@@ -3,194 +3,146 @@
  * @description Bitbucket VCS provider implementation
  */
 
-import type { 
-  VCSProvider,
-  VCSConfig,
-  VCSAuthOptions,
-  CommitFetchOptions,
-  VCSError
-} from './types'
-import type { CommitData, RepoStats } from '@/types'
+import { VCSProvider, VCSConfig, VCSAuthOptions, CommitFetchOptions, VCSError } from './types'
+import type { CommitData, RepoStats, ErrorType } from '@/types'
 
-/**
- * Bitbucket VCS provider implementation
- * 
- * @example
- * ```ts
- * const bitbucket = new BitbucketProvider()
- * await bitbucket.init({ platform: 'bitbucket' })
- * await bitbucket.authenticate({ token: 'your-token' })
- * 
- * const commits = await bitbucket.fetchCommits({
- *   owner: 'owner',
- *   repo: 'repo'
- * })
- * ```
- */
-export class BitbucketProvider implements VCSProvider {
-  private token: string | null = null
-  private config: VCSConfig | null = null
-  private baseUrl: string = 'https://api.bitbucket.org/2.0'
-
-  /**
-   * Initialize the Bitbucket provider
-   */
-  async init(config: VCSConfig): Promise<void> {
-    if (config.platform !== 'bitbucket') {
-      throw this.createError('Invalid platform', 'validation_error')
-    }
-    this.config = config
-    if (config.baseUrl) {
-      this.baseUrl = config.baseUrl
+interface _BitbucketRepo {
+  uuid: string
+  name: string
+  full_name: string
+  links: {
+    html: {
+      href: string
     }
   }
+  description: string | null
+}
 
-  /**
-   * Authenticate with Bitbucket
-   */
-  async authenticate(options: VCSAuthOptions): Promise<void> {
-    try {
-      // Verify token by making a test API call
-      const response = await fetch(`${this.baseUrl}/user`, {
-        headers: {
-          'Authorization': `Bearer ${options.token}`,
-        }
-      })
+interface BitbucketCommit {
+  hash: string
+  message: string
+  author: {
+    user: {
+      display_name: string
+    }
+    raw: string
+  }
+  date: string
+  links: {
+    html: {
+      href: string
+    }
+  }
+}
 
-      if (!response.ok) {
-        throw new Error('Authentication failed')
+interface BitbucketError extends Error {
+  status?: number
+  response?: {
+    data?: {
+      error?: {
+        message?: string
       }
-
-      this.token = options.token
-    } catch (error) {
-      throw this.createError('Authentication failed', 'auth_error', error)
     }
   }
+}
 
-  /**
-   * Fetch commits from a Bitbucket repository
-   */
+export class BitbucketProvider implements VCSProvider {
+  private token: string | undefined
+  private baseUrl = 'https://api.bitbucket.org/2.0'
+  private config: VCSConfig | undefined
+
+  async init(config: VCSConfig): Promise<void> {
+    this.config = config
+    this.baseUrl = config.baseUrl || this.baseUrl
+  }
+
+  async authenticate(options: VCSAuthOptions): Promise<void> {
+    this.token = options.token
+  }
+
   async fetchCommits(options: CommitFetchOptions): Promise<CommitData[]> {
-    if (!this.token) {
-      throw this.createError('Not authenticated', 'auth_error')
-    }
-
     try {
-      const url = new URL(`${this.baseUrl}/repositories/${options.owner}/${options.repo}/commits`)
-
-      if (options.branch) url.searchParams.append('include', options.branch)
-      if (options.since) url.searchParams.append('since', options.since.toISOString())
-      if (options.until) url.searchParams.append('until', options.until.toISOString())
-      if (options.perPage) url.searchParams.append('pagelen', options.perPage.toString())
-      if (options.page) url.searchParams.append('page', options.page.toString())
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
+      const response = await fetch(
+        `${this.baseUrl}/repositories/${options.owner}/${options.repo}/commits${
+          options.branch ? `?branch=${options.branch}` : ''
+        }`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
         }
-      })
+      )
 
       if (!response.ok) {
-        throw new Error(`Bitbucket API error: ${response.statusText}`)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      const commits = data.values || []
-
-      return commits.map((commit: any) => {
-        const stats = commit.rendered?.stats && {
-          total: (commit.rendered.stats.additions || 0) + (commit.rendered.stats.deletions || 0),
-          additions: commit.rendered.stats.additions || 0,
-          deletions: commit.rendered.stats.deletions || 0,
-        }
-
-        return {
-          id: commit.hash,
-          message: commit.message,
-          author: commit.author.user?.display_name || commit.author.raw || 'Unknown',
-          date: commit.date || new Date().toISOString(),
-          additions: stats?.additions || 0,
-          deletions: stats?.deletions || 0,
-          files: commit.rendered?.files?.length || 0,
-          stats,
-        }
-      })
+      return data.values.map((commit: BitbucketCommit) => ({
+        sha: commit.hash,
+        message: commit.message,
+        author: {
+          name: commit.author.user.display_name,
+          email: commit.author.raw,
+        },
+        date: commit.date,
+        url: commit.links.html.href,
+      }))
     } catch (error) {
-      throw this.createError('Failed to fetch commits', 'api_error', error)
+      const err = error as BitbucketError
+      const vcsError: VCSError = {
+        type: 'api_error' as ErrorType,
+        message: `Failed to fetch commits: ${err.response?.data?.error?.message || err.message}`,
+        statusCode: err.status,
+        raw: err
+      }
+      throw vcsError
     }
   }
 
-  /**
-   * Fetch Bitbucket repository statistics
-   */
   async fetchRepoStats(owner: string, repo: string): Promise<RepoStats> {
-    if (!this.token) {
-      throw this.createError('Not authenticated', 'auth_error')
-    }
-
     try {
       const response = await fetch(
         `${this.baseUrl}/repositories/${owner}/${repo}`,
         {
           headers: {
-            'Authorization': `Bearer ${this.token}`,
-          }
+            Authorization: `Bearer ${this.token}`,
+          },
         }
       )
 
       if (!response.ok) {
-        throw new Error(`Bitbucket API error: ${response.statusText}`)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-
       return {
-        stars: data.watchers?.count || 0,
+        stars: data.watchers_count || 0,
         forks: data.forks_count || 0,
-        watchers: data.watchers?.count || 0,
+        watchers: data.subscribers_count || 0,
         issues: data.open_issues_count || 0,
         lastUpdated: data.updated_on,
       }
     } catch (error) {
-      throw this.createError('Failed to fetch repo stats', 'api_error', error)
+      const err = error as BitbucketError
+      const vcsError: VCSError = {
+        type: 'api_error' as ErrorType,
+        message: `Failed to fetch repository stats: ${err.response?.data?.error?.message || err.message}`,
+        statusCode: err.status,
+        raw: err
+      }
+      throw vcsError
     }
   }
 
-  /**
-   * Check if the provider is authenticated
-   */
   isAuthenticated(): boolean {
-    return this.token !== null
+    return !!this.token
   }
 
-  /**
-   * Get the current configuration
-   */
   getConfig(): VCSConfig {
     if (!this.config) {
-      throw this.createError('Not initialized', 'validation_error')
+      throw new Error('Provider not initialized')
     }
     return this.config
-  }
-
-  /**
-   * Create a standardized error object
-   */
-  private createError(
-    message: string,
-    type: VCSError['type'],
-    raw?: unknown
-  ): VCSError {
-    const error: VCSError = {
-      type,
-      message,
-      raw,
-    }
-
-    if (raw instanceof Error) {
-      error.message = `${message}: ${raw.message}`
-    }
-
-    return error
   }
 } 

@@ -3,192 +3,132 @@
  * @description GitLab VCS provider implementation
  */
 
-import type { 
-  VCSProvider,
-  VCSConfig,
-  VCSAuthOptions,
-  CommitFetchOptions,
-  VCSError
-} from './types'
-import type { CommitData, RepoStats } from '@/types'
+import { VCSProvider, VCSConfig, VCSAuthOptions, CommitFetchOptions, VCSError } from './types'
+import type { CommitData, RepoStats, ErrorType } from '@/types'
 
-/**
- * GitLab VCS provider implementation
- * 
- * @example
- * ```ts
- * const gitlab = new GitLabProvider()
- * await gitlab.init({ platform: 'gitlab' })
- * await gitlab.authenticate({ token: 'your-token' })
- * 
- * const commits = await gitlab.fetchCommits({
- *   owner: 'owner',
- *   repo: 'repo'
- * })
- * ```
- */
+interface _GitLabRepo {
+  id: number
+  name: string
+  path_with_namespace: string
+  web_url: string
+  description: string | null
+}
+
+interface GitLabCommit {
+  id: string
+  message: string
+  author_name: string
+  author_email: string
+  committed_date: string
+  web_url: string
+}
+
+interface GitLabError extends Error {
+  response?: {
+    status?: number
+    data?: {
+      message?: string
+    }
+  }
+}
+
 export class GitLabProvider implements VCSProvider {
-  private token: string | null = null
-  private config: VCSConfig | null = null
-  private baseUrl: string = 'https://gitlab.com/api/v4'
+  private token: string | undefined
+  private baseUrl = 'https://gitlab.com/api/v4'
+  private config: VCSConfig | undefined
 
-  /**
-   * Initialize the GitLab provider
-   */
   async init(config: VCSConfig): Promise<void> {
-    if (config.platform !== 'gitlab') {
-      throw this.createError('Invalid platform', 'validation_error')
-    }
     this.config = config
-    if (config.baseUrl) {
-      this.baseUrl = config.baseUrl
-    }
+    this.baseUrl = config.baseUrl || this.baseUrl
   }
 
-  /**
-   * Authenticate with GitLab
-   */
   async authenticate(options: VCSAuthOptions): Promise<void> {
-    try {
-      // Verify token by making a test API call
-      const response = await fetch(`${this.baseUrl}/user`, {
-        headers: {
-          'Authorization': `Bearer ${options.token}`,
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Authentication failed')
-      }
-
-      this.token = options.token
-    } catch (error) {
-      throw this.createError('Authentication failed', 'auth_error', error)
-    }
+    this.token = options.token
   }
 
-  /**
-   * Fetch commits from a GitLab repository
-   */
   async fetchCommits(options: CommitFetchOptions): Promise<CommitData[]> {
-    if (!this.token) {
-      throw this.createError('Not authenticated', 'auth_error')
-    }
-
     try {
-      const encodedRepo = encodeURIComponent(`${options.owner}/${options.repo}`)
-      const url = new URL(`${this.baseUrl}/projects/${encodedRepo}/repository/commits`)
-
-      if (options.branch) url.searchParams.append('ref_name', options.branch)
-      if (options.since) url.searchParams.append('since', options.since.toISOString())
-      if (options.until) url.searchParams.append('until', options.until.toISOString())
-      if (options.perPage) url.searchParams.append('per_page', options.perPage.toString())
-      if (options.page) url.searchParams.append('page', options.page.toString())
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
+      const response = await fetch(
+        `${this.baseUrl}/projects/${encodeURIComponent(options.owner + '/' + options.repo)}/repository/commits${
+          options.branch ? `?ref_name=${options.branch}` : ''
+        }`,
+        {
+          headers: {
+            'PRIVATE-TOKEN': this.token || '',
+          },
         }
-      })
+      )
 
       if (!response.ok) {
-        throw new Error(`GitLab API error: ${response.statusText}`)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const commits = await response.json()
-
-      return commits.map((commit: any) => {
-        const stats = commit.stats && {
-          total: commit.stats.total || 0,
-          additions: commit.stats.additions || 0,
-          deletions: commit.stats.deletions || 0,
-        }
-
-        return {
-          id: commit.id,
-          message: commit.message,
-          author: commit.author_name || 'Unknown',
-          date: commit.created_at || new Date().toISOString(),
-          additions: stats?.additions || 0,
-          deletions: stats?.deletions || 0,
-          files: commit.stats?.files || 0,
-          stats,
-        }
-      })
+      return commits.map((commit: GitLabCommit) => ({
+        id: commit.id,
+        message: commit.message,
+        author: {
+          name: commit.author_name,
+          email: commit.author_email,
+        },
+        date: commit.committed_date,
+        url: commit.web_url,
+      }))
     } catch (error) {
-      throw this.createError('Failed to fetch commits', 'api_error', error)
+      const err = error as GitLabError
+      const vcsError: VCSError = {
+        type: 'api_error' as ErrorType,
+        message: `Failed to fetch commits: ${err.response?.data?.message || err.message}`,
+        statusCode: err.response?.status,
+        raw: err
+      }
+      throw vcsError
     }
   }
 
-  /**
-   * Fetch GitLab repository statistics
-   */
   async fetchRepoStats(owner: string, repo: string): Promise<RepoStats> {
-    if (!this.token) {
-      throw this.createError('Not authenticated', 'auth_error')
-    }
-
     try {
-      const encodedRepo = encodeURIComponent(`${owner}/${repo}`)
-      const response = await fetch(`${this.baseUrl}/projects/${encodedRepo}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
+      const response = await fetch(
+        `${this.baseUrl}/projects/${encodeURIComponent(owner + '/' + repo)}`,
+        {
+          headers: {
+            'PRIVATE-TOKEN': this.token || '',
+          },
         }
-      })
+      )
 
       if (!response.ok) {
-        throw new Error(`GitLab API error: ${response.statusText}`)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-
       return {
-        stars: data.star_count,
-        forks: data.forks_count,
-        watchers: data.star_count, // GitLab uses stars as watchers
-        issues: data.open_issues_count,
+        stars: data.star_count || 0,
+        forks: data.forks_count || 0,
+        watchers: data.star_count || 0, // GitLab uses stars as watchers
+        issues: data.open_issues_count || 0,
         lastUpdated: data.last_activity_at,
       }
     } catch (error) {
-      throw this.createError('Failed to fetch repo stats', 'api_error', error)
+      const err = error as GitLabError
+      const vcsError: VCSError = {
+        type: 'api_error' as ErrorType,
+        message: `Failed to fetch repository stats: ${err.response?.data?.message || err.message}`,
+        statusCode: err.response?.status,
+        raw: err
+      }
+      throw vcsError
     }
   }
 
-  /**
-   * Check if the provider is authenticated
-   */
   isAuthenticated(): boolean {
-    return this.token !== null
+    return !!this.token
   }
 
-  /**
-   * Get the current configuration
-   */
   getConfig(): VCSConfig {
     if (!this.config) {
-      throw this.createError('Not initialized', 'validation_error')
+      throw new Error('Provider not initialized')
     }
     return this.config
-  }
-
-  /**
-   * Create a standardized error object
-   */
-  private createError(
-    message: string,
-    type: VCSError['type'],
-    raw?: unknown
-  ): VCSError {
-    const error: VCSError = {
-      type,
-      message,
-      raw,
-    }
-
-    if (raw instanceof Error) {
-      error.message = `${message}: ${raw.message}`
-    }
-
-    return error
   }
 } 

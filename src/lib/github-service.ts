@@ -1,206 +1,138 @@
 /**
- * @module github-service
- * @description Service layer for interacting with the GitHub API.
- * Handles authentication, data fetching, and error handling.
+ * @module lib/github-service
+ * @description Service for interacting with GitHub API
  */
 
 import { Octokit } from '@octokit/rest'
-import type { RestEndpointMethodTypes } from '@octokit/rest'
-import type { CommitData } from '@/components/github-story-visualizer'
-import { isValidDateFormat } from '@/lib/validation'
+import type { VCSProvider, VCSConfig, VCSAuthOptions, CommitFetchOptions } from '@/lib/vcs/types'
+import type { CommitData, RepoStats } from '@/types'
 
-type CommitResponse = RestEndpointMethodTypes['repos']['listCommits']['response']
-type RepoResponse = RestEndpointMethodTypes['repos']['get']['response']
-
-/**
- * GitHub API error types
- */
-export class GitHubAPIError extends Error {
-  constructor(
-    message: string,
-    public status?: number,
-    public response?: unknown
-  ) {
-    super(message)
-    this.name = 'GitHubAPIError'
+type _GitHubCommit = {
+  sha: string
+  message: string
+  author: {
+    name: string
+    email: string
+    date: string
   }
 }
 
 /**
- * Configuration options for the GitHub service
- */
-export interface GitHubServiceConfig {
-  token?: string
-  baseUrl?: string
-  userAgent?: string
-}
-
-/**
- * Parameters for fetching commit data
- */
-export interface FetchCommitsParams {
-  owner: string
-  repo: string
-  since?: string
-  until?: string
-  perPage?: number
-  page?: number
-}
-
-/**
- * Repository statistics response
- */
-export interface RepoStats {
-  stars: number
-  forks: number
-  language: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-/**
- * GitHub service class for handling API interactions
+ * GitHub service implementation
  * 
- * @example
- * ```ts
- * const github = new GitHubService({ token: 'your-token' })
- * 
- * try {
- *   const commits = await github.fetchCommits({
- *     owner: 'username',
- *     repo: 'repo-name'
- *   })
- * } catch (error) {
- *   if (error instanceof GitHubAPIError) {
- *     console.error('API Error:', error.message)
- *   }
- * }
- * ```
+ * @class
+ * @implements {VCSProvider}
  */
-export class GitHubService {
+export class GitHubService implements VCSProvider {
   private octokit: Octokit
-  private rateLimitRemaining: number = 5000
+  private config?: VCSConfig
 
-  /**
-   * Creates a new GitHubService instance
-   * @param {GitHubServiceConfig} config - Configuration options
-   */
-  constructor(config: GitHubServiceConfig = {}) {
+  constructor(token: string) {
     this.octokit = new Octokit({
-      auth: config.token,
-      baseUrl: config.baseUrl,
-      userAgent: config.userAgent || 'RepoTales-App',
+      auth: token
     })
   }
 
-  /**
-   * Fetches commit data for a repository
-   * @param {FetchCommitsParams} params - Parameters for the fetch operation
-   * @returns {Promise<CommitData[]>} Array of commit data
-   * @throws {GitHubAPIError} If the API request fails
-   */
-  async fetchCommits(params: FetchCommitsParams): Promise<CommitData[]> {
-    try {
-      // Validate date parameters
-      if (params.since && !isValidDateFormat(params.since)) {
-        throw new GitHubAPIError('Invalid since date format')
-      }
-      if (params.until && !isValidDateFormat(params.until)) {
-        throw new GitHubAPIError('Invalid until date format')
-      }
-
-      // Check rate limit before making request
-      if (this.rateLimitRemaining <= 0) {
-        throw new GitHubAPIError('GitHub API rate limit exceeded')
-      }
-
-      const response: CommitResponse = await this.octokit.repos.listCommits({
-        owner: params.owner,
-        repo: params.repo,
-        since: params.since,
-        until: params.until,
-        per_page: params.perPage || 30,
-        page: params.page || 1,
-      })
-
-      // Update rate limit
-      this.rateLimitRemaining = parseInt(
-        response.headers['x-ratelimit-remaining'] || '5000'
-      )
-
-      // Transform the response into CommitData format
-      return response.data.map(commit => ({
-        date: new Date(commit.commit.author?.date || '').toISOString().split('T')[0],
-        commits: 1,
-        message: commit.commit.message,
-        time: new Date(commit.commit.author?.date || '').toTimeString().slice(0, 5),
-        language: null, // Language needs to be fetched separately
-        linesAdded: null,
-        linesRemoved: null,
-      }))
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new GitHubAPIError(
-          error.message,
-          (error as any).status,
-          (error as any).response
-        )
-      }
-      throw new GitHubAPIError('Unknown error occurred')
-    }
+  async init(config: VCSConfig): Promise<void> {
+    this.config = config
+    this.octokit = new Octokit({
+      auth: config.token,
+      baseUrl: config.baseUrl
+    })
   }
 
-  /**
-   * Fetches repository statistics
-   * @param {string} owner - Repository owner
-   * @param {string} repo - Repository name
-   * @returns {Promise<RepoStats>} Repository statistics
-   * @throws {GitHubAPIError} If the API request fails
-   */
+  async authenticate(options: VCSAuthOptions): Promise<void> {
+    this.octokit = new Octokit({
+      auth: options.token
+    })
+  }
+
+  async fetchCommits(options: CommitFetchOptions): Promise<CommitData[]> {
+    const { data } = await this.octokit.repos.listCommits({
+      owner: options.owner,
+      repo: options.repo,
+      sha: options.branch,
+      since: options.since?.toISOString(),
+      until: options.until?.toISOString(),
+      per_page: options.perPage,
+      page: options.page
+    })
+
+    return data.map(commit => ({
+      id: commit.sha,
+      message: commit.commit.message,
+      author: commit.commit.author?.name || 'Unknown',
+      date: commit.commit.author?.date || new Date().toISOString(),
+      additions: 0, // Would need additional API call to get these
+      deletions: 0, // Would need additional API call to get these
+      files: 0, // Would need additional API call to get these
+      stats: {
+        total: 0,
+        additions: 0,
+        deletions: 0
+      }
+    }))
+  }
+
   async fetchRepoStats(owner: string, repo: string): Promise<RepoStats> {
-    try {
-      const response: RepoResponse = await this.octokit.repos.get({
-        owner,
-        repo,
-      })
+    const { data } = await this.octokit.repos.get({
+      owner,
+      repo
+    })
 
-      return {
-        stars: response.data.stargazers_count,
-        forks: response.data.forks_count,
-        language: response.data.language,
-        createdAt: response.data.created_at,
-        updatedAt: response.data.updated_at,
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new GitHubAPIError(
-          error.message,
-          (error as any).status,
-          (error as any).response
-        )
-      }
-      throw new GitHubAPIError('Unknown error occurred')
+    return {
+      stars: data.stargazers_count,
+      forks: data.forks_count,
+      watchers: data.watchers_count,
+      issues: data.open_issues_count,
+      lastUpdated: data.updated_at
     }
   }
 
-  /**
-   * Checks if the current token has valid authentication
-   * @returns {Promise<boolean>} Whether the token is valid
-   */
-  async checkAuth(): Promise<boolean> {
-    try {
-      await this.octokit.users.getAuthenticated()
-      return true
-    } catch {
-      return false
-    }
+  isAuthenticated(): boolean {
+    return !!this.octokit.auth
   }
 
-  /**
-   * Gets the remaining rate limit
-   * @returns {number} Remaining API calls
-   */
-  getRateLimitRemaining(): number {
-    return this.rateLimitRemaining
+  getConfig(): VCSConfig {
+    if (!this.config) {
+      throw new Error('GitHub provider not initialized')
+    }
+    return this.config
+  }
+
+  // Additional helper methods
+  async getRepositories() {
+    const { data } = await this.octokit.repos.listForAuthenticatedUser({
+      sort: 'updated',
+      direction: 'desc',
+      per_page: 100
+    })
+
+    return data.map(repo => ({
+      id: repo.id.toString(),
+      name: repo.name,
+      fullName: repo.full_name,
+      description: repo.description || '',
+      url: repo.html_url,
+      private: repo.private,
+      language: repo.language || 'Unknown',
+      stars: repo.stargazers_count,
+      forks: repo.forks_count,
+      updatedAt: repo.updated_at
+    }))
+  }
+
+  async getLanguages(owner: string, repo: string) {
+    const { data } = await this.octokit.repos.listLanguages({
+      owner,
+      repo
+    })
+
+    const total = Object.values(data).reduce((sum, value) => sum + value, 0)
+
+    return Object.entries(data).map(([name, bytes]) => ({
+      name,
+      percentage: (bytes / total) * 100
+    }))
   }
 } 
