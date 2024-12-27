@@ -1,61 +1,57 @@
-# RepoTales Documentation
+# GitFables Documentation
 
-Welcome to the RepoTales documentation! This documentation will help you understand the project structure, features, and development guidelines.
+Welcome to the GitFables documentation! This documentation will help you understand the project structure, features, and development guidelines.
 
 ## Table of Contents
 
-- [Architecture](./architecture/README.md)
+1. [Architecture](./architecture/README.md)
 
-  - Project structure
-  - Tech stack
-  - Design patterns
+   - Project structure
+   - Design patterns
+   - Technical decisions
 
-- [Components](./components/README.md)
+2. [Components](./components/README.md)
 
-  - UI components
-  - Layout components
-  - Section components
+   - UI components
+   - Layout components
+   - Shared components
 
-- [Features](./features/README.md)
+3. [Features](./features/README.md)
 
-  - Story generation
-  - GitHub integration
-  - Sharing capabilities
+   - Core features
+   - Story generation
+   - VCS integration
+   - Analytics
 
-- [Guides](./guides/README.md)
-  - Development setup
-  - Contributing guidelines
-  - Best practices
+4. [Guides](./guides/)
+   - [Getting Started](./guides/getting-started.md)
+   - [Contributing](./guides/contributing.md)
+   - [Development](./guides/development.md)
+   - [Deployment](./guides/deployment.md)
 
-## Quick Links
+## About GitFables
 
-- [Getting Started](./guides/getting-started.md)
-- [Component Library](./components/ui/README.md)
-- [Story Generation](./features/story-generation.md)
-- [Architecture Overview](./architecture/overview.md)
-
-## Project Overview
-
-RepoTales is a web application that transforms GitHub repository histories into engaging stories. It uses AI to analyze commit patterns, code changes, and development timelines to create narratives that showcase a developer's journey.
+GitFables is a web application that transforms GitHub repository histories into engaging stories. It uses AI to analyze commit patterns, code changes, and development timelines to create narratives that showcase your development journey.
 
 ### Key Features
 
-- GitHub repository integration
-- AI-powered story generation
-- Multiple narrative styles
-- Story sharing and export options
-- Team collaboration features
-- Interactive visualizations
+- 🔄 Multi-platform VCS support
+- 📝 AI-powered story generation
+- 📊 Development analytics
+- 🌓 Dark/light mode
+- 🎨 Modern UI/UX
+- 🚀 High performance
 
 ### Tech Stack
 
-- Next.js 14 (App Router)
+- Next.js 14
 - TypeScript
-- Tailwind CSS
+- TailwindCSS
 - Supabase
-- GitHub API
-- Framer Motion
+- shadcn/ui
 
-## Development Status
+## Getting Help
 
-Current development status and upcoming features are tracked in our [Project Roadmap](./features/roadmap.md).
+- [GitHub Issues](https://github.com/marcstampfli/gitfables/issues)
+- [Discord Community](https://discord.gg/gitfables)
+- Email: support@gitfables.com

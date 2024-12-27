@@ -14,8 +14,8 @@ import type { _cookies } from 'next/headers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'RepoTales',
-  description: 'Turn your Git history into engaging stories',
+  title: 'GitFables',
+  description: 'Transform your Git history into engaging stories',
   icons: {
     icon: '/favicon.ico'
   }

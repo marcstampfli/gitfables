@@ -6,8 +6,8 @@ import { SettingsForm } from '@/components/settings/settings-form'
 import { PostgrestSingleResponse } from '@supabase/supabase-js'
 
 export const metadata: Metadata = {
-  title: 'Settings | RepoTales',
-  description: 'Manage your RepoTales settings'
+  title: 'Settings | GitFables',
+  description: 'Manage your GitFables settings'
 }
 
 const defaultSettings: Settings = {

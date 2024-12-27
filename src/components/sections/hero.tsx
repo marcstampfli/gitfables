@@ -33,8 +33,8 @@ export function Hero({ isConnected, isLoading }: HeroProps) {
           
           <Animated animation="slide-up" delay={400}>
             <p className="mx-auto max-w-[600px] text-lg sm:text-xl text-muted-foreground">
-              RepoTales analyzes your repositories and generates engaging
-              stories about your development journey, achievements, and coding style.
+              GitFables analyzes your repositories and generates engaging
+              stories about your development journey.
             </p>
           </Animated>
 

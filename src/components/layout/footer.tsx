@@ -5,6 +5,7 @@
 
 import Link from 'next/link'
 import { Github, Twitter } from 'lucide-react'
+import { Icons } from '@/components/icons'
 
 export function Footer() {
   return (
@@ -31,13 +32,13 @@ export function Footer() {
         </div>
         <div className="flex items-center space-x-4">
           <Link
-            href="https://github.com/marcstampfli/repotales-app"
+            className="flex items-center gap-2 text-sm font-medium"
+            href="https://github.com/marcstampfli/gitfables"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
           >
-            <Github className="h-5 w-5" />
-            <span className="sr-only">GitHub</span>
+            <Icons.gitHub className="h-4 w-4" />
+            GitHub
           </Link>
           <Link
             href="https://twitter.com/marcstampfli"

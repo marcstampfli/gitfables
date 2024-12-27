@@ -1,163 +1,97 @@
-# Getting Started with RepoTales
+# Getting Started with GitFables
 
-This guide will help you set up RepoTales for local development.
+This guide will help you set up GitFables for local development.
 
 ## Prerequisites
 
-- Node.js 18.x or later
-- Git
-- GitHub account
+- Node.js 18 or later
 - npm or yarn
+- Git
+- GitHub account (for OAuth)
+- Supabase account (for database)
 
 ## Installation
 
-1. **Clone the Repository**
+1. Clone the repository:
 
 ```bash
-git clone https://github.com/marcstampfli/repotales-app.git
-cd repotales-app
+git clone https://github.com/marcstampfli/gitfables.git
+cd gitfables
 ```
 
-2. **Install Dependencies**
+2. Install dependencies:
 
 ```bash
 npm install
+# or
+yarn install
 ```
 
-3. **Environment Setup**
-   Copy the example environment file:
+3. Set up environment variables:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Update the following variables in `.env.local`:
+Edit `.env.local` with your credentials:
 
 ```env
-NEXT_PUBLIC_GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# GitHub OAuth
+NEXT_PUBLIC_GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Site URL
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-4. **Start Development Server**
+4. Start the development server:
 
 ```bash
 npm run dev
+# or
+yarn dev
 ```
 
-Visit `http://localhost:3000` to see the application.
+Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## Project Structure
 
 ```
-repotales-app/
+gitfables/
 ├── src/
-│   ├── app/                 # Next.js pages
-│   ├── components/          # React components
-│   ├── hooks/              # Custom hooks
-│   ├── lib/                # Utilities
-│   └── styles/             # Global styles
-├── public/                 # Static assets
-├── docs/                   # Documentation
-└── tests/                  # Test files
+│   ├── app/           # Next.js app router
+│   ├── components/    # React components
+│   ├── lib/          # Utilities and services
+│   └── types/        # TypeScript types
+├── public/           # Static assets
+└── docs/            # Documentation
 ```
 
 ## Development Workflow
 
-1. **Create a Feature Branch**
+1. Create a new branch for your feature/fix
+2. Make your changes
+3. Write/update tests
+4. Update documentation
+5. Submit a pull request
 
-```bash
-git checkout -b feature/your-feature-name
-```
+## Getting Help
 
-2. **Make Changes**
-
-- Follow the [component guidelines](../components/README.md)
-- Add tests for new features
-- Update documentation
-
-3. **Run Tests**
-
-```bash
-npm run test        # Run unit tests
-npm run test:e2e    # Run E2E tests
-npm run lint        # Run linter
-```
-
-4. **Submit Changes**
-
-```bash
-git add .
-git commit -m "feat: your feature description"
-git push origin feature/your-feature-name
-```
-
-Create a Pull Request on GitHub.
-
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:e2e` - Run E2E tests
-
-## GitHub Setup
-
-1. Create a new OAuth App:
-
-   - Go to GitHub Settings > Developer settings > OAuth Apps
-   - Set Homepage URL: `http://localhost:3000`
-   - Set Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
-
-2. Copy credentials to `.env.local`
-
-## Supabase Setup
-
-1. Create a new Supabase project
-2. Copy project URL and anon key to `.env.local`
-3. Run database migrations:
-
-```bash
-npm run supabase:migrate
-```
-
-## Common Issues
-
-### Authentication Issues
-
-- Verify GitHub OAuth credentials
-- Check callback URLs
-- Ensure environment variables are set
-
-### Build Errors
-
-- Clear `.next` directory
-- Remove `node_modules` and reinstall
-- Check Node.js version
-
-### Type Errors
-
-- Run `npm run type-check`
-- Update TypeScript dependencies
-- Check type definitions
-
-## Next Steps
-
-1. Review the [Architecture Documentation](../architecture/README.md)
-2. Explore [Components](../components/README.md)
-3. Check [Features Documentation](../features/README.md)
-4. Join our [Discord Community](https://discord.gg/repotales)
+1. Check the [documentation](../README.md)
+2. Search [GitHub Issues](https://github.com/marcstampfli/gitfables/issues)
+3. Join our [Discord Community](https://discord.gg/gitfables)
+4. Email us at support@gitfables.com
 
 ## Contributing
 
-See our [Contributing Guide](./contributing.md) for detailed information about contributing to RepoTales.
+See our [Contributing Guide](./contributing.md) for detailed information about contributing to GitFables.
 
 ## Support
 
-- GitHub Issues: Bug reports and feature requests
-- Discord: Community support and discussions
-- Email: support@repotales.dev
+- Discord: [Join our community](https://discord.gg/gitfables)
+- Email: support@gitfables.com
+- Twitter: [@gitfables](https://twitter.com/gitfables)

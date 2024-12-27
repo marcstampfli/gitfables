@@ -44,7 +44,7 @@ export function ShareMenu({ _url }: ShareMenuProps) {
   async function handleShare(platform: string) {
     try {
       const url = window.location.href
-      const text = 'Check out this story on RepoTales!'
+      const text = 'Check out this story on GitFables!'
 
       switch (platform) {
         case 'twitter':

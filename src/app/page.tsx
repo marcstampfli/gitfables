@@ -19,7 +19,9 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <h1 className="text-4xl font-bold text-center">RepoTales</h1>
+      <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-background">
+        <h1 className="text-4xl font-bold text-center">GitFables</h1>
+      </div>
       <p className="text-center text-muted-foreground">
         Transform your GitHub repository into an engaging story
       </p>

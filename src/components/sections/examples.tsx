@@ -40,7 +40,7 @@ export function Examples() {
               Used by developers worldwide
             </h2>
             <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-              Join thousands of developers who use RepoTales to showcase their work
+              Join thousands of developers who use GitFables to showcase their work
             </p>
           </div>
         </Animated>
