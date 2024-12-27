@@ -1,5 +1,23 @@
+/**
+ * @module tailwind.config
+ * @description Tailwind CSS configuration file that defines the design system.
+ * Configures colors, typography, spacing, and other design tokens used throughout the application.
+ *
+ * @example
+ * ```ts
+ * // This config is automatically loaded by Tailwind CSS
+ * // You can reference these values in your CSS using CSS variables:
+ * // bg-background text-foreground
+ * ```
+ */
+
 import type { Config } from 'tailwindcss'
 
+/**
+ * Tailwind configuration object
+ * Defines the complete design system including colors, typography, spacing, and animations
+ * @type {Config}
+ */
 const config: Config = {
   darkMode: ['class'],
   content: [
