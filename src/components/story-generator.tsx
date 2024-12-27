@@ -1,102 +1,185 @@
 /**
- * @module components/story-generator
- * @description Component for generating stories from commit data
+ * @module StoryGenerator
+ * @description A component that generates stories from GitHub repository commit history.
+ * Provides repository selection and story generation functionality.
+ * 
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <StoryGenerator onStoryGenerated={(story) => console.log('Generated:', story)} />
+ * ```
  */
 
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
+import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
-import type { Repository, Commit } from '@/lib/github-client'
-import type { Story } from '@/lib/story'
-import { useVCS } from '@/hooks/use-vcs'
-import { useToast } from '@/hooks/use-toast'
+import { Card } from '@/components/ui/card'
+import { type Repository } from '@/lib/github-client'
+import { type Story } from '@/lib/story'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { logError } from '@/lib/logger'
 
+/**
+ * Props for the StoryGenerator component
+ * @interface
+ */
 interface StoryGeneratorProps {
-  repo: Repository
+  /** Callback function called when a story is successfully generated */
   onStoryGenerated: (story: Story) => void
 }
 
-export function StoryGenerator({ repo, onStoryGenerated }: StoryGeneratorProps) {
+/**
+ * StoryGenerator Component
+ * 
+ * @component
+ * @description A component that allows users to select a GitHub repository and generate
+ * a story from its commit history. Handles repository loading, selection, and story generation.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onStoryGenerated - Callback function called with the generated story
+ * @returns {JSX.Element} A card component with repository selection and story generation UI
+ */
+export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const [commits, setCommits] = useState<Commit[]>([])
-  const [isLoadingCommits, setIsLoadingCommits] = useState(false)
-  const { fetchCommits } = useVCS()
-  const { addToast } = useToast()
+  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null)
+  const [repositories, setRepositories] = useState<Repository[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
-    async function loadCommits() {
-      setIsLoadingCommits(true)
+    async function loadRepositories() {
       try {
-        const repoCommits = await fetchCommits(repo)
-        setCommits(repoCommits)
+        const response = await fetch('/api/repos')
+        if (!response.ok) throw new Error('Failed to fetch repositories')
+        const data = await response.json()
+        setRepositories(data)
       } catch (error) {
-        addToast({
-          type: 'error',
+        logError(error instanceof Error ? error : new Error('Error loading repositories'), {
+          context: 'StoryGenerator:loadRepositories'
+        })
+        toast({
           title: 'Error',
-          message: 'Failed to load commits',
+          description: 'Failed to load repositories',
+          variant: 'destructive',
         })
       } finally {
-        setIsLoadingCommits(false)
+        setIsLoading(false)
       }
     }
-    loadCommits()
-  }, [repo, fetchCommits, addToast])
 
-  const handleGenerate = async () => {
-    setIsGenerating(true)
-    try {
-      // TODO: Implement actual story generation
-      const story: Story = {
-        id: '1',
-        title: `Story from ${repo.name}`,
-        content: `Generated from ${commits.length} commits...`,
-        createdAt: new Date().toISOString(),
-      }
-      onStoryGenerated(story)
-    } catch (error) {
-      console.error('Failed to generate story:', error)
-      addToast({
-        type: 'error',
+    loadRepositories()
+  }, [toast])
+
+  const generateStory = async () => {
+    if (!selectedRepo) {
+      toast({
         title: 'Error',
-        message: 'Failed to generate story',
+        description: 'Please select a repository first',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      setIsGenerating(true)
+
+      const response = await fetch('/api/story/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repository: {
+            id: selectedRepo.id,
+            name: selectedRepo.name,
+            fullName: selectedRepo.fullName,
+            url: selectedRepo.url,
+            description: selectedRepo.description,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate story')
+      }
+
+      const story = await response.json()
+      onStoryGenerated(story)
+
+      toast({
+        title: 'Success',
+        description: 'Your story has been generated',
+      })
+    } catch (error) {
+      logError(error instanceof Error ? error : new Error('Error generating story'), {
+        context: 'StoryGenerator:generateStory',
+        metadata: { repositoryId: selectedRepo?.id }
+      })
+      toast({
+        title: 'Error',
+        description: 'Failed to generate story',
+        variant: 'destructive',
       })
     } finally {
       setIsGenerating(false)
     }
   }
 
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-muted-foreground">Loading repositories...</p>
+      </Card>
+    )
+  }
+
+  if (repositories.length === 0) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-muted-foreground">
+          No repositories found. Connect your GitHub account to get started.
+        </p>
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Generate Story</h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Generate a story from {repo.full_name}
-        </p>
-        {isLoadingCommits ? (
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading commits...</span>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">
-            {commits.length} commits loaded
+        <div>
+          <h3 className="text-lg font-semibold">Generate a Story</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Select a repository to generate a story from its commit history
           </p>
-        )}
-        <Button
-          onClick={handleGenerate}
-          disabled={isGenerating || isLoadingCommits}
+        </div>
+
+        <Select
+          value={selectedRepo?.fullName}
+          onValueChange={(value) => {
+            const repo = repositories.find((r) => r.fullName === value)
+            setSelectedRepo(repo || null)
+          }}
         >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            'Generate Story'
-          )}
+          <SelectTrigger>
+            <SelectValue placeholder="Select a repository" />
+          </SelectTrigger>
+          <SelectContent>
+            {repositories.map((repo) => (
+              <SelectItem key={repo.id} value={repo.fullName}>
+                {repo.fullName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          onClick={generateStory}
+          disabled={isGenerating || !selectedRepo}
+          className="w-full"
+        >
+          {isGenerating ? 'Generating...' : 'Generate Story'}
         </Button>
       </div>
     </Card>

@@ -1,63 +1,63 @@
 /**
- * @module components/toast-provider
- * @description Toast provider component for displaying notifications
+ * @module ToastProvider
+ * @description A provider component that manages and renders toast notifications using shadcn/ui toast system.
+ * 
+ * @example
+ * ```tsx
+ * // Basic usage in app layout
+ * export default function RootLayout({ children }) {
+ *   return (
+ *     <html>
+ *       <body>
+ *         {children}
+ *         <ToastProvider />
+ *       </body>
+ *     </html>
+ *   )
+ * }
+ * ```
  */
 
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useToast } from '@/hooks/use-toast'
-import { Card } from '@/components/ui/card'
-import { X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/use-toast'
+import { Toaster } from '@/components/ui/toaster'
+import {
+  Toast,
+  ToastClose,
+  ToastDescription,
+  ToastTitle,
+  ToastViewport,
+} from '@/components/ui/toast'
 
 /**
- * Toast provider component
+ * ToastProvider Component
+ * 
+ * @component
+ * @description Renders toast notifications and manages their state using the shadcn/ui toast system.
+ * Provides a viewport for toasts and handles rendering of toast content including title, description, and actions.
+ * 
+ * @returns {JSX.Element} A fragment containing toast components and viewport
  */
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const { toasts, removeToast } = useToast()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <>{children}</>
-  }
+export function ToastProvider() {
+  const { toasts } = useToast()
 
   return (
     <>
-      {children}
-      <div className="fixed bottom-0 right-0 z-50 m-4 flex flex-col gap-2">
-        {toasts.map((toast) => (
-          <Card
-            key={toast.id}
-            className={cn(
-              'relative flex w-[350px] items-center justify-between p-4 shadow-lg transition-all',
-              {
-                'bg-green-50 dark:bg-green-900/20': toast.type === 'success',
-                'bg-red-50 dark:bg-red-900/20': toast.type === 'error',
-                'bg-blue-50 dark:bg-blue-900/20': toast.type === 'info',
-                'bg-yellow-50 dark:bg-yellow-900/20': toast.type === 'warning',
-              }
+      {toasts.map(({ id, title, description, action, ...props }) => (
+        <Toast key={id} {...props}>
+          <div className="grid gap-1">
+            {title && <ToastTitle>{title}</ToastTitle>}
+            {description && (
+              <ToastDescription>{description}</ToastDescription>
             )}
-          >
-            <div className="space-y-1">
-              <h3 className="font-medium">{toast.title}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {toast.message}
-              </p>
-            </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="absolute right-2 top-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </Card>
-        ))}
-      </div>
+          </div>
+          {action}
+          <ToastClose />
+        </Toast>
+      ))}
+      <Toaster />
+      <ToastViewport />
     </>
   )
 } 
