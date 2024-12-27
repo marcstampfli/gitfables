@@ -5,15 +5,20 @@
 
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/components/theme-provider'
-import { ToastProvider } from '@/components/toast-provider'
-import './globals.css'
+import { cn } from '@/lib/utils'
+import '@/styles/globals.css'
+import type { _cookies } from 'next/headers'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'RepoTales',
-  description: 'Turn your commit history into engaging stories',
+  description: 'Turn your Git history into engaging stories',
+  icons: {
+    icon: '/favicon.ico'
+  }
 }
 
 export default function RootLayout({
@@ -23,16 +28,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={cn(
+        'min-h-screen bg-background font-sans antialiased',
+        inter.className
+      )}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

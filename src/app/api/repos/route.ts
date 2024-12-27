@@ -1,27 +1,25 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createGitHubClient } from '@/lib/github-client'
+import { logError } from '@/lib/logger'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const token = cookies().get('github_token')
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return new Response('Unauthorized', { status: 401 })
     }
 
-    const github = createGitHubClient(token.value)
-    const { data: repos } = await github.repos.listForAuthenticatedUser({
-      sort: 'updated',
-      per_page: 100,
-      visibility: 'all'
-    })
-
+    const client = await createGitHubClient()
+    const repos = await client.listRepositories()
     return NextResponse.json(repos)
   } catch (error) {
-    console.error('Failed to fetch repositories:', error)
+    if (error instanceof Error) {
+      logError(error, { context: 'API:repos' })
+      return new Response('Error fetching repositories', { status: 500 })
+    }
     return NextResponse.json(
       { error: 'Failed to fetch repositories' },
       { status: 500 }
