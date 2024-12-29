@@ -17,9 +17,8 @@
 
 import type { Linter } from 'eslint'
 import js from '@eslint/js'
-import tsParser from '@typescript-eslint/parser'
 import * as tsPlugin from '@typescript-eslint/eslint-plugin'
-import * as nextPlugin from '@next/eslint-plugin-next'
+import tsParser from '@typescript-eslint/parser'
 
 /**
  * ESLint configuration array using the new flat config format
@@ -68,7 +67,6 @@ const config: Linter.FlatConfig[] = [
     },
     plugins: {
       '@typescript-eslint': tsPlugin as any,
-      '@next/next': nextPlugin as any,
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { 
