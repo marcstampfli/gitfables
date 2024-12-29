@@ -1,54 +1,93 @@
 /**
  * @module components/layout/footer
- * @description Footer component with credits and social links
+ * @description Footer component with essential links and information
  */
 
 import Link from 'next/link'
-import { Github, Twitter } from 'lucide-react'
-import { Icons } from '@/components/icons'
+import { Logo } from '@/components/ui/logo'
+import { MadeWithLove } from '@/components/ui/made-with-love'
+
+const links = {
+  product: [
+    { href: '/features', label: 'Features' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/docs', label: 'Documentation' },
+  ],
+  company: [
+    { href: '/about', label: 'About' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/contact', label: 'Contact' },
+  ],
+  legal: [
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/terms', label: 'Terms' },
+  ],
+}
 
 export function Footer() {
   return (
-    <footer className="w-full border-t bg-background">
-      <div className="container flex flex-col sm:flex-row items-center justify-between py-4 space-y-2 sm:space-y-0">
-        <div className="text-sm text-muted-foreground flex items-center gap-1">
-          Made with{' '}
-          <svg
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-4 h-4 text-red-500 animate-pulse"
-          >
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
-          {' '}by{' '}
-          <Link
-            href="https://github.com/marcstampfli"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium underline underline-offset-4 hover:text-foreground"
-          >
-            Marc Stämpfli
-          </Link>
+    <footer className="border-t bg-background">
+      <div className="container py-12 md:py-16">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-4">
+            <Logo />
+            <p className="text-sm text-muted-foreground max-w-xs">
+              Transform your Git history into engaging stories that showcase your development journey.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-medium">Product</h4>
+            <ul className="space-y-2">
+              {links.product.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-medium">Company</h4>
+            <ul className="space-y-2">
+              {links.company.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-medium">Legal</h4>
+            <ul className="space-y-2">
+              {links.legal.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <Link
-            className="flex items-center gap-2 text-sm font-medium"
-            href="https://github.com/marcstampfli/gitfables"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icons.gitHub className="h-4 w-4" />
-            GitHub
-          </Link>
-          <Link
-            href="https://twitter.com/marcstampfli"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Twitter className="h-5 w-5" />
-            <span className="sr-only">Twitter</span>
-          </Link>
+        <div className="mt-8 pt-8 border-t">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} GitFables. All rights reserved.
+            </p>
+            <MadeWithLove />
+          </div>
         </div>
       </div>
     </footer>

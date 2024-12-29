@@ -11,70 +11,90 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserAvatar } from '@/components/user-avatar'
-import { Icons } from '@/components/icons'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Logo } from '@/components/ui/logo'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 interface HeaderProps {
-  user: User | null
+  user?: User | null
 }
 
 export function Header({ user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Icons.logo className="h-6 w-6" />
-            <span className="font-bold">GitFables</span>
+      <div className="container flex h-16 items-center">
+        <div className="flex items-center gap-6 md:gap-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <Logo size="sm" />
           </Link>
-          {user && (
-            <nav className="flex items-center space-x-6 text-sm font-medium">
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/dashboard/repositories">Repositories</Link>
-              <Link href="/dashboard/stories">Stories</Link>
-            </nav>
-          )}
+          <nav className="hidden md:flex gap-6">
+            <Link 
+              href="/features" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Features
+            </Link>
+            <Link 
+              href="/pricing" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link 
+              href="/docs" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Documentation
+            </Link>
+          </nav>
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <UserAvatar user={user} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    {user.email && (
-                      <p className="font-medium">{user.email}</p>
-                    )}
+
+        <div className="flex flex-1 items-center justify-end gap-4">
+          <nav className="flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <UserAvatar user={user} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {user.email && (
+                        <p className="font-medium">{user.email}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onSelect={async (event) => {
-                    event.preventDefault()
-                    await signOut()
-                  }}
-                >
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button asChild>
-              <Link href="/login">Sign in</Link>
-            </Button>
-          )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/stories">My Stories</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={async (event) => {
+                      event.preventDefault()
+                      await signOut()
+                    }}
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="default">
+                <Link href="/login">Get Started</Link>
+              </Button>
+            )}
+          </nav>
         </div>
       </div>
     </header>

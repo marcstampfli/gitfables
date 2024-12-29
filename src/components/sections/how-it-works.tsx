@@ -1,6 +1,6 @@
 /**
- * @module components/sections/how-it-works
- * @description Section explaining how RepoTales works
+ * @module sections/how-it-works
+ * @description Section explaining how GitFables works
  */
 
 import { GitBranch, BookOpen, Share2 } from 'lucide-react'

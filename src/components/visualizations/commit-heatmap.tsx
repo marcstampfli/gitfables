@@ -14,14 +14,14 @@ export function CommitHeatmap({
   height = 100,
 }: CommitHeatmapProps) {
   const commitsByDate = commits.reduce((acc, commit) => {
-    const date = new Date(commit.date).toISOString().split('T')[0]
+    const date = new Date(commit.commit.author.date).toISOString().split('T')[0]
     acc[date] = (acc[date] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
   const maxCommits = Math.max(...Object.values(commitsByDate))
-  const minDate = new Date(Math.min(...commits.map(c => new Date(c.date).getTime())))
-  const maxDate = new Date(Math.max(...commits.map(c => new Date(c.date).getTime())))
+  const minDate = new Date(Math.min(...commits.map(c => new Date(c.commit.author.date).getTime())))
+  const maxDate = new Date(Math.max(...commits.map(c => new Date(c.commit.author.date).getTime())))
 
   const days = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24))
   const cellSize = Math.min(width / days, height)

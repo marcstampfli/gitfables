@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip } from '@/components/ui/tooltip'
-import type { CommitPattern } from '@/lib/story/types'
+import type { CommitPattern } from '@/types'
 
 interface CommitTimelineProps {
   patterns: CommitPattern[]

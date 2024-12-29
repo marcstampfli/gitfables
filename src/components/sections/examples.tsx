@@ -3,12 +3,13 @@
  * @description Section showcasing example stories
  */
 
-import Image from 'next/image'
 import { Animated } from '@/components/ui/animated'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface ExampleUser {
   name: string
   role: string
+  initials: string
   avatar: string
 }
 
@@ -16,16 +17,19 @@ const examples: ExampleUser[] = [
   {
     name: 'Sarah Chen',
     role: 'Senior Developer',
+    initials: 'SC',
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah&backgroundColor=b6e3f4',
   },
   {
     name: 'Michael Rodriguez',
     role: 'Tech Lead',
+    initials: 'MR',
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=michael&backgroundColor=c0aede',
   },
   {
     name: 'Dev Team',
     role: 'Engineering',
+    initials: 'DT',
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=team&backgroundColor=d1d4f9',
   },
 ]
@@ -53,15 +57,10 @@ export function Examples() {
               delay={200 + index * 100}
             >
               <div className="flex flex-col items-center gap-4 p-6 rounded-lg bg-muted/50">
-                <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted">
-                  <Image
-                    src={user.avatar}
-                    alt={user.name}
-                    width={96}
-                    height={96}
-                    className="object-cover"
-                  />
-                </div>
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarFallback>{user.initials}</AvatarFallback>
+                </Avatar>
                 <div className="text-center">
                   <p className="font-semibold">{user.name}</p>
                   <p className="text-sm text-muted-foreground">{user.role}</p>
