@@ -20,7 +20,7 @@ export function useAuth() {
 
   useEffect(() => {
     async function initAuth() {
-      const supabase = createClient()
+      const supabase = await createClient()
       const { data: { user: initialUser } } = await supabase.auth.getUser()
       setUser(initialUser)
       setLoading(false)
