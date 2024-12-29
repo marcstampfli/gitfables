@@ -74,11 +74,11 @@ export class GitLabProvider extends BaseVCSProvider implements VCSProvider {
       throw new Error('GitLab provider not authenticated')
     }
 
-    const projects = (await this.gitlab.Projects.all({
+    const projects = await this.gitlab.Projects.all({
       membership: true,
       maxPages: 1,
       perPage: 100
-    })) as unknown as GitLabProject[]
+    }) as GitLabProject[]
 
     const repositories = await Promise.all(projects.map(async (project) => {
       let languages: Record<string, number> = {}
@@ -136,10 +136,10 @@ export class GitLabProvider extends BaseVCSProvider implements VCSProvider {
     }
 
     const projectPath = `${owner}/${repo}`
-    const commits = (await this.gitlab.Commits.all(projectPath, {
+    const commits = await this.gitlab.Commits.all(projectPath, {
       maxPages: 1,
       perPage: 100
-    })) as unknown as GitLabCommit[]
+    }) as GitLabCommit[]
 
     return commits.map((commit) => ({
       sha: commit.id,

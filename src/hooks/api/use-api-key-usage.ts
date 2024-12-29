@@ -66,7 +66,7 @@ export function useAPIKeyUsage() {
   const [loading, setLoading] = useState(false)
   const [usage, setUsage] = useState<APIKeyUsage | null>(null)
   const { toast } = useToast()
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const getUsageStats = useCallback(async (apiKeyId: string, startDate: Date) => {
     try {

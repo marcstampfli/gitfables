@@ -1,25 +1,23 @@
 /**
  * @module lib/supabase/client
- * @description Client-side Supabase client configuration
+ * @description Client-side Supabase client
  */
 
 import { createBrowserClient } from '@supabase/ssr'
-import { Database } from '@/types/database'
+import type { Database } from '@/types/database'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-if (!supabaseUrl) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
-}
-
-if (!supabaseKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
 
 export function createClient() {
-  return createBrowserClient<Database>(
-    supabaseUrl,
-    supabaseKey
+  if (typeof window === 'undefined') {
+    throw new Error('Browser client cannot be used on the server side')
+  }
+
+  if (browserClient) return browserClient
+  
+  browserClient = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+  return browserClient
 } 

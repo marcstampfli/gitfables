@@ -8,7 +8,7 @@ import { ExportAnalytics } from '@/components/dashboard/stories/export-analytics
 import type { ActivityType } from '@/types/activity'
 
 async function getExportActivities(days: number) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 

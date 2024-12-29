@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const story = await getStory(supabase, params.id)
 
   if (!story) {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function StoryPage({ params }: PageProps) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const story = await getStory(supabase, params.id)
 
   if (!story) {

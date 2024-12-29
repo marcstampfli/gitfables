@@ -309,6 +309,7 @@ export interface Database {
             theme: {
               mode: 'light' | 'dark' | 'system'
               accent_color: string
+              language: 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'ko' | 'zh'
             }
             notifications: {
               email: boolean
@@ -341,6 +342,7 @@ export interface Database {
             theme: {
               mode: 'light' | 'dark' | 'system'
               accent_color: string
+              language: 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'ko' | 'zh'
             }
             notifications: {
               email: boolean
@@ -373,6 +375,7 @@ export interface Database {
             theme?: {
               mode?: 'light' | 'dark' | 'system'
               accent_color?: string
+              language?: 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'ko' | 'zh'
             }
             notifications?: {
               email?: boolean
@@ -572,6 +575,7 @@ export interface UserSettings {
   theme: {
     mode: 'light' | 'dark' | 'system'
     accent_color: string
+    language: 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'ko' | 'zh'
   }
   notifications: {
     email: boolean

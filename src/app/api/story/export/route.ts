@@ -3,47 +3,46 @@
  * @description API route for exporting stories to Markdown format
  */
 
-import { type StoryEvent } from '@/types/stories'
-import { getStory } from '@/lib/story/story-service'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getUser } from '@/lib/actions/auth'
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const supabase = createClient()
-  const story = await getStory(supabase, params.id)
-  if (!story) {
-    return new Response('Story not found', { status: 404 })
-  }
+export async function GET(request: Request) {
+  try {
+    const user = await getUser()
+    const supabase = await createClient()
 
-  const markdown = `# ${story.title}
+    const { searchParams } = new URL(request.url)
+    const storyId = searchParams.get('id')
 
-${story.description || 'A story generated from Git commits'}
-
-## Repository Details
-- Name: ${story.repository?.name ?? 'Unknown'}
-- Description: ${story.repository?.description ?? 'No description'}
-- URL: ${story.repository?.html_url ?? 'Not available'}
-
-## Story Details
-- Generated: ${story.metadata?.generatedAt ?? new Date().toISOString()}
-- Style: ${story.metadata?.style ?? 'standard'}
-
-## Content
-
-${story.content}
-
-## Events
-
-${story.events?.map((event: StoryEvent) => `### ${event.timestamp}
-${event.data?.message ?? 'No message'}`).join('\n\n') ?? 'No events recorded'}
-`
-
-  return new Response(markdown, {
-    headers: {
-      'Content-Type': 'text/markdown',
-      'Content-Disposition': `attachment; filename="${story.title.toLowerCase().replace(/\s+/g, '-')}.md"`
+    if (!storyId) {
+      return NextResponse.json({ error: 'Story ID is required' }, { status: 400 })
     }
-  })
+
+    const { data: story, error } = await supabase
+      .from('stories')
+      .select('*')
+      .eq('id', storyId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (error || !story) {
+      return NextResponse.json({ error: 'Story not found' }, { status: 404 })
+    }
+
+    const content = {
+      title: story.title,
+      content: story.content,
+      metadata: story.metadata,
+      exportedAt: new Date().toISOString()
+    }
+
+    return NextResponse.json(content)
+  } catch (error) {
+    console.error('Error exporting story:', error)
+    return NextResponse.json(
+      { error: 'Failed to export story' },
+      { status: 500 }
+    )
+  }
 } 

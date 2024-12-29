@@ -66,7 +66,8 @@ const config: Linter.FlatConfig[] = [
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin as any,
+      // @ts-expect-error - ESLint plugin type mismatch
+      '@typescript-eslint': tsPlugin,
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { 

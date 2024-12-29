@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { type User } from '@supabase/supabase-js'
-import { signOut } from '@/lib/auth/actions'
+import { signOut } from '@/lib/actions/auth'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

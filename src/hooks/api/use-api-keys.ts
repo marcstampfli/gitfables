@@ -6,7 +6,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import type { ApiKey, ApiKeyWithToken, CreateApiKeyRequest, ApiKeyUsageStats } from '@/types/api/api-keys'
 import { logError } from '@/lib/utils/logger'
 
@@ -14,7 +14,7 @@ export function useApiKeys() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [usageStats, setUsageStats] = useState<Record<string, ApiKeyUsageStats[]>>({})
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   const loadKeyUsageStats = useCallback(async (keyId: string) => {
     try {

@@ -21,7 +21,7 @@ export function useVCSConnections() {
   const [connections, setConnections] = useState<VCSConnection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
+  const supabase = await createClient()
 
   useEffect(() => {
     async function loadConnections() {
