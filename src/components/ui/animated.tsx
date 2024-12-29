@@ -21,6 +21,7 @@
 
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { animationVariants, defaultTransition } from '@/lib/utils/animations'
 
 /**
  * Props for the Animated component
@@ -32,7 +33,7 @@ interface AnimatedProps {
   /** Optional CSS classes */
   className?: string
   /** Animation type (slide-up, slide-down, fade-in, etc.) */
-  animation?: 'slide-up' | 'slide-down' | 'fade-in'
+  animation?: keyof typeof animationVariants
   /** Animation delay in milliseconds */
   delay?: number
 }
@@ -47,35 +48,22 @@ interface AnimatedProps {
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child elements to animate
  * @param {string} [props.className] - Optional CSS classes
- * @param {string} [props.animation='slide-up'] - Animation type
+ * @param {string} [props.animation='slideUp'] - Animation type
  * @param {number} [props.delay=0] - Animation delay in milliseconds
  * @returns {JSX.Element} A motion div wrapping the children
  */
-export function Animated({ children, className, animation = 'slide-up', delay = 0 }: AnimatedProps) {
-  const variants = {
-    'slide-up': {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      exit: { opacity: 0, y: 20 },
-    },
-    'slide-down': {
-      initial: { opacity: 0, y: -20 },
-      animate: { opacity: 1, y: 0 },
-      exit: { opacity: 0, y: -20 },
-    },
-    'fade-in': {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-    },
-  }
+export function Animated({ children, className, animation = 'slideUp', delay = 0 }: AnimatedProps) {
+  const variant = animationVariants[animation]
 
   return (
     <motion.div
-      initial={variants[animation].initial}
-      animate={variants[animation].animate}
-      exit={variants[animation].exit}
-      transition={{ duration: 0.5, delay: delay / 1000 }}
+      initial={variant.initial}
+      animate={variant.animate}
+      exit={variant.exit}
+      transition={{
+        ...defaultTransition,
+        delay: delay / 1000,
+      }}
       className={cn('transition-all', className)}
     >
       {children}

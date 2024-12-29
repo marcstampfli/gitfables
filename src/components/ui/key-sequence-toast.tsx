@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { animationVariants, defaultTransition } from '@/lib/utils/animations'
 
 interface KeySequenceToastProps {
   sequence: string[]
@@ -34,9 +35,10 @@ export function KeySequenceToast({ sequence, isActive, onHide }: KeySequenceToas
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+          initial={animationVariants.slideUp.initial}
+          animate={animationVariants.slideUp.animate}
+          exit={animationVariants.slideDown.exit}
+          transition={defaultTransition}
           className="fixed bottom-4 right-4 bg-background border rounded-lg shadow-lg p-4"
         >
           <div className="flex gap-2 items-center">

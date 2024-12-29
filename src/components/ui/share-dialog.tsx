@@ -1,17 +1,20 @@
+'use client'
+
 /**
  * @module components/shared/share-dialog
  * @description A unified share dialog component that supports both simple and advanced sharing options
  */
 
 import { useState } from 'react'
-import { Check, Copy, Share2 } from 'lucide-react'
+import { Icons } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
+import type { Story } from '@/types/stories'
 
 type ShareType = 'private' | 'public' | 'team'
 
@@ -21,6 +24,8 @@ interface ShareDialogProps {
   shareCode?: string
   onShare?: (type: ShareType, expiresIn: string) => Promise<string>
   showAdvancedOptions?: boolean
+  /** The story being shared. Currently unused but kept for future analytics and metadata purposes */
+  _story?: Story
 }
 
 export function ShareDialog({ 
@@ -28,7 +33,8 @@ export function ShareDialog({
   url,
   shareCode: initialShareCode,
   onShare,
-  showAdvancedOptions = false 
+  showAdvancedOptions = false,
+  _story 
 }: ShareDialogProps) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -45,8 +51,8 @@ export function ShareDialog({
       const code = await onShare(shareType, expiresIn)
       setShareCode(code)
     } catch (error) {
-      logError(error instanceof Error ? error : new Error('Error generating share link'), {
-        context: 'ShareDialog:handleShare',
+      logError('Error generating share link', error instanceof Error ? error : new Error('Error generating share link'), {
+        context: 'share_dialog'
       })
       toast({
         title: 'Error',
@@ -73,8 +79,8 @@ export function ShareDialog({
         description: 'Link copied to clipboard',
       })
     } catch (error) {
-      logError(error instanceof Error ? error : new Error('Error copying to clipboard'), {
-        context: 'ShareDialog:copyLink',
+      logError('Error copying to clipboard', error instanceof Error ? error : new Error('Error copying to clipboard'), {
+        context: 'share_dialog'
       })
       toast({
         title: 'Error',
@@ -87,7 +93,7 @@ export function ShareDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
-        <Share2 className="h-4 w-4" />
+        <Icons.share className="h-4 w-4" />
         <span className="sr-only">Share</span>
       </Button>
 
@@ -150,9 +156,9 @@ export function ShareDialog({
                   onClick={handleCopy}
                 >
                   {copied ? (
-                    <Check className="h-4 w-4" />
+                    <Icons.check className="h-4 w-4" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <Icons.copy className="h-4 w-4" />
                   )}
                 </Button>
               </div>

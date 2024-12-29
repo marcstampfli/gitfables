@@ -63,9 +63,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // Log the error using our logger utility
-    logError(error, {
-      context: 'ErrorBoundary',
-      metadata: { errorInfo }
+    logError('Component error boundary caught error', error, {
+      context: 'error_boundary',
+      metadata: {
+        componentStack: errorInfo?.componentStack
+      }
     })
 
     // Call the optional error handler
