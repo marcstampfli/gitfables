@@ -6,50 +6,49 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/logger'
 
-/**
- * Sign in with OAuth provider
- * 
- * @param {string} provider - OAuth provider name
- * @returns {Promise<void>}
- */
-export async function signInWithOAuth(provider: 'github') {
-  const supabase = createClient()
+export async function signIn() {
+  const supabase = await createClient()
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      logError('Error signing in:', { context: 'auth:signIn', metadata: { error } })
+      return { error }
     }
-  })
 
-  if (error) {
-    throw error
-  }
-
-  if (data.url) {
-    redirect(data.url)
+    return { data }
+  } catch (error) {
+    logError('Error in auth function:', { context: 'auth:signIn', metadata: { error } })
+    return { error }
   }
 }
 
-/**
- * Sign out user
- * 
- * @returns {Promise<void>}
- */
 export async function signOut() {
-  const _cookieStore = cookies()
-  const supabase = createClient()
+  const supabase = await createClient()
 
-  const { error } = await supabase.auth.signOut()
+  try {
+    const { error } = await supabase.auth.signOut()
 
-  if (error) {
-    throw error
+    if (error) {
+      logError('Error signing out:', { context: 'auth:signOut', metadata: { error } })
+      return { error }
+    }
+
+    redirect('/login')
+  } catch (error) {
+    logError('Error in auth function:', { context: 'auth:signOut', metadata: { error } })
+    return { error }
   }
-
-  redirect('/login')
 }
 
 /**
@@ -58,8 +57,7 @@ export async function signOut() {
  * @returns {Promise<Session | null>}
  */
 export async function getSession() {
-  const _cookieStore = cookies()
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { session }, error } = await supabase.auth.getSession()
 
@@ -76,8 +74,7 @@ export async function getSession() {
  * @returns {Promise<User | null>}
  */
 export async function getUser() {
-  const _cookieStore = cookies()
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error } = await supabase.auth.getUser()
 

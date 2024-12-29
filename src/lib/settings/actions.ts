@@ -5,85 +5,68 @@
 
 'use server'
 
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import type { Database } from '@/types/supabase'
-import type { PostgrestSingleResponse } from '@supabase/supabase-js'
+import { logError } from '@/lib/utils/logger'
+import type { SettingsUpdate } from '@/types'
 
-export type Settings = Database['public']['Tables']['user_settings']['Row']
-type UpdateSettingsParams = Pick<Settings, 'theme' | 'default_story_style' | 'email_notifications'>
-type SettingsUpdate = Database['public']['Tables']['user_settings']['Update']
+export async function getSettings() {
+  const supabase = await createClient()
 
-/**
- * Update user settings
- * 
- * @param {Partial<UpdateSettingsParams>} settings - The settings to update
- * @returns {Promise<Settings>} The updated settings
- * @throws {Error} If there's an error updating settings
- */
-export async function updateSettings(settings: Partial<UpdateSettingsParams>) {
-  const supabase = createClient()
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  const response: PostgrestSingleResponse<Settings> = await supabase
-    .from('user_settings')
-    .select()
-    .single()
+    if (userError || !user) {
+      logError('Error getting user:', { context: 'settings:getSettings', metadata: { error: userError } })
+      return null
+    }
 
-  if (response.error) {
-    throw response.error
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    if (error) {
+      logError('Error getting settings:', { context: 'settings:getSettings', metadata: { error } })
+      return null
+    }
+
+    return data
+  } catch (error) {
+    logError('Error in settings function:', { context: 'settings:getSettings', metadata: { error } })
+    return null
   }
-
-  if (!response.data) {
-    throw new Error('No settings found to update')
-  }
-
-  const currentSettings = response.data
-
-  // Create a type-safe update object
-  const updateFields = {
-    ...(settings.theme !== undefined && { theme: settings.theme }),
-    ...(settings.default_story_style !== undefined && { default_story_style: settings.default_story_style }),
-    ...(settings.email_notifications !== undefined && { email_notifications: settings.email_notifications }),
-    updated_at: new Date().toISOString()
-  }
-
-  // Supabase's TypeScript types for the update operation are overly strict
-  // and don't properly handle conditional object spreading.
-  // This is a known issue: https://github.com/supabase/supabase/issues/12794
-  const updateResponse = await supabase
-    .from('user_settings')
-    .update(updateFields as SettingsUpdate)
-    .eq('id', currentSettings.id)
-    .select()
-    .single()
-
-  if (updateResponse.error) {
-    throw updateResponse.error
-  }
-
-  if (!updateResponse.data) {
-    throw new Error('Failed to update settings')
-  }
-
-  return updateResponse.data
 }
 
-/**
- * Get user settings
- * 
- * @returns {Promise<Settings | null>} The user settings or null if not found
- * @throws {Error} If there's an error fetching settings
- */
-export async function getSettings() {
-  const supabase = createClient()
+export async function updateSettings(settings: SettingsUpdate) {
+  const supabase = await createClient()
 
-  const response: PostgrestSingleResponse<Settings> = await supabase
-    .from('user_settings')
-    .select('*')
-    .single()
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (response.error) {
-    throw response.error
+    if (userError || !user) {
+      logError('Error getting user:', { context: 'settings:updateSettings', metadata: { error: userError } })
+      return { error: userError }
+    }
+
+    const { data, error } = await supabase
+      .from('user_settings')
+      .upsert({
+        user_id: user.id,
+        ...settings,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      logError('Error updating settings:', { context: 'settings:updateSettings', metadata: { error } })
+      return { error }
+    }
+
+    return { data }
+  } catch (error) {
+    logError('Error in settings function:', { context: 'settings:updateSettings', metadata: { error } })
+    return { error }
   }
-
-  return response.data
 } 

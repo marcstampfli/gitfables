@@ -5,7 +5,7 @@
  * @example
  * ```ts
  * import { useAuth } from '@/lib/auth/client'
- * import { logDebug } from '@/lib/logger'
+ * import { logDebug } from '@/lib/utils/logger'
  * 
  * const { user } = useAuth()
  * if (user) {
@@ -51,8 +51,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
  * ```ts
  * const user = await getUser()
  * if (user) {
- *   console.log('User:', user.email)
- *   console.log('Profile:', user.username)
+ *   logDebug('User info', { 
+ *     context: 'auth',
+ *     metadata: { 
+ *       email: user.email,
+ *       username: user.username 
+ *     }
+ *   })
  * }
  * ```
  */

@@ -1,86 +1,48 @@
 /**
  * @module types
- * @description Common type definitions for the application
+ * @description Re-exports of all type definitions
  */
 
-/**
- * Theme configuration
- */
-export interface ThemeConfig {
-  primary: string
-  secondary: string
-  accent: string
-  background: string
-  text: string
-  isDark: boolean
-}
+export * from './api/api'
+export * from './api/api-keys'
+export type {
+  AuthConfig,
+  AuthProvider,
+  AuthState,
+  AuthCredentials,
+  Session,
+  User
+} from './auth'
+export * from './components'
+export * from './database'
+export * from './error'
+export * from './forms'
+export * from './logger'
+export * from './next'
+export type {
+  StoryStyle,
+  StoryTone,
+  StoryLength,
+  StorySettings,
+  StoryEvent,
+  StorySegment,
+  DeveloperPersona
+} from './story'
+export type {
+  Story,
+  SharedStory,
+  CreateStoryRequest,
+  UpdateStoryRequest,
+  ShareStoryRequest
+} from './stories'
+export * from './ui'
+export * from './vcs'
+export * from './activity'
+export * from './analytics'
+export * from './settings'
 
-/**
- * Toast notification type
- */
-export type ToastType = 'info' | 'success' | 'warning' | 'error'
-
-/**
- * Toast notification
- */
-export interface Toast {
-  id: string
-  type: ToastType
-  title: string
-  message: string
-  duration?: number
-}
-
-/**
- * Version control system platform
- */
-export type VCSPlatform = 'github' | 'gitlab' | 'bitbucket'
-
-/**
- * Repository statistics
- */
-export interface RepoStats {
-  stars: number
-  forks: number
-  watchers: number
-  issues: number
-  lastUpdated: string
-}
-
-/**
- * Commit data
- */
-export interface CommitData {
-  id: string
-  message: string
-  author: string
-  date: string
-  additions: number
-  deletions: number
-  files: number
-  stats?: {
-    total: number
-    additions: number
-    deletions: number
-  }
-}
-
-/**
- * Error types
- */
-export type ErrorType = 
-  | 'auth_error'
-  | 'network_error'
-  | 'api_error'
-  | 'validation_error'
-  | 'unknown_error'
-
-/**
- * API error response
- */
-export interface APIError {
-  type: ErrorType
-  message: string
-  code?: number
-  details?: Record<string, unknown>
+export interface UserSettings {
+  theme: 'light' | 'dark' | 'system'
+  animations_enabled: boolean
+  // ... existing settings ...
 } 

@@ -5,10 +5,9 @@
 
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { type User, type AuthChangeEvent, type Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
 
 /**
  * Hook for managing authentication state
@@ -16,28 +15,34 @@ import type { User } from '@supabase/supabase-js'
  * @returns {Object} Authentication state and functions
  */
 export function useAuth() {
-  const router = useRouter()
-  const supabase = createClient()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, _session) => {
-      if (event === 'SIGNED_OUT') {
-        router.push('/login')
+    async function initAuth() {
+      const supabase = createClient()
+      const { data: { user: initialUser } } = await supabase.auth.getUser()
+      setUser(initialUser)
+      setLoading(false)
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+        if (event === 'SIGNED_IN') {
+          setUser(session?.user ?? null)
+        }
+        if (event === 'SIGNED_OUT') {
+          setUser(null)
+        }
+      })
+
+      return () => {
+        subscription.unsubscribe()
       }
-    })
-
-    return () => {
-      subscription.unsubscribe()
     }
-  }, [router, supabase.auth])
 
-  return {
-    signOut: () => supabase.auth.signOut(),
-    getUser: async (): Promise<User | null> => {
-      const { data: { user } } = await supabase.auth.getUser()
-      return user
-    }
-  }
+    initAuth()
+  }, [])
+
+  return { user, loading }
 } 

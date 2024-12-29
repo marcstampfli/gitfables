@@ -15,7 +15,7 @@
  * ```
  */
 
-import { type Story } from './story/types'
+import type { Story } from '@/types'
 
 export type { Story }
 

@@ -1,36 +1,25 @@
 /**
  * @module lib/supabase/client
- * @description Client-side Supabase client configuration.
- * Creates a type-safe Supabase client instance for browser context.
- * 
- * @example
- * ```ts
- * import { supabase } from '@/lib/supabase/client'
- * 
- * // Type-safe query
- * const { data: user } = await supabase
- *   .from('users')
- *   .select('*')
- *   .eq('id', userId)
- *   .single()
- * ```
+ * @description Client-side Supabase client configuration
  */
 
-import { createClient as supabaseCreateClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
+import { createBrowserClient } from '@supabase/ssr'
+import { Database } from '@/types/database'
 
-// Validate required environment variables
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
 }
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+if (!supabaseKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 
-export const createClient = () => supabaseCreateClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-export const supabase = createClient() 
+export function createClient() {
+  return createBrowserClient<Database>(
+    supabaseUrl,
+    supabaseKey
+  )
+} 
