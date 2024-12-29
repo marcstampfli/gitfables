@@ -1,8 +1,7 @@
-import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
 import type { Session } from '@supabase/supabase-js'
-import type { UserProfile } from '@/types'
+import type { UserProfile } from '@/types/auth'
 
 /**
  * Get the current session
@@ -10,7 +9,6 @@ import type { UserProfile } from '@/types'
  * @returns {Promise<Session | null>} The current session or null
  */
 export async function getCurrentSession(): Promise<Session | null> {
-  const _cookieStore = cookies()
   const supabase = await createClient()
 
   try {
@@ -34,7 +32,6 @@ export async function getCurrentSession(): Promise<Session | null> {
  * @returns {Promise<string | null>} The current user ID or null
  */
 export async function getCurrentUserId(): Promise<string | null> {
-  const _cookieStore = cookies()
   const supabase = await createClient()
 
   try {
@@ -58,7 +55,6 @@ export async function getCurrentUserId(): Promise<string | null> {
  * @returns {Promise<string | null>} The current user email or null
  */
 export async function getCurrentUserEmail(): Promise<string | null> {
-  const _cookieStore = cookies()
   const supabase = await createClient()
 
   try {
@@ -81,6 +77,6 @@ export async function getUser(): Promise<UserProfile | null> {
   return null
 }
 
-export async function updateUser(user: UserProfile): Promise<void> {
+export async function updateUser(_user: UserProfile): Promise<void> {
   // Implementation here
 } 

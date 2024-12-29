@@ -5,7 +5,6 @@
 
 'use server'
 
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
@@ -45,6 +44,7 @@ export async function signOut() {
     }
 
     redirect('/login')
+    return { error: null }
   } catch (error) {
     logError('Error in auth function:', { context: 'auth:signOut', metadata: { error } })
     return { error }

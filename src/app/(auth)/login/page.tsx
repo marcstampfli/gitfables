@@ -5,6 +5,7 @@
 
 'use client'
 
+import { Suspense } from 'react'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +16,7 @@ import Link from 'next/link'
 import { Logo } from '@/components/ui/logo'
 import { useToast } from '@/components/ui/use-toast'
 import { logError } from '@/lib/utils/logger'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface AuthState {
   email: string
@@ -22,7 +24,7 @@ interface AuthState {
   isLoading: boolean
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -176,5 +178,43 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1">
+        <div className="container relative flex flex-col items-center justify-center min-h-screen">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <Skeleton className="h-12 w-32 mx-auto" />
+              <Skeleton className="h-8 w-48 mx-auto" />
+              <Skeleton className="h-4 w-64 mx-auto" />
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <LoginContent />
+    </Suspense>
   )
 } 

@@ -154,3 +154,14 @@ export interface AuthCredentials {
  * Provides type-safe database operations.
  */
 export type DbUser = Database['public']['Tables']['users']['Row'] 
+
+export interface UserProfile {
+  id: string
+  email: string | null
+  full_name?: string
+  username?: string
+  avatar_url?: string
+  provider?: string
+  provider_id?: string
+  updated_at?: string
+} 

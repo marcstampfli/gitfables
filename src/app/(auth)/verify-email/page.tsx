@@ -5,13 +5,15 @@
 
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Mail } from 'lucide-react'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/logo'
+import { Skeleton } from '@/components/ui/skeleton'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
 
@@ -69,5 +71,38 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1">
+        <div className="container relative flex flex-col items-center justify-center min-h-screen">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <Skeleton className="h-12 w-32 mx-auto" />
+              <div className="flex justify-center">
+                <Skeleton className="h-12 w-12 rounded-full" />
+              </div>
+              <Skeleton className="h-8 w-48 mx-auto" />
+              <Skeleton className="h-4 w-64 mx-auto" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <VerifyEmailContent />
+    </Suspense>
   )
 } 
