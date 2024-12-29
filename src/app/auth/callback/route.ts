@@ -1,26 +1,53 @@
+/**
+ * @module app/auth/callback/route
+ * @description OAuth callback route handler for Supabase Auth
+ */
+
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { logError } from '@/lib/utils/logger'
 
-export const runtime = 'nodejs'
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const error = requestUrl.searchParams.get('error')
+  const error_description = requestUrl.searchParams.get('error_description')
 
-export async function GET(request: NextRequest) {
-  const url = new URL(request.url)
-  const error = url.searchParams.get('error')
-  const errorDescription = url.searchParams.get('error_description')
-  const hash = url.hash
-
-  // If there's an error in the URL or hash fragment
-  if (error || errorDescription || hash.includes('error=')) {
-    // Extract error details from hash if present
-    const hashError = hash.match(/error_description=([^&]+)/)?.[1]
-    const finalErrorDescription = hashError ? decodeURIComponent(hashError) : errorDescription
-
-    // Redirect to login with error details
+  // Handle OAuth errors
+  if (error || !code) {
+    logError('OAuth authentication failed', { 
+      metadata: { 
+        error,
+        error_description,
+        url: request.url 
+      }
+    })
     return NextResponse.redirect(
-      new URL(`/login?error=auth_error&details=${encodeURIComponent(finalErrorDescription || '')}`, url.origin)
+      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=${encodeURIComponent(error_description || error || 'Unknown error')}`
     )
   }
 
-  // For non-error cases, return a 200 response
-  return new Response(null, { status: 200 })
+  try {
+    const supabase = await createClient()
+
+    // Exchange code for session
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (exchangeError) throw exchangeError
+
+    // Redirect to the dashboard on success
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`)
+  } catch (error) {
+    logError('Failed to exchange code for session', { 
+      metadata: { 
+        error,
+        code,
+        url: request.url 
+      }
+    })
+    const errorMessage = error instanceof Error ? error.message : 'Failed to exchange code for session'
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=${encodeURIComponent(errorMessage)}`
+    )
+  }
 } 

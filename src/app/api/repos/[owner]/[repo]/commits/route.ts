@@ -1,32 +1,20 @@
-import { createGitHubClient } from '@/lib/github-client'
-import { logError } from '@/lib/logger'
-
-export const runtime = 'nodejs'
+import { NextResponse } from 'next/server'
+import { GitHubClient } from '@/lib/vcs/github-client'
 
 export async function GET(
   request: Request,
-  { params: { owner, repo } }: { params: { owner: string; repo: string } }
+  { params }: { params: { owner: string; repo: string } }
 ) {
   try {
-    const _url = new URL(request.url)
-    const token = request.headers.get('cookie')?.match(/github_token=([^;]+)/)?.[1]
-
-    if (!token) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const github = createGitHubClient(token)
+    const { owner, repo } = params
+    const github = await new GitHubClient('token')
     const commits = await github.listCommits(owner, repo)
 
-    return Response.json(commits)
+    return NextResponse.json(commits)
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Error fetching commits'), {
-      context: 'API:commits',
-      metadata: { owner, repo }
-    })
-    return new Response('Error fetching commits', { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch commits' },
+      { status: 500 }
+    )
   }
 } 
