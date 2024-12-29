@@ -1,6 +1,6 @@
-# Features Documentation
+# Features
 
-This section details the features implemented in RepoTales, their current status, and planned enhancements.
+This section details the features implemented in GitFables, their current status, and planned enhancements.
 
 ## Core Features
 
@@ -137,4 +137,4 @@ Available narrative styles:
 
 ## Feature Requests
 
-See our [GitHub Issues](https://github.com/marcstampfli/repotales-app/issues) for current feature requests and to submit new ones.
+See our [GitHub Issues](https://github.com/marcstampfli/gitfables/issues) for current feature requests and to submit new ones.

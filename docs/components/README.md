@@ -1,6 +1,6 @@
-# Components Documentation
+# Components
 
-This section documents the components used in RepoTales, their usage, and best practices.
+This section documents the components used in GitFables, their usage, and best practices.
 
 ## Component Categories
 
