@@ -20,10 +20,9 @@
  */
 
 /**
- * Supported social media platforms for sharing.
- * Used to track which platforms users share stories on.
+ * Supported platforms for sharing.
  */
-export type SharePlatform = 'twitter' | 'linkedin' | 'facebook'
+export type SharePlatform = 'twitter' | 'linkedin' | 'facebook' | 'email'
 
 /**
  * Analytics event for story sharing.
@@ -76,14 +75,25 @@ export interface ShareEvent {
  * ```
  */
 export interface ShareAnalytics {
+  /** Total number of share events */
   totalShares: number
+  /** Platform breakdown of shares */
   platformBreakdown: Record<SharePlatform, number>
+  /** Top shared stories */
   topStories: Array<{
     id: string
     shares: number
   }>
+  /** Period start timestamp */
   periodStart: string
+  /** Period end timestamp */
   periodEnd: string
+  /** Percentage of successful share events */
+  successRate?: number
+  /** Number of shares per platform */
+  platformShares?: Record<SharePlatform, number>
+  /** List of share events */
+  events?: ShareEvent[]
 }
 
 /**

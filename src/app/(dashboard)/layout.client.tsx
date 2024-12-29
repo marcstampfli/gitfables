@@ -5,32 +5,40 @@
 
 'use client'
 
-import { DashboardHeader } from '@/components/layout/dashboard/header'
-import { DashboardFooter } from '@/components/layout/dashboard/footer'
+import { useState } from 'react'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
-import { KeySequenceToast } from '@/components/ui/key-sequence-toast'
-import { useSettings } from '@/hooks/use-settings'
+import { CommandPalette } from '@/components/ui/command-palette'
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode
 }
 
 export function DashboardLayoutClient({ children }: DashboardLayoutClientProps) {
-  const { settings } = useSettings()
-  // Initialize keyboard shortcuts
-  const { currentSequence, isSequenceActive, resetSequence } = useKeyboardShortcuts()
+  const [showCommandPalette, setShowCommandPalette] = useState(false)
+
+  const keyMaps = [
+    {
+      key: 'k',
+      ctrl: true,
+      description: 'Open command palette',
+      action: () => setShowCommandPalette(true)
+    },
+    {
+      key: 'Escape',
+      description: 'Close command palette',
+      action: () => setShowCommandPalette(false)
+    }
+  ]
+
+  useKeyboardShortcuts(keyMaps)
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <DashboardHeader />
-      <main className="flex-1">{children}</main>
-      <DashboardFooter />
-      {settings.accessibility.keyboard_shortcuts && (
-        <KeySequenceToast
-          sequence={currentSequence}
-          isActive={isSequenceActive}
-          onHide={resetSequence}
-        />
+    <div className="relative min-h-screen">
+      <div className="flex-1">
+        {children}
+      </div>
+      {showCommandPalette && (
+        <CommandPalette onClose={() => setShowCommandPalette(false)} />
       )}
     </div>
   )

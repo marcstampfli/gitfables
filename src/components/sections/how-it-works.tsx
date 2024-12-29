@@ -5,6 +5,8 @@
 
 import { GitBranch, BookOpen, Share2 } from 'lucide-react'
 import { Animated } from '@/components/ui/animated'
+import { cn } from '@/lib/utils'
+import { headingVariants } from '@/components/ui/heading'
 
 const steps = [
   {
@@ -28,9 +30,9 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-20 bg-muted/50">
       <div className="container">
-        <Animated animation="slide-up">
+        <Animated animation="slideUp">
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className={cn(headingVariants({ size: 'h2' }), 'text-center')}>
               How It Works
             </h2>
             <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
@@ -43,7 +45,7 @@ export function HowItWorks() {
           {steps.map((step, index) => (
             <Animated
               key={step.title}
-              animation="slide-up"
+              animation="slideUp"
               delay={200 + index * 100}
             >
               <div

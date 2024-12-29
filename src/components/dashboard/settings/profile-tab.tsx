@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { Loader2, Camera, Github, Twitter, Linkedin, Globe, MapPin, Clock, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { logError } from '@/lib/utils/logger'
@@ -66,22 +66,36 @@ export function ProfileTab() {
     async function loadProfile() {
       try {
         setIsLoading(true)
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError) throw authError
+        if (!user) throw new Error('No authenticated user')
         
         if (isMounted) setEmail(user.email || '')
         
-        const { data, error } = await supabase
+        const { data, error: profileError } = await supabase
           .from('users')
-          .select('username, full_name, bio, location, website, timezone, avatar_url, social_links')
+          .select('username, name, bio, location, website, timezone, avatar_url, social_links')
           .eq('id', user.id)
           .single()
           
-        if (error) throw error
+        if (profileError) {
+          // Log the actual error details
+          logError('Failed to load profile', profileError, {
+            context: 'profile',
+            metadata: {
+              action: 'load',
+              timestamp: new Date().toISOString(),
+              userId: user.id,
+              error: profileError
+            }
+          })
+          throw profileError
+        }
+
         if (isMounted && data) {
           setProfile({
             username: data.username || '',
-            full_name: data.full_name || '',
+            full_name: data.name || '',
             bio: data.bio || '',
             location: data.location || '',
             website: data.website || '',
@@ -91,18 +105,26 @@ export function ProfileTab() {
           })
         }
       } catch (error: unknown) {
-        const error_message = error instanceof Error ? error.message : 'Unknown error occurred'
-        logError('Failed to load profile', { error_message }, {
+        let errorMessage = 'Unknown error occurred'
+        if (error instanceof Error) {
+          errorMessage = error.message
+        } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          errorMessage = String(error.message)
+        }
+        
+        logError('Failed to load profile', error, {
           context: 'profile',
           metadata: {
             action: 'load',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            error: errorMessage
           }
         })
+        
         if (isMounted) {
           toast({
             title: 'Error',
-            description: error_message,
+            description: errorMessage,
             variant: 'destructive'
           })
         }
@@ -167,7 +189,7 @@ export function ProfileTab() {
         .from('users')
         .update({
           username: profile.username,
-          full_name: profile.full_name,
+          name: profile.full_name,
           bio: profile.bio,
           location: profile.location,
           website: profile.website,

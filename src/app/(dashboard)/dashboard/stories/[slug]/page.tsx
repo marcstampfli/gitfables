@@ -8,7 +8,7 @@ import { ArrowLeft, Share2, Download, GitBranch, Calendar, Clock } from 'lucide-
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserId } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth/auth'
 import type { Database } from '@/types/database'
 
 type StoryBlock = {

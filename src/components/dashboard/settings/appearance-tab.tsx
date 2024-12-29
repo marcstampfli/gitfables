@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { useSettings } from '@/hooks/use-settings'
 import { useTheme } from '@/hooks/use-theme'
 import { logError } from '@/lib/utils/logger'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import type { UserSettings } from '@/types/database'
 
 export function AppearanceTab() {

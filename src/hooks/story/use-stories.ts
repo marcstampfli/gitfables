@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { useActivity } from '@/hooks/use-activity'
 import { useSharedStories } from '@/hooks/story/use-shared-stories'
 import type { Story, CreateStoryRequest, UpdateStoryRequest, ShareStoryRequest } from '@/types/stories'

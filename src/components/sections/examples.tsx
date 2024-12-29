@@ -5,6 +5,8 @@
 
 import { Animated } from '@/components/ui/animated'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
+import { headingVariants } from '@/components/ui/heading'
 
 interface ExampleUser {
   name: string
@@ -38,9 +40,9 @@ export function Examples() {
   return (
     <section className="py-20">
       <div className="container">
-        <Animated animation="slide-up">
+        <Animated animation="slideUp">
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className={cn(headingVariants({ size: 'h2' }), 'text-center')}>
               Used by developers worldwide
             </h2>
             <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
@@ -53,7 +55,7 @@ export function Examples() {
           {examples.map((user, index) => (
             <Animated
               key={user.name}
-              animation="slide-up"
+              animation="slideUp"
               delay={200 + index * 100}
             >
               <div className="flex flex-col items-center gap-4 p-6 rounded-lg bg-muted/50">

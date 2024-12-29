@@ -6,6 +6,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Animated } from '@/components/ui/animated'
+import { cn } from '@/lib/utils'
+import { headingVariants } from '@/components/ui/heading'
 
 interface HeroProps {
   isConnected: boolean
@@ -22,8 +24,8 @@ export function Hero({ isConnected, isLoading }: HeroProps) {
       
       <div className="container relative">
         <div className="mx-auto max-w-[800px] text-center space-y-8">
-          <Animated animation="slide-down" delay={200}>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          <Animated animation="slideDown" delay={200}>
+            <h1 className={cn(headingVariants({ size: 'h1' }), 'text-center')}>
               Turn Your Git History into{' '}
               <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 Stories
@@ -31,15 +33,15 @@ export function Hero({ isConnected, isLoading }: HeroProps) {
             </h1>
           </Animated>
           
-          <Animated animation="slide-up" delay={400}>
-            <p className="mx-auto max-w-[600px] text-lg sm:text-xl text-muted-foreground">
+          <Animated animation="slideUp" delay={400}>
+            <p className="text-center text-muted-foreground text-lg max-w-[42rem] mx-auto">
               GitFables analyzes your repositories and generates engaging
               stories about your development journey.
             </p>
           </Animated>
 
-          <Animated animation="slide-up" delay={600}>
-            <div className="flex justify-center gap-4">
+          <Animated animation="slideUp" delay={600}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 size="lg"
                 className="h-12 px-6"
@@ -61,7 +63,7 @@ export function Hero({ isConnected, isLoading }: HeroProps) {
             </div>
           </Animated>
 
-          <Animated animation="fade-in" delay={800}>
+          <Animated animation="fadeIn" delay={800}>
             <div className="pt-8">
               <p className="text-sm text-muted-foreground">
                 Join developers from companies like

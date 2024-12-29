@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { Logo } from '@/components/ui/logo'
-import { ThemeToggle } from '@/components/layout/theme-toggle'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface HeaderProps {
   user?: User | null

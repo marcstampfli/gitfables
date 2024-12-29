@@ -92,40 +92,67 @@ export interface Database {
           id: string
           user_id: string
           name: string
+          full_name: string
           owner: string
-          github_id: string
           description: string | null
-          html_url: string
+          url: string
+          private: boolean
           default_branch: string
+          languages: Record<string, number>
+          stargazers_count: number
+          forks_count: number
+          watchers_count: number
+          size: number
+          story_count: number
+          commit_count: number
           last_synced_at: string | null
           created_at: string
           updated_at: string
+          provider: RepositoryProvider
         }
         Insert: {
           id?: string
           user_id: string
           name: string
+          full_name: string
           owner: string
-          github_id: string
           description?: string | null
-          html_url: string
+          url: string
+          private?: boolean
           default_branch?: string
+          languages?: Record<string, number>
+          stargazers_count?: number
+          forks_count?: number
+          watchers_count?: number
+          size?: number
+          story_count?: number
+          commit_count?: number
           last_synced_at?: string | null
           created_at?: string
           updated_at?: string
+          provider?: RepositoryProvider
         }
         Update: {
           id?: string
           user_id?: string
           name?: string
+          full_name?: string
           owner?: string
-          github_id?: string
           description?: string | null
-          html_url?: string
+          url?: string
+          private?: boolean
           default_branch?: string
+          languages?: Record<string, number>
+          stargazers_count?: number
+          forks_count?: number
+          watchers_count?: number
+          size?: number
+          story_count?: number
+          commit_count?: number
           last_synced_at?: string | null
           created_at?: string
           updated_at?: string
+          provider?: RepositoryProvider
         }
       }
       stories: {
@@ -436,6 +463,29 @@ export interface Database {
           created_at?: string
         }
       }
+      user_activity: {
+        Row: {
+          id: string
+          user_id: string
+          activity_type: ActivityType
+          details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          activity_type: ActivityType
+          details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          activity_type?: ActivityType
+          details?: Json
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -444,7 +494,8 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      activity_type: ActivityType
+      repository_provider: RepositoryProvider
     }
   }
 }
@@ -542,4 +593,27 @@ export interface UserSettings {
     high_contrast: boolean
     keyboard_shortcuts: boolean
   }
-} 
+}
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type RepositoryProvider = 'github' | 'gitlab' | 'bitbucket' 
+
+export type ActivityType = 
+  | 'story_created'
+  | 'story_updated'
+  | 'story_shared'
+  | 'story_exported'
+  | 'api_key_created'
+  | 'api_key_deleted'
+  | 'settings_updated'
+
+export type DbUserActivity = Database['public']['Tables']['user_activity']['Row']
+export type DbUserActivityInsert = Database['public']['Tables']['user_activity']['Insert']
+export type DbUserActivityUpdate = Database['public']['Tables']['user_activity']['Update'] 

@@ -1,32 +1,31 @@
 /**
  * @module types/settings
- * @description Type definitions for user settings and preferences
+ * @description Types for user settings and preferences
  */
 
-export interface UserSettings {
-  theme: {
-    mode: 'light' | 'dark' | 'system'
-    accent_color: string
-  }
-  notifications: {
-    email: boolean
-    web: boolean
-    digest: 'daily' | 'weekly' | 'never'
-  }
-  privacy: {
-    show_activity: boolean
-    default_story_visibility: 'private' | 'team'
-  }
-  repository: {
-    auto_sync: boolean
-    sync_frequency: 'hourly' | 'daily' | 'weekly'
-    default_branch: string
-  }
-}
-
 export interface SettingsUpdate {
-  path: string[]
-  value: any
-}
-
-export type SettingsPath = keyof UserSettings | `${keyof UserSettings}.${string}` 
+  theme?: 'light' | 'dark' | 'system'
+  notifications?: {
+    email?: boolean
+    push?: boolean
+    inApp?: boolean
+  }
+  privacy?: {
+    shareAnalytics?: boolean
+    shareUsage?: boolean
+  }
+  display?: {
+    compactMode?: boolean
+    showAvatars?: boolean
+    showTimestamps?: boolean
+  }
+  accessibility?: {
+    reduceMotion?: boolean
+    highContrast?: boolean
+    largeText?: boolean
+  }
+  advanced?: {
+    experimentalFeatures?: boolean
+    debugMode?: boolean
+  }
+} 

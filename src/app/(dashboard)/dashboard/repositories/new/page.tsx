@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import Link from 'next/link'
-import { SUPPORTED_PROVIDERS } from '@/lib/vcs/vcs-providers'
-import type { VCSProvider } from '@/types/vcs'
+import { SUPPORTED_PROVIDERS, type VCSProviderConfig } from '@/lib/vcs/vcs-providers'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -32,7 +31,7 @@ export default async function NewRepositoryPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {SUPPORTED_PROVIDERS.map((provider: VCSProvider) => (
+        {SUPPORTED_PROVIDERS.map((provider: VCSProviderConfig) => (
           <Card 
             key={provider.id}
             className={provider.isActive ? 'hover:border-primary cursor-pointer' : 'opacity-60'}

@@ -7,7 +7,7 @@
 
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
 
 export interface APIKeyUsage {

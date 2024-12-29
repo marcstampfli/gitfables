@@ -1,33 +1,14 @@
 /**
  * @module lib/github-client
  * @description GitHub API client for interacting with repositories and commits.
- * Uses Octokit REST client for making authenticated requests to the GitHub API.
- * 
- * @example
- * ```ts
- * import { createGitHubClient } from '@/lib/vcs/github-client'
- * 
- * const client = createGitHubClient()
- * const repos = await client.listRepositories()
- * console.debug('Repository info', { fullName: repos[0].full_name })
- * 
- * const commits = await client.listCommits('owner/repo')
- * console.debug('Commit info', { message: commits[0].message })
- * ```
  */
 
 import { Octokit } from '@octokit/rest'
 import type { Repository, Commit } from '@/types/vcs'
+import { logDebug } from '@/lib/utils/logger'
 
 /**
  * GitHub API client wrapper
- * 
- * @example
- * ```ts
- * const client = new GitHubClient('token')
- * const repos = await client.listRepositories()
- * console.debug('Repositories fetched', { count: repos.length })
- * ```
  */
 export class GitHubClient {
   private octokit: Octokit
@@ -38,85 +19,88 @@ export class GitHubClient {
 
   /**
    * List repositories for the authenticated user
-   * 
-   * @example
-   * ```ts
-   * const repos = await client.listRepositories()
-   * console.debug('Repositories fetched', { count: repos.length })
-   * ```
    */
   async listRepositories(): Promise<Repository[]> {
-    const { data } = await this.octokit.repos.listForAuthenticatedUser({
-      visibility: 'all',
-      sort: 'updated',
-      per_page: 100
-    })
+    try {
+      const { data } = await this.octokit.repos.listForAuthenticatedUser({
+        visibility: 'all',
+        sort: 'updated',
+        per_page: 100
+      })
 
-    return data.map(repo => ({
-      id: repo.id,
-      name: repo.name,
-      full_name: repo.full_name,
-      html_url: repo.html_url,
-      description: repo.description,
-      language: repo.language,
-      languages_url: repo.languages_url,
-      owner: repo.owner.login,
-      stargazers_count: repo.stargazers_count,
-      forks_count: repo.forks_count,
-      languages: null, // Requires separate API call
-      default_branch: repo.default_branch,
-      watchers_count: repo.watchers_count,
-      size: repo.size
-    }))
+      const repositories = await Promise.all(data.map(async (repo) => {
+        let languages: Record<string, number> = {}
+
+        try {
+          const { data: languageData } = await this.octokit.repos.listLanguages({
+            owner: repo.owner.login,
+            repo: repo.name
+          })
+          languages = languageData
+        } catch (error) {
+          logDebug('Failed to fetch languages for repository', {
+            context: 'github_client',
+            metadata: { repository: repo.full_name, error: error instanceof Error ? error.message : 'Unknown error' }
+          })
+        }
+
+        return {
+          id: repo.id.toString(),
+          name: repo.name,
+          full_name: repo.full_name,
+          owner: repo.owner.login,
+          description: repo.description ?? '',
+          url: repo.html_url,
+          private: repo.private,
+          default_branch: repo.default_branch,
+          languages,
+          stargazers_count: repo.stargazers_count,
+          forks_count: repo.forks_count,
+          watchers_count: repo.watchers_count,
+          size: repo.size,
+          created_at: repo.created_at || new Date().toISOString(),
+          updated_at: repo.updated_at || new Date().toISOString()
+        }
+      }))
+
+      return repositories
+    } catch (error) {
+      logDebug('Failed to list repositories', {
+        context: 'github_client',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
+      })
+      throw error
+    }
   }
 
   /**
    * List commits for a repository
-   * 
-   * @example
-   * ```ts
-   * const commits = await client.listCommits('owner', 'repo')
-   * console.debug('Commits fetched', { count: commits.length })
-   * ```
    */
   async listCommits(owner: string, repo: string): Promise<Commit[]> {
-    const { data } = await this.octokit.repos.listCommits({
-      owner,
-      repo,
-      per_page: 100
-    })
+    try {
+      const { data } = await this.octokit.repos.listCommits({
+        owner,
+        repo,
+        per_page: 100
+      })
 
-    return data.map(commit => {
-      const commitAuthor = commit.commit.author || {
-        name: 'Unknown',
-        email: 'unknown@example.com',
-        date: new Date().toISOString()
-      }
-
-      const commitUrl = typeof commit.html_url === 'string' 
-        ? commit.html_url 
-        : `https://github.com/${owner}/${repo}/commit/${commit.sha}`
-
-      const commitMessage = typeof commit.commit.message === 'string'
-        ? commit.commit.message
-        : 'No commit message'
-
-      const commitSha = typeof commit.sha === 'string'
-        ? commit.sha
-        : 'unknown'
-
-      return {
-        sha: commitSha,
-        message: commitMessage,
+      return data.map((commit) => ({
+        sha: commit.sha,
+        message: commit.commit.message,
         author: {
-          name: commitAuthor.name || 'Unknown',
-          email: commitAuthor.email || 'unknown@example.com',
-          date: commitAuthor.date || new Date().toISOString()
+          name: commit.commit.author?.name ?? 'Unknown',
+          email: commit.commit.author?.email ?? 'unknown@example.com',
+          date: commit.commit.author?.date ?? new Date().toISOString()
         },
-        date: commitAuthor.date || new Date().toISOString(),
-        url: commitUrl
-      }
-    })
+        url: commit.html_url
+      }))
+    } catch (error) {
+      logDebug('Failed to list commits', {
+        context: 'github_client',
+        metadata: { repository: `${owner}/${repo}`, error: error instanceof Error ? error.message : 'Unknown error' }
+      })
+      throw error
+    }
   }
 }
 

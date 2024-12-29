@@ -10,9 +10,9 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import { ShareDialog } from '@/components/ui/share-dialog'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
-import type { Story } from '@/types/story'
+import type { Story } from '@/types/stories'
 
 interface StoryViewerProps {
   story: Story
@@ -60,9 +60,7 @@ export function StoryViewer({
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">{story.title}</h2>
-          {story.description && (
-            <p className="mt-2 text-muted-foreground">{story.description}</p>
-          )}
+          <p className="mt-2 text-muted-foreground">{story.content}</p>
         </div>
 
         {showActions && (
@@ -99,10 +97,6 @@ export function StoryViewer({
             )}
           </div>
         )}
-      </div>
-
-      <div className="prose prose-gray dark:prose-invert mt-6 max-w-none">
-        {story.content}
       </div>
     </Card>
   )

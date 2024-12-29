@@ -35,7 +35,7 @@
 
 import { z } from 'zod'
 import { logError, logDebug } from '@/lib/utils/logger'
-import type { ErrorType } from '@/types'
+import type { ErrorType } from '@/types/error'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**

@@ -1,56 +1,52 @@
 'use client'
 
-import { type Commit } from '@/types/vcs'
+import * as React from 'react'
+import { format } from 'date-fns'
+import type { Commit } from '@/types/vcs'
 
 interface CommitHeatmapProps {
   commits: Commit[]
-  width?: number
-  height?: number
+  className?: string
 }
 
-export function CommitHeatmap({
-  commits,
-  width = 340,
-  height = 100,
-}: CommitHeatmapProps) {
-  const commitsByDate = commits.reduce((acc, commit) => {
-    const date = new Date(commit.date).toISOString().split('T')[0]
-    acc[date] = (acc[date] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
+export function CommitHeatmap({ commits, className }: CommitHeatmapProps) {
+  // Group commits by date
+  const commitsByDate = React.useMemo(() => {
+    return commits.reduce<Record<string, number>>((acc, commit) => {
+      const date = format(new Date(commit.author.date), 'yyyy-MM-dd')
+      acc[date] = (acc[date] || 0) + 1
+      return acc
+    }, {})
+  }, [commits])
 
-  const maxCommits = Math.max(...Object.values(commitsByDate))
-  const minDate = new Date(Math.min(...commits.map(c => new Date(c.date).getTime())))
-  const maxDate = new Date(Math.max(...commits.map(c => new Date(c.date).getTime())))
+  // Calculate max commits for color scaling
+  const maxCommits = React.useMemo(() => {
+    const values = Object.values(commitsByDate)
+    return values.length ? Math.max(...values) : 0
+  }, [commitsByDate])
 
-  const days = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24))
-  const cellSize = Math.min(width / days, height)
-
-  const getColor = (count: number) => {
-    const intensity = count / maxCommits
-    return `rgb(0, ${Math.round(intensity * 150)}, 0)`
-  }
+  // Color scale function
+  const getColor = React.useCallback((count: number) => {
+    if (count === 0) return '#ebedf0'
+    const intensity = Math.min(count / maxCommits, 1)
+    return `rgba(14, 165, 233, ${intensity})`
+  }, [maxCommits])
 
   return (
-    <div className="relative">
-      <svg width={width} height={height}>
-        {Object.entries(commitsByDate).map(([date, count]) => {
-          const x = (new Date(date).getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24) * cellSize
-          return (
-            <g key={date}>
-              <rect
-                x={x}
-                y={0}
-                width={cellSize * 0.9}
-                height={height}
-                fill={getColor(count)}
-                rx={2}
-              />
-              <title>{`${count} commits on ${date}`}</title>
-            </g>
-          )
-        })}
-      </svg>
+    <div className={className}>
+      <div className="grid grid-cols-7 gap-1">
+        {Object.entries(commitsByDate).map(([date, count]) => (
+          <div
+            key={date}
+            className="aspect-square rounded"
+            style={{
+              backgroundColor: getColor(count),
+              cursor: 'pointer',
+            }}
+            title={`${count} commits on ${format(new Date(date), 'MMM d, yyyy')}`}
+          />
+        ))}
+      </div>
     </div>
   )
 } 

@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import { Download, AlertTriangle, LogOut, Loader2, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'

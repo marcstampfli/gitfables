@@ -1,23 +1,19 @@
 /**
- * @module lib/story
- * @description Story generation module exports and factory
+ * @module lib/story/index
+ * @description Story generator factory and implementation
  */
 
 import type { Repository } from '@/types/vcs'
-import type { StoryGenerator, StoryEvent, StorySettings } from '@/types/story'
+import type { Story, StoryEvent, StoryGenerator, StorySettings } from '@/types/stories'
 import { generateStory } from './generator'
-
-export * from '@/types/story'
-export * from './generator'
 
 /**
  * Create a story generator instance
- * 
  * @returns {StoryGenerator} Story generator instance
  */
 export function createStoryGenerator(): StoryGenerator {
   return {
-    async generateStory(events: StoryEvent[], settings: StorySettings) {
+    async generateStory(events: StoryEvent[], settings: StorySettings): Promise<Story> {
       const eventRepo = events[0]?.data.repository
       if (!eventRepo) {
         throw new Error('No repository data found in events')
@@ -25,20 +21,21 @@ export function createStoryGenerator(): StoryGenerator {
 
       // Create a Repository object with required fields
       const repository: Repository = {
-        id: 0, // Default ID since we don't have it in the event
+        id: crypto.randomUUID(),
         name: eventRepo.name,
         full_name: `${eventRepo.owner}/${eventRepo.name}`,
-        html_url: eventRepo.html_url,
-        description: eventRepo.description,
-        language: null,
-        languages_url: `${eventRepo.url}/languages`,
+        url: eventRepo.url,
+        description: eventRepo.description || '',
         owner: eventRepo.owner,
+        default_branch: 'main',
+        languages: {},
         stargazers_count: 0,
         forks_count: 0,
-        languages: null,
-        default_branch: 'main',
         watchers_count: 0,
-        size: 0
+        size: 0,
+        private: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
 
       return generateStory({
@@ -51,13 +48,12 @@ export function createStoryGenerator(): StoryGenerator {
             email: '',
             date: event.timestamp
           },
-          date: event.timestamp,
-          url: ''
+          url: `${eventRepo.url}/commit/${event.data.id}`
         })),
         style: settings.style,
         includeTimeContext: settings.includeTimeContext,
         includeLanguageContext: settings.includeLanguageContext,
-        includeLineChanges: settings.includeLineChanges
+        _includeLineChanges: settings.includeLineChanges
       })
     }
   }

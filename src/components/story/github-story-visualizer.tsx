@@ -39,7 +39,7 @@ export function GitHubStoryVisualizer({
 
   const handleError = React.useCallback((error: Error) => {
     setError(error)
-    logError(error, { context: 'GitHubStoryVisualizer' })
+    logError('Failed to fetch GitHub data', error, { context: 'GitHubStoryVisualizer' })
     onError?.(error)
   }, [onError])
 

@@ -1,298 +1,100 @@
 /**
  * @module types/vcs
- * @description Type definitions for version control system integrations.
- * These types define the core interfaces and types for interacting with various VCS platforms
- * like GitHub, GitLab, and Bitbucket.
- * 
- * @example
- * ```ts
- * import type { VCSProvider, VCSConfig, Repository } from '@/types'
- * 
- * // Configure a VCS provider
- * const config: VCSConfig = {
- *   platform: 'github',
- *   token: process.env.GITHUB_TOKEN
- * }
- * 
- * // Initialize provider
- * await provider.init(config)
- * 
- * // Fetch repository data
- * const repo = await provider.fetchRepoStats('owner', 'repo')
- * ```
+ * @description Type definitions for version control system (VCS) integration
  */
 
-/** Supported version control system platforms */
+/**
+ * VCS provider platform
+ */
 export type VCSPlatform = 'github' | 'gitlab' | 'bitbucket'
 
 /**
- * Configuration options for VCS providers.
- * Used to initialize and configure provider instances.
- * 
- * @example
- * ```ts
- * const config: VCSConfig = {
- *   platform: 'github',
- *   baseUrl: 'https://api.github.com',
- *   token: 'your-access-token'
- * }
- * ```
+ * VCS provider configuration
  */
 export interface VCSConfig {
+  /** The VCS platform */
   platform: VCSPlatform
+  /** The base URL for API requests */
   baseUrl?: string
-  token?: string
+  /** The API version to use */
+  apiVersion?: string
 }
 
 /**
- * Authentication options for VCS providers.
- * Used to authenticate with the VCS platform.
- * 
- * @example
- * ```ts
- * const authOptions: VCSAuthOptions = {
- *   token: 'your-access-token',
- *   scope: ['repo', 'user']
- * }
- * ```
+ * VCS authentication options
  */
 export interface VCSAuthOptions {
+  /** The authentication token */
   token: string
-  scope?: string[]
 }
 
 /**
- * Options for fetching commits from a repository.
- * Supports pagination and date range filtering.
- * 
- * @example
- * ```ts
- * const options: CommitFetchOptions = {
- *   owner: 'octocat',
- *   repo: 'Hello-World',
- *   branch: 'main',
- *   since: new Date('2024-01-01'),
- *   perPage: 100
- * }
- * ```
- */
-export interface CommitFetchOptions {
-  owner: string
-  repo: string
-  branch?: string
-  since?: Date
-  until?: Date
-  perPage?: number
-  page?: number
-}
-
-/**
- * Standard error structure for VCS operations.
- * Provides consistent error handling across providers.
- * 
- * @example
- * ```ts
- * const error: VCSError = {
- *   type: 'auth_error',
- *   message: 'Invalid access token',
- *   raw: originalError
- * }
- * ```
- */
-export interface VCSError {
-  type: 'auth_error' | 'api_error' | 'validation_error' | 'unknown_error'
-  message: string
-  raw?: unknown
-}
-
-/**
- * Configuration for a VCS provider integration.
- * Used to define available VCS providers in the application.
- * 
- * @example
- * ```ts
- * const githubConfig: VCSProviderConfig = {
- *   id: 'github',
- *   name: 'GitHub',
- *   icon: 'github-icon',
- *   isActive: true,
- *   authUrl: 'https://github.com/login/oauth/authorize'
- * }
- * ```
- */
-export interface VCSProviderConfig {
-  id: string
-  name: string
-  icon: string
-  isActive: boolean
-  authUrl: string
-}
-
-/**
- * Provider implementation interface.
- * Defines the required methods for VCS provider implementations.
- */
-export interface VCSProviderImpl {
-  init(config: VCSConfig): Promise<void>
-  authenticate(options: VCSAuthOptions): Promise<void>
-  fetchCommits(options: CommitFetchOptions): Promise<CommitData[]>
-  fetchRepoStats(owner: string, repo: string): Promise<RepoStats>
-  isAuthenticated(): boolean
-  getConfig(): VCSConfig
-}
-
-/**
- * Core interface for VCS provider metadata.
- * Used for provider selection and display.
- */
-export interface VCSProvider {
-  /** Unique identifier for the provider */
-  id: string
-  /** Display name of the provider */
-  name: string
-  /** Icon identifier for the provider */
-  icon: string
-  /** Whether the provider is currently active */
-  isActive?: boolean
-  /** Base URL for API requests */
-  baseUrl?: string
-  /** OAuth authorization URL */
-  authUrl?: string
-  description: string
-  type: VCSProviderType
-}
-
-/**
- * Repository information from a VCS platform.
- * Contains metadata about a code repository.
- * 
- * @example
- * ```ts
- * const repo: Repository = {
- *   id: 123,
- *   name: 'Hello-World',
- *   fullName: 'octocat/Hello-World',
- *   url: 'https://github.com/octocat/Hello-World',
- *   description: 'My first repository',
- *   language: 'TypeScript',
- *   // ... other properties
- * }
- * ```
+ * Repository interface
  */
 export interface Repository {
-  id: number
+  /** Unique identifier for the repository */
+  id: string
+  /** Repository name */
   name: string
+  /** Full repository name (owner/name) */
   full_name: string
-  html_url: string
-  description: string | null
-  language: string | null
-  languages_url: string
+  /** Repository owner */
   owner: string
-  stargazers_count: number
-  forks_count: number
-  languages: Record<string, number> | null
+  /** Repository description */
+  description?: string | null
+  /** Repository URL */
+  url: string
+  /** Whether the repository is private */
+  private: boolean
+  /** Default branch name */
   default_branch: string
+  /** Repository languages */
+  languages: Record<string, number>
+  /** Number of stargazers */
+  stargazers_count: number
+  /** Number of forks */
+  forks_count: number
+  /** Number of watchers */
   watchers_count: number
+  /** Repository size in KB */
   size: number
+  /** Repository creation date */
+  created_at: string
+  /** Repository last update date */
+  updated_at: string
 }
 
 /**
- * Commit information from a VCS platform.
- * Contains metadata about a single commit.
- * 
- * @example
- * ```ts
- * const commit: Commit = {
- *   sha: 'abc123',
- *   message: 'feat: add user authentication',
- *   author: {
- *     name: 'John Doe',
- *     email: 'john@example.com',
- *     date: '2024-01-01T00:00:00Z'
- *   },
- *   date: '2024-01-01T00:00:00Z',
- *   url: 'https://github.com/octocat/Hello-World/commit/abc123'
- * }
- * ```
+ * Commit interface
  */
 export interface Commit {
+  /** Commit SHA */
   sha: string
+  /** Commit message */
   message: string
+  /** Commit author */
   author: {
+    /** Author name */
     name: string
+    /** Author email */
     email: string
+    /** Commit date */
     date: string
   }
-  date: string
+  /** Commit URL */
   url: string
 }
 
 /**
- * Repository statistics from a VCS platform.
- * Contains high-level metrics about a repository.
- * 
- * @example
- * ```ts
- * const stats: RepoStats = {
- *   stars: 1000,
- *   forks: 100,
- *   watchers: 50,
- *   issues: 10,
- *   lastUpdated: '2024-01-01T00:00:00Z'
- * }
- * ```
+ * VCS provider interface
  */
-export interface RepoStats {
-  stars: number
-  forks: number
-  watchers: number
-  issues: number
-  lastUpdated: string
-}
-
-/**
- * Extended commit data with additional statistics.
- * Used for detailed commit analysis and story generation.
- * 
- * @example
- * ```ts
- * const commitData: CommitData = {
- *   id: 'abc123',
- *   message: 'feat: add user authentication',
- *   author: 'John Doe',
- *   date: '2024-01-01T00:00:00Z',
- *   additions: 100,
- *   deletions: 50,
- *   files: 5,
- *   stats: {
- *     total: 150,
- *     additions: 100,
- *     deletions: 50
- *   }
- * }
- * ```
- */
-export interface CommitData {
-  id: string
-  message: string
-  author: string
-  date: string
-  additions: number
-  deletions: number
-  files: number
-  stats?: {
-    total: number
-    additions: number
-    deletions: number
-  }
-}
-
-export type VCSProviderType = 'github' | 'gitlab' | 'bitbucket'
-
 export interface VCSProvider {
-  name: string
-  description: string
-  icon: string
-  type: VCSProviderType
-  // ... rest of the existing code ...
+  /** Initialize the provider with configuration */
+  init(config: VCSConfig): Promise<void>
+  /** Authenticate with the provider */
+  authenticate(options: VCSAuthOptions): Promise<void>
+  /** List repositories for the authenticated user */
+  listRepositories(): Promise<Repository[]>
+  /** List commits for a repository */
+  listCommits(owner: string, repo: string): Promise<Commit[]>
 } 

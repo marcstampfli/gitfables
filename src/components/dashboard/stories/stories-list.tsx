@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Pencil, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { ShareDialog } from '@/components/dashboard/stories/share-dialog'
+import { ShareDialog } from '@/components/ui/share-dialog'
 import { ExportDialog } from '@/components/dashboard/stories/export-dialog'
 import { BatchExportDialog } from '@/components/dashboard/stories/batch-export-dialog'
 
@@ -53,7 +53,7 @@ export function StoriesList() {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <ShareDialog story={story} />
+              <ShareDialog _story={story} />
               <ExportDialog story={story} />
               <Button variant="outline" size="sm" asChild>
                 <a href={`/dashboard/stories/${story.id}/edit`}>

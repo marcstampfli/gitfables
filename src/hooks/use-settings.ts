@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
 import type { UserSettings } from '@/types/database'
 

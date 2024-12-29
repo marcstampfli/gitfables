@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react'
-import { Story } from '@/lib/story'
+import { type Story } from '@/types/stories'
 
 export function useStory() {
   const [story, setStory] = useState<Story | null>(null)

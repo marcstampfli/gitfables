@@ -3,23 +3,20 @@
  * @description Base VCS provider implementation with shared functionality
  */
 
-import type { VCSProvider, VCSProviderType, VCSConfig } from '@/types/vcs'
+import type { VCSProvider, VCSConfig, VCSAuthOptions, Repository, Commit } from '@/types/vcs'
 
+/**
+ * Base VCS provider implementation
+ */
 export abstract class BaseVCSProvider implements VCSProvider {
   protected config: VCSConfig
-  public baseUrl: string
-  public id: string
-  public name: string
-  public icon: string
-  public isActive: boolean = true
-  abstract description: string
-  abstract type: VCSProviderType
 
-  constructor(config: VCSConfig, id: string, name: string, icon: string) {
+  constructor(config: VCSConfig) {
     this.config = config
-    this.baseUrl = config.baseUrl || ''
-    this.id = id
-    this.name = name
-    this.icon = icon
   }
+
+  abstract init(config: VCSConfig): Promise<void>
+  abstract authenticate(options: VCSAuthOptions): Promise<void>
+  abstract listRepositories(): Promise<Repository[]>
+  abstract listCommits(owner: string, repo: string): Promise<Commit[]>
 } 

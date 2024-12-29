@@ -9,7 +9,7 @@ import { useVCSConnections, type VCSConnection } from '@/hooks/vcs/use-vcs-conne
 import { cn } from '@/lib/utils/styles'
 import { logError } from '@/lib/utils/logger'
 
-interface VCSProvider {
+interface VCSProviderItem {
   id: string
   name: string
   icon: React.ComponentType<{ className?: string }>
@@ -17,7 +17,7 @@ interface VCSProvider {
   comingSoon?: boolean
 }
 
-const providers: VCSProvider[] = [
+const providers: VCSProviderItem[] = [
   {
     id: 'github',
     name: 'GitHub',
@@ -39,7 +39,7 @@ export function VCSProviderList() {
   const { connections, isLoading } = useVCSConnections()
   const supabase = createClient()
 
-  const handleConnect = async (provider: VCSProvider) => {
+  const handleConnect = async (provider: VCSProviderItem) => {
     if (!provider.isActive) return
 
     try {

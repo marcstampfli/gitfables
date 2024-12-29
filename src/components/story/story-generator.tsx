@@ -6,19 +6,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { type Repository } from '@/types/vcs'
-import { type Story } from '@/types/story'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { type Story } from '@/types/stories'
 import { logError } from '@/lib/utils/logger'
-import { useRouter } from 'next/navigation'
+import { RepositorySelect } from './repository-select'
 
-/**
- * Props for the StoryGenerator component
- * @interface
- */
 interface StoryGeneratorProps {
   /** Callback function called when a story is successfully generated */
   onStoryGenerated: (story: Story) => void
@@ -30,10 +24,6 @@ interface StoryGeneratorProps {
  * @component
  * @description A component that allows users to select a GitHub repository and generate
  * a story from its commit history. Handles repository loading, selection, and story generation.
- * 
- * @param {Object} props - Component props
- * @param {Function} props.onStoryGenerated - Callback function called with the generated story
- * @returns {JSX.Element} A card component with repository selection and story generation UI
  */
 export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
   const [repositories, setRepositories] = useState<Repository[]>([])
@@ -41,7 +31,6 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const { toast } = useToast()
-  const router = useRouter()
 
   useEffect(() => {
     async function loadRepositories() {
@@ -50,7 +39,6 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
         const response = await fetch('/api/repositories')
         if (!response.ok) {
           if (response.status === 401) {
-            // Don't redirect, just set repositories to empty array
             setRepositories([])
             return
           }
@@ -75,34 +63,21 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
     }
 
     loadRepositories()
-  }, [toast, router])
+  }, [toast])
 
-  const generateStory = async () => {
-    if (!selectedRepo) {
-      toast({
-        title: 'Error',
-        description: 'Please select a repository first',
-        variant: 'destructive',
-      })
-      return
-    }
+  async function handleGenerateStory() {
+    if (!selectedRepo) return
 
+    setIsGenerating(true)
     try {
-      setIsGenerating(true)
-
       const response = await fetch('/api/story/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          repository: {
-            id: selectedRepo.id,
-            name: selectedRepo.name,
-            full_name: selectedRepo.full_name,
-            html_url: selectedRepo.html_url,
-            description: selectedRepo.description,
-          },
+          repository_url: selectedRepo.url,
+          commit_hash: selectedRepo.default_branch
         }),
       })
 
@@ -112,20 +87,15 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
 
       const story = await response.json()
       onStoryGenerated(story)
-
-      toast({
-        title: 'Success',
-        description: 'Your story has been generated',
-      })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error generating story'
       logError(errorMessage, {
         context: 'StoryGenerator:generateStory',
-        metadata: { repositoryId: selectedRepo?.id }
+        metadata: { repositoryId: selectedRepo.id }
       })
       toast({
         title: 'Error',
-        description: 'Failed to generate story',
+        description: 'Failed to generate story. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -133,69 +103,24 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
     }
   }
 
-  if (isLoading) {
-    return (
-      <Card className="p-6">
-        <p className="text-center text-muted-foreground">Loading repositories...</p>
-      </Card>
-    )
-  }
-
-  if (repositories.length === 0) {
-    return (
-      <Card className="p-6">
-        <div className="text-center space-y-2">
-          <p className="text-muted-foreground">
-            No repositories found. Connect your GitHub account to get started.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/login')}
-          >
-            Connect GitHub Account
-          </Button>
-        </div>
-      </Card>
-    )
-  }
-
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold">Generate a Story</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Select a repository to generate a story from its commit history
-          </p>
-        </div>
+    <div className="space-y-4">
+      <RepositorySelect
+        repositories={repositories}
+        selectedRepo={selectedRepo}
+        onSelectRepo={setSelectedRepo}
+        isLoading={isLoading}
+      />
 
-        <Select
-          value={selectedRepo?.full_name}
-          onValueChange={(value) => {
-            const repo = repositories.find((r) => r.full_name === value)
-            setSelectedRepo(repo || null)
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a repository" />
-          </SelectTrigger>
-          <SelectContent>
-            {repositories.map((repo) => (
-              <SelectItem key={repo.id} value={repo.full_name}>
-                {repo.full_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
+      {selectedRepo && (
         <Button
-          onClick={generateStory}
-          disabled={isGenerating || !selectedRepo}
           className="w-full"
+          onClick={handleGenerateStory}
+          disabled={isGenerating}
         >
-          {isGenerating ? 'Generating...' : 'Generate Story'}
+          {isGenerating ? 'Generating Story...' : 'Generate Story'}
         </Button>
-      </div>
-    </Card>
+      )}
+    </div>
   )
 } 

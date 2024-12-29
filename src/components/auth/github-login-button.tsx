@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { GithubIcon } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
 
 interface GitHubLoginButtonProps {

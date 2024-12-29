@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { useActivity } from '@/hooks/use-activity'
 import type { SharedStory, ShareStoryRequest } from '@/types/stories'
 import { logError } from '@/lib/utils/logger'
@@ -27,7 +27,7 @@ export function useSharedStories() {
         if (!user) return
 
         const { data, error } = await supabase
-          .from('shared_stories')
+          .from('story_shares')
           .select(`
             *,
             story:stories(*)
@@ -72,7 +72,7 @@ export function useSharedStories() {
 
       // Create shared story
       const { data, error } = await supabase
-        .from('shared_stories')
+        .from('story_shares')
         .insert({
           user_id: user.id,
           story_id: request.story_id,
@@ -122,7 +122,7 @@ export function useSharedStories() {
       if (!story) return
 
       const { error } = await supabase
-        .from('shared_stories')
+        .from('story_shares')
         .delete()
         .eq('id', id)
 
@@ -151,7 +151,7 @@ export function useSharedStories() {
     try {
       // Get story
       const { data, error } = await supabase
-        .from('shared_stories')
+        .from('story_shares')
         .select(`
           *,
           story:stories(*)

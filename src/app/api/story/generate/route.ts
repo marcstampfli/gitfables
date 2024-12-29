@@ -1,63 +1,47 @@
 /**
- * @module api/story/generate
- * @description API route for generating stories from repository commits
+ * @module app/api/story/generate/route
+ * @description Story generation API route
  */
 
 import { NextResponse } from 'next/server'
-import { GitHubProvider } from '@/lib/vcs/github-provider'
-import { generateStory } from '@/lib/story/generator'
-import { type Repository, type Commit } from '@/types/vcs'
+import { createVCSProvider, initializeVCSProvider } from '@/lib/vcs'
+import { logError } from '@/lib/utils/logger'
 import { createClient } from '@/lib/supabase/server'
 
+/**
+ * Generate a story from repository commits
+ */
 export async function POST(request: Request) {
   try {
-    const { repository } = await request.json() as { repository: Repository }
-    const [owner, repo] = repository.full_name.split('/')
-
-    // Get GitHub token from Supabase auth
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { session } } = await supabase.auth.getSession()
+
     if (!session?.provider_token) {
-      throw new Error('GitHub token not found')
+      return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    // Initialize GitHub provider
-    const provider = new GitHubProvider()
-    await provider.init({ platform: 'github' })
-    await provider.authenticate({ token: session.provider_token })
+    const data = await request.json()
+    const { owner, repo } = data
 
-    const commitData = await provider.fetchCommits({ owner, repo })
-    
-    // Convert CommitData to Commit type
-    const commits: Commit[] = commitData.map(data => ({
-      sha: data.id,
-      message: data.message,
-      author: {
-        name: data.author,
-        email: '', // Not available in CommitData
-        date: data.date
-      },
-      date: data.date,
-      url: '' // Not available in CommitData
-    }))
+    if (!owner || !repo) {
+      return new NextResponse('Missing required fields', { status: 400 })
+    }
 
-    const story = await generateStory({
-      repository,
-      commits,
+    const provider = createVCSProvider({
+      platform: 'github'
     })
 
-    return NextResponse.json(story)
-  } catch (error) {
-    if (error instanceof Error && error.message === 'GitHub token not found') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to generate story' },
-      { status: 500 }
+    await initializeVCSProvider(
+      provider,
+      { platform: 'github' },
+      session.provider_token
     )
+
+    const commits = await provider.listCommits(owner, repo)
+
+    return NextResponse.json({ commits })
+  } catch (error) {
+    logError('Failed to generate story', { metadata: { error } })
+    return new NextResponse('Internal Server Error', { status: 500 })
   }
 } 

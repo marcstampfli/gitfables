@@ -12,17 +12,20 @@
  */
 
 /** @type {import('next').NextConfig} */
-const config = {
+const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      'avatars.githubusercontent.com',
-      'gitlab.com',
-      'bitbucket.org',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   typescript: {
-    // Disable type checking in Next.js since we run it separately
+    // Type checking is done via separate tsc command
     ignoreBuildErrors: true,
   },
   eslint: {
@@ -30,12 +33,9 @@ const config = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // Enable modern features
-    serverActions: {
-      allowedOrigins: ['localhost:3000'],
-    },
-    typedRoutes: true,
+    // Disable experimental features that might cause type issues
+    typedRoutes: false,
   },
 }
 
-export default config 
+export default nextConfig 

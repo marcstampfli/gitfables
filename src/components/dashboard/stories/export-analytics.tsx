@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { FileText, FileJson, FileType, Download, TrendingUp } from 'lucide-react'
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { format, subDays, eachDayOfInterval } from 'date-fns'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
 
 interface Activity {

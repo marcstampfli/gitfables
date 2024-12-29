@@ -10,10 +10,37 @@ export interface Story {
   user_id: string
   title: string
   content: string
+  description?: string
   repository_url: string
   commit_hash: string
   created_at: string
   updated_at: string
+  repository?: {
+    name: string
+    description?: string
+    html_url: string
+  }
+  metadata?: {
+    generatedAt: string
+    style: string
+  }
+  events?: Array<StoryEvent>
+}
+
+export interface StoryEvent {
+  timestamp: string
+  data: {
+    id: string
+    message: string
+    author: string
+    repository: {
+      name: string
+      owner: string
+      url: string
+      description: string
+      html_url: string
+    }
+  }
 }
 
 export interface SharedStory {
@@ -51,6 +78,19 @@ export interface UpdateStoryRequest {
 }
 
 export type StoryStyle = 'epic' | 'technical' | 'casual'
+
+export interface StorySettings {
+  style: StoryStyle
+  includeTimeContext: boolean
+  includeLanguageContext: boolean
+  includeLineChanges: boolean
+  tone: 'enthusiastic' | 'professional' | 'casual'
+  length: 'brief' | 'standard' | 'detailed'
+}
+
+export interface StoryGenerator {
+  generateStory(events: StoryEvent[], settings: StorySettings): Promise<Story>
+}
 
 export interface CommitPattern {
   type: string

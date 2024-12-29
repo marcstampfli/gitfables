@@ -65,16 +65,6 @@ export interface ButtonProps extends BaseProps {
 }
 
 /**
- * Toast notification props.
- */
-export interface ToastProps {
-  type: 'success' | 'error' | 'info' | 'warning'
-  message: string
-  duration?: number
-  onClose?: () => void
-}
-
-/**
  * Modal dialog props.
  */
 export interface ModalProps extends BaseProps {

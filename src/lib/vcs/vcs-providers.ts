@@ -3,17 +3,31 @@
  * @description Configuration for supported VCS providers
  */
 
-import type { VCSProvider } from '@/types/vcs'
+import type { VCSPlatform } from '@/types/vcs'
+
+/**
+ * VCS provider configuration
+ */
+export interface VCSProviderConfig {
+  id: string
+  type: VCSPlatform
+  name: string
+  icon: string
+  isActive: boolean
+  baseUrl: string
+  authUrl: string
+  description: string
+}
 
 /**
  * List of supported VCS providers
  */
-export const SUPPORTED_PROVIDERS: VCSProvider[] = [
+export const SUPPORTED_PROVIDERS: VCSProviderConfig[] = [
   {
     id: 'github',
     type: 'github',
     name: 'GitHub',
-    icon: '/icons/github.svg',
+    icon: '/images/providers/github.svg',
     isActive: true,
     baseUrl: 'https://github.com',
     authUrl: 'https://github.com/login/oauth/authorize',
@@ -23,7 +37,7 @@ export const SUPPORTED_PROVIDERS: VCSProvider[] = [
     id: 'gitlab',
     type: 'gitlab',
     name: 'GitLab',
-    icon: '/icons/gitlab.svg',
+    icon: '/images/providers/gitlab.svg',
     isActive: false,
     baseUrl: 'https://gitlab.com',
     authUrl: 'https://gitlab.com/oauth/authorize',
@@ -33,7 +47,7 @@ export const SUPPORTED_PROVIDERS: VCSProvider[] = [
     id: 'bitbucket',
     type: 'bitbucket',
     name: 'Bitbucket',
-    icon: '/icons/bitbucket.svg',
+    icon: '/images/providers/bitbucket.svg',
     isActive: false,
     baseUrl: 'https://bitbucket.org',
     authUrl: 'https://bitbucket.org/site/oauth2/authorize',
@@ -44,13 +58,13 @@ export const SUPPORTED_PROVIDERS: VCSProvider[] = [
 /**
  * Get a VCS provider by ID
  */
-export function getProvider(id: string): VCSProvider | undefined {
+export function getProvider(id: string): VCSProviderConfig | undefined {
   return SUPPORTED_PROVIDERS.find(p => p.id === id)
 }
 
 /**
  * Get all active VCS providers
  */
-export function getActiveProviders(): VCSProvider[] {
+export function getActiveProviders(): VCSProviderConfig[] {
   return SUPPORTED_PROVIDERS.filter(p => p.isActive)
 } 

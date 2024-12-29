@@ -3,7 +3,80 @@
  * @description Type definitions for React components and their props.
  */
 
-import type { BaseProps, ComponentSize, ComponentVariant, AsyncStateProps } from './ui'
+import type { ReactNode } from 'react'
+
+/**
+ * Common UI component variants.
+ */
+export type ComponentVariant = 
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'info'
+
+/**
+ * Common UI component sizes.
+ */
+export type ComponentSize = 'sm' | 'md' | 'lg' | 'xl'
+
+/**
+ * Common UI component states.
+ */
+export type ComponentState = 'idle' | 'loading' | 'success' | 'error'
+
+/**
+ * Base props interface for UI components.
+ */
+export interface BaseProps {
+  className?: string
+  disabled?: boolean
+  children?: ReactNode
+  testId?: string
+}
+
+/**
+ * Common loading state props.
+ */
+export interface LoadingStateProps {
+  loading: boolean
+  error?: string
+  children?: ReactNode
+}
+
+/**
+ * Common async state props.
+ */
+export interface AsyncStateProps extends LoadingStateProps {
+  success?: string
+  onRetry?: () => void
+}
+
+/**
+ * Button component props.
+ */
+export interface ButtonProps extends BaseProps {
+  variant?: ComponentVariant
+  size?: ComponentSize
+  type?: 'button' | 'submit' | 'reset'
+  onClick?: () => void
+  loading?: boolean
+  icon?: ReactNode
+  fullWidth?: boolean
+}
+
+/**
+ * Modal dialog props.
+ */
+export interface ModalProps extends BaseProps {
+  title: string
+  isOpen: boolean
+  onClose: () => void
+  size?: ComponentSize
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
+}
 
 /**
  * Props for navigation components.
@@ -12,7 +85,7 @@ export interface NavigationProps extends BaseProps {
   items: Array<{
     label: string
     href: string
-    icon?: React.ReactNode
+    icon?: ReactNode
     disabled?: boolean
   }>
   orientation?: 'horizontal' | 'vertical'
@@ -29,7 +102,7 @@ export interface CardProps extends BaseProps {
     src: string
     alt: string
   }
-  footer?: React.ReactNode
+  footer?: ReactNode
   variant?: ComponentVariant
 }
 
@@ -38,9 +111,9 @@ export interface CardProps extends BaseProps {
  */
 export interface ListProps<T> extends BaseProps, Pick<AsyncStateProps, 'loading' | 'error' | 'onRetry'> {
   items: T[]
-  renderItem: (item: T) => React.ReactNode
+  renderItem: (item: T) => ReactNode
   keyExtractor: (item: T) => string
-  emptyState?: React.ReactNode
+  emptyState?: ReactNode
 }
 
 /**
@@ -50,7 +123,7 @@ export interface TabProps extends BaseProps {
   tabs: Array<{
     label: string
     value: string
-    content: React.ReactNode
+    content: ReactNode
     disabled?: boolean
   }>
   defaultValue?: string
@@ -60,22 +133,29 @@ export interface TabProps extends BaseProps {
 }
 
 /**
- * Props for avatar components.
+ * Props for header components.
  */
-export interface AvatarProps extends BaseProps {
-  src?: string
-  alt?: string
-  fallback?: string
-  size?: ComponentSize
-  variant?: ComponentVariant
+export interface HeaderProps extends BaseProps {
+  title: string
+  description?: string
+  actions?: ReactNode
 }
 
 /**
- * Props for badge components.
+ * Props for footer components.
  */
-export interface BadgeProps extends BaseProps {
-  label: string
-  count?: number
-  variant?: ComponentVariant
-  size?: ComponentSize
+export interface FooterProps extends BaseProps {
+  actions?: ReactNode
+  sticky?: boolean
+}
+
+/**
+ * Props for dialog components.
+ */
+export interface DialogProps extends BaseProps {
+  title: string
+  description?: string
+  isOpen: boolean
+  onClose: () => void
+  footer?: ReactNode
 } 

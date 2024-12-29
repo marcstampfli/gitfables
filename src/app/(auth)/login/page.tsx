@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/logo'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
 import { Skeleton } from '@/components/ui/skeleton'
 

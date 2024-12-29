@@ -1,11 +1,6 @@
 /**
- * @module app/(marketing)/stories/shared/[code]/page
- * @description Public view for shared stories accessed via a unique code.
- * This page handles:
- * - Loading shared stories by code
- * - Checking expiration status
- * - Tracking view counts
- * - Displaying story content in a public-friendly format
+ * @module app/(marketing)/shared/[code]/page
+ * @description Public shared story page that displays a story shared via a unique code
  */
 
 'use client'
@@ -17,11 +12,15 @@ import { Button } from '@/components/ui/button'
 import { Loader2, Eye, Calendar, Share2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import type { SharedStory } from '@/types/stories'
-import type { PageProps } from '@/types/next'
 
-type StoryPageProps = PageProps<{ code: string }>
+interface PageProps {
+  params: {
+    code: string
+  }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
 
-export default function SharedStoryPage({ params }: StoryPageProps) {
+export default function SharedStoryPage({ params }: PageProps) {
   const { getSharedStory } = useSharedStories()
   const [loading, setLoading] = useState(true)
   const [story, setStory] = useState<SharedStory | null>(null)

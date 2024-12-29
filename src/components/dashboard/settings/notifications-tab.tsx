@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSettings } from '@/hooks/use-settings'
 import { Loader2 } from 'lucide-react'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 
 export function NotificationsTab() {
   const { settings, updateSettings } = useSettings()

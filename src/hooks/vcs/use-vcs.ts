@@ -1,51 +1,81 @@
 /**
- * @module hooks/use-vcs
- * @description Hook for managing version control system providers
+ * @module hooks/vcs/use-vcs
+ * @description Hook for VCS provider interactions
  */
 
-'use client'
-
-import { useState, useEffect } from 'react'
-import { GitHubProvider } from '@/lib/vcs/github-provider'
-import { type VCSProviderImpl } from '@/types/vcs'
+import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { createVCSProvider, initializeVCSProvider } from '@/lib/vcs'
+import type { VCSProvider, Commit } from '@/types/vcs'
 
 /**
- * Hook for managing VCS providers
- * 
- * @returns {Object} VCS provider management functions and state
+ * Hook for VCS provider interactions
  */
 export function useVCS() {
-  const [provider, setProvider] = useState<VCSProviderImpl | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: session } = useSession()
+  const [provider, setProvider] = useState<VCSProvider | null>(null)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  useEffect(() => {
-    async function initializeProvider() {
-      try {
-        const response = await fetch('/api/auth/token')
-        if (!response.ok) {
-          throw new Error('Failed to fetch token')
-        }
-
-        const { token } = await response.json()
-        if (!token) {
-          setProvider(null)
-          return
-        }
-
-        const provider = new GitHubProvider()
-        await provider.init({ platform: 'github' })
-        await provider.authenticate({ token })
-        setProvider(provider)
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to initialize VCS provider'))
-      } finally {
-        setIsLoading(false)
-      }
+  /**
+   * Initialize the VCS provider
+   */
+  const initialize = async () => {
+    if (!session?.provider_token || !session?.provider) {
+      throw new Error('No provider token available')
     }
 
-    initializeProvider()
-  }, [])
+    try {
+      setLoading(true)
+      setError(null)
 
-  return { provider, isLoading, error }
+      const vcsProvider = createVCSProvider({
+        platform: session.provider as 'github' | 'gitlab' | 'bitbucket',
+      })
+
+      const initializedProvider = await initializeVCSProvider(
+        vcsProvider,
+        { platform: session.provider as 'github' | 'gitlab' | 'bitbucket' },
+        session.provider_token
+      )
+
+      setProvider(initializedProvider)
+      return initializedProvider
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to initialize VCS provider')
+      setError(error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Get commits from a repository
+   */
+  const getCommits = async (owner: string, repo: string): Promise<Commit[]> => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const vcsProvider = provider || await initialize()
+      const commits = await vcsProvider.listCommits(owner, repo)
+
+      return commits
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch commits')
+      setError(error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    provider,
+    loading,
+    error,
+    initialize,
+    getCommits,
+  }
 } 
