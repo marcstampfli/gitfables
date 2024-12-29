@@ -1,137 +1,212 @@
 /**
  * @module components/dashboard/settings/notifications-tab
- * @description Tab component for managing notification settings
+ * @description Notifications settings tab with email and activity preferences
  */
 
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { 
+  Bell,
+  MessageSquare,
+  Heart,
+  AtSign,
+  Mail
+} from 'lucide-react'
+import type { SettingsTabProps } from './types'
 import { useSettings } from '@/hooks/use-settings'
-import { Loader2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
-export function NotificationsTab() {
-  const { settings, updateSettings } = useSettings()
-  const [isSaving, setIsSaving] = useState(false)
+type EmailFrequency = 'daily' | 'weekly' | 'never'
 
-  const handleUpdateNotifications = async (updates: {
-    notifications?: {
-      email?: boolean
-      web?: boolean
-      digest?: 'daily' | 'weekly' | 'never'
-    }
-  }) => {
+const EMAIL_FREQUENCIES: Array<{ value: EmailFrequency; label: string }> = [
+  { value: 'daily', label: 'Daily digest' },
+  { value: 'weekly', label: 'Weekly digest' },
+  { value: 'never', label: 'Never' }
+]
+
+export function NotificationsTab({ settings: initialSettings }: SettingsTabProps) {
+  const { settings, updateSettings, isLoading } = useSettings(initialSettings)
+  const [emailEnabled, setEmailEnabled] = React.useState(settings.notifications.email)
+  const [emailFrequency, setEmailFrequency] = React.useState<EmailFrequency>(settings.notifications.digest)
+  const [notifications, setNotifications] = React.useState({
+    comments: true,
+    likes: true,
+    mentions: true
+  })
+
+  const handleEmailToggle = async (checked: boolean) => {
     try {
-      setIsSaving(true)
       await updateSettings({
         settings: {
           notifications: {
             ...settings.notifications,
-            ...updates.notifications
+            email: checked
           }
         }
       })
+      setEmailEnabled(checked)
       toast({
-        title: 'Notifications Updated',
-        description: 'Your notification preferences have been updated successfully'
+        title: 'Email Notifications Updated',
+        description: `Email notifications have been ${checked ? 'enabled' : 'disabled'}`
       })
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to update notification settings. Please try again.',
+        description: 'Failed to update email preferences. Please try again.',
         variant: 'destructive'
       })
-    } finally {
-      setIsSaving(false)
+    }
+  }
+
+  const handleFrequencyChange = async (value: EmailFrequency) => {
+    try {
+      await updateSettings({
+        settings: {
+          notifications: {
+            ...settings.notifications,
+            digest: value
+          }
+        }
+      })
+      setEmailFrequency(value)
+      toast({
+        title: 'Email Frequency Updated',
+        description: 'Your email notification frequency has been updated'
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update email frequency. Please try again.',
+        variant: 'destructive'
+      })
     }
   }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Notifications</h2>
-        <p className="text-muted-foreground">
-          Manage how you receive notifications and updates
+      <div>
+        <h3 className="text-2xl font-semibold tracking-tight">Notifications</h3>
+        <p className="text-sm text-muted-foreground">
+          Choose how you want to be notified about activity
         </p>
       </div>
 
-      <Card className="p-6">
-        <div className="space-y-6">
-          {/* Email Notifications */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Email Notifications</Label>
-              <p className="text-sm text-muted-foreground">
-                Receive notifications about activity via email
-              </p>
+      <div className="grid gap-6">
+        {/* Email Preferences */}
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Mail className="h-5 w-5 text-primary" />
+                <h4 className="font-medium">Email Preferences</h4>
+              </div>
+              <Switch
+                checked={emailEnabled}
+                onCheckedChange={handleEmailToggle}
+                disabled={isLoading}
+              />
             </div>
-            <Switch
-              checked={settings.notifications.email}
-              onCheckedChange={(checked) =>
-                handleUpdateNotifications({
-                  notifications: { email: checked }
-                })
-              }
-            />
+            <Separator />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Email Frequency</Label>
+                <Select 
+                  value={emailFrequency}
+                  onValueChange={handleFrequencyChange}
+                  disabled={!emailEnabled || isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EMAIL_FREQUENCIES.map((freq) => (
+                      <SelectItem key={freq.value} value={freq.value}>
+                        {freq.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Choose how often you want to receive email notifications
+                </p>
+              </div>
+            </div>
           </div>
+        </Card>
 
-          {/* Web Notifications */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Web Notifications</Label>
-              <p className="text-sm text-muted-foreground">
-                Show browser notifications when you&apos;re using the app
-              </p>
+        {/* Activity Notifications */}
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Bell className="h-5 w-5 text-primary" />
+              <h4 className="font-medium">Activity Notifications</h4>
             </div>
-            <Switch
-              checked={settings.notifications.web}
-              onCheckedChange={(checked) =>
-                handleUpdateNotifications({
-                  notifications: { web: checked }
-                })
-              }
-            />
+            <Separator />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Comments</Label>
+                    <p className="text-sm text-muted-foreground">
+                      When someone comments on your stories
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifications.comments}
+                  onCheckedChange={(checked) => 
+                    setNotifications(prev => ({ ...prev, comments: checked }))
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Likes</Label>
+                    <p className="text-sm text-muted-foreground">
+                      When someone likes your stories
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifications.likes}
+                  onCheckedChange={(checked) => 
+                    setNotifications(prev => ({ ...prev, likes: checked }))
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <AtSign className="h-4 w-4 text-muted-foreground" />
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Mentions</Label>
+                    <p className="text-sm text-muted-foreground">
+                      When someone mentions you
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifications.mentions}
+                  onCheckedChange={(checked) => 
+                    setNotifications(prev => ({ ...prev, mentions: checked }))
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
           </div>
-
-          {/* Digest Frequency */}
-          <div className="space-y-4">
-            <div>
-              <Label>Activity Digest</Label>
-              <p className="text-sm text-muted-foreground">
-                How often you want to receive activity summaries
-              </p>
-            </div>
-
-            <Select
-              value={settings.notifications.digest}
-              onValueChange={(value: 'daily' | 'weekly' | 'never') =>
-                handleUpdateNotifications({
-                  notifications: { digest: value }
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select digest frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="never">Never</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {isSaving && (
-            <div className="flex items-center justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </div>
-          )}
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 } 

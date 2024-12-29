@@ -1,297 +1,165 @@
 /**
  * @module components/dashboard/settings/advanced-tab
- * @description Advanced settings tab with data management and account settings
+ * @description Advanced settings tab with system configuration and debug options
  */
 
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { useToast } from '@/hooks/use-toast'
-import { createClient } from '@/lib/supabase/client'
-import { Download, AlertTriangle, LogOut, Loader2, Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { logError } from '@/lib/utils/logger'
+import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { 
+  Settings,
+  Zap
+} from 'lucide-react'
+import type { SettingsTabProps } from './types'
 
-export function AdvancedTab() {
-  const [isExporting, setIsExporting] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isSigningOut, setIsSigningOut] = useState(false)
-  const [deleteConfirmation, setDeleteConfirmation] = useState('')
-  const { toast } = useToast()
-  const router = useRouter()
-  const supabase = createClient()
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-  const handleExportData = async () => {
-    try {
-      setIsExporting(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user')
+interface SystemHealth {
+  cpu: number
+  memory: number
+  disk: number
+  status: 'healthy' | 'warning' | 'error'
+}
 
-      // Fetch user data
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+interface PerformanceMetrics {
+  responseTime: number
+  uptime: number
+  errorRate: number
+}
 
-      if (userError) throw userError
+export function AdvancedTab({ settings: _settings }: SettingsTabProps) {
+  const [debugMode, setDebugMode] = React.useState(false)
+  const [logLevel, setLogLevel] = React.useState<LogLevel>('info')
+  const [systemHealth, _setSystemHealth] = React.useState<SystemHealth>({
+    cpu: 45,
+    memory: 60,
+    disk: 25,
+    status: 'healthy'
+  })
+  const [performanceMetrics, _setPerformanceMetrics] = React.useState<PerformanceMetrics>({
+    responseTime: 120,
+    uptime: 99.9,
+    errorRate: 0.1
+  })
 
-      // Fetch stories
-      const { data: stories, error: storiesError } = await supabase
-        .from('stories')
-        .select('*')
-        .eq('user_id', user.id)
-
-      if (storiesError) throw storiesError
-
-      // Fetch settings
-      const { data: settings, error: settingsError } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (settingsError) throw settingsError
-
-      // Create export data
-      const exportData = {
-        profile: userData,
-        stories,
-        settings,
-        exported_at: new Date().toISOString()
-      }
-
-      // Create and download file
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `gitfables-export-${new Date().toISOString()}.json`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-
-      toast({
-        title: 'Data Exported',
-        description: 'Your data has been exported successfully.'
-      })
-    } catch (error) {
-      logError('Failed to export data', error, {
-        context: 'advanced_settings',
-        metadata: {
-          action: 'export_data'
-        }
-      })
-      toast({
-        title: 'Error',
-        description: 'Failed to export data. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsExporting(false)
-    }
+  const handleClearCache = () => {
+    // Handle cache clearing
   }
 
-  const handleDeleteAccount = async () => {
-    try {
-      setIsDeleting(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user')
-
-      if (deleteConfirmation !== user.email) {
-        throw new Error('Email confirmation does not match')
-      }
-
-      // Delete user data
-      const { error: deleteError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id)
-
-      if (deleteError) throw deleteError
-
-      // Delete user auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id)
-      if (authError) throw authError
-
-      await supabase.auth.signOut()
-      router.push('/auth/login')
-    } catch (error) {
-      logError('Failed to delete account', error, {
-        context: 'advanced_settings',
-        metadata: {
-          action: 'delete_account'
-        }
-      })
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete account. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsDeleting(false)
-      setDeleteConfirmation('')
-    }
-  }
-
-  const handleSignOut = async () => {
-    try {
-      setIsSigningOut(true)
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      router.push('/auth/login')
-    } catch (error) {
-      logError('Failed to sign out', error, {
-        context: 'advanced_settings',
-        metadata: {
-          action: 'sign_out'
-        }
-      })
-      toast({
-        title: 'Error',
-        description: 'Failed to sign out. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsSigningOut(false)
-    }
+  const handleLogLevelChange = (level: LogLevel) => {
+    setLogLevel(level)
   }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Advanced Settings</h2>
-        <p className="text-muted-foreground">
-          Manage your data, sessions, and account
+      <div>
+        <h3 className="text-2xl font-semibold tracking-tight">Advanced Settings</h3>
+        <p className="text-sm text-muted-foreground">
+          Configure advanced system settings and debugging options
         </p>
       </div>
 
-      {/* Data Management */}
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium mb-1">Data Management</h3>
-            <p className="text-sm text-muted-foreground">
-              Export or delete your account data
-            </p>
+      <div className="grid gap-6">
+        {/* Debug Mode */}
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Settings className="h-5 w-5 text-primary" />
+              <h4 className="font-medium">Debug Settings</h4>
+            </div>
+            <Separator />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Debug Mode</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable detailed logging and debugging features
+                  </p>
+                </div>
+                <Switch
+                  checked={debugMode}
+                  onCheckedChange={setDebugMode}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Log Level</Label>
+                <Select
+                  value={logLevel}
+                  onValueChange={handleLogLevelChange}
+                  disabled={!debugMode}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select log level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="debug">Debug</SelectItem>
+                    <SelectItem value="info">Info</SelectItem>
+                    <SelectItem value="warn">Warning</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Set the verbosity of application logs
+                </p>
+              </div>
+            </div>
           </div>
+        </Card>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              variant="outline"
-              onClick={handleExportData}
-              disabled={isExporting}
-              className="flex items-center gap-2"
-            >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              Export Data
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Session Management */}
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium mb-1">Session Management</h3>
-            <p className="text-sm text-muted-foreground">
-              Manage your current session
-            </p>
-          </div>
-
-          <Button
-            variant="outline"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="flex items-center gap-2"
-          >
-            {isSigningOut ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="h-4 w-4" />
-            )}
-            Sign Out
-          </Button>
-        </div>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-destructive p-6">
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-medium mb-1 flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              Danger Zone
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all associated data
-            </p>
-          </div>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="destructive" className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
-                Delete Account
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Account</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone. This will permanently delete your account
-                  and remove all associated data from our servers.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
+        {/* Performance */}
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Zap className="h-5 w-5 text-primary" />
+              <h4 className="font-medium">Performance</h4>
+            </div>
+            <Separator />
+            <div className="space-y-4">
+              <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-email">
-                    Please type your email to confirm
-                  </Label>
-                  <Input
-                    id="confirm-email"
-                    value={deleteConfirmation}
-                    onChange={(e) => setDeleteConfirmation(e.target.value)}
-                    placeholder="your@email.com"
-                  />
+                  <Label>System Health</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">CPU Usage</p>
+                      <p className="text-2xl font-bold">{systemHealth.cpu}%</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Memory Usage</p>
+                      <p className="text-2xl font-bold">{systemHealth.memory}%</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Disk Usage</p>
+                      <p className="text-2xl font-bold">{systemHealth.disk}%</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Performance Metrics</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Response Time</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.responseTime}ms</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Uptime</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.uptime}%</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Error Rate</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.errorRate}%</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    'Delete Account'
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </Card>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 } 
