@@ -13,13 +13,14 @@ import { Loader2, Eye, Calendar, Share2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import type { SharedStory } from '@/types/stories'
 
-interface SharedStoryPageProps {
+interface PageProps {
   params: {
     code: string
   }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function SharedStoryPage({ params }: SharedStoryPageProps) {
+export default function SharedStoryPage({ params }: PageProps) {
   const { getSharedStory } = useSharedStories()
   const [loading, setLoading] = useState(true)
   const [story, setStory] = useState<SharedStory | null>(null)

@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/use-toast'
 import { createClient } from '@/lib/supabase/client'
-import { Download, Upload, AlertTriangle, LogOut, Loader2, RefreshCw, Trash2 } from 'lucide-react'
+import { Download, AlertTriangle, LogOut, Loader2, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { logError } from '@/lib/utils/logger'
 

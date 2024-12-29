@@ -40,7 +40,7 @@ const SHORTCUT_CATEGORIES = [
   }
 ]
 
-export const KeyboardShortcutsDialog = forwardRef<HTMLButtonElement>((props, ref) => {
+export const KeyboardShortcutsDialog = forwardRef<HTMLButtonElement>((_, ref) => {
   return (
     <Dialog>
       <DialogTrigger asChild>

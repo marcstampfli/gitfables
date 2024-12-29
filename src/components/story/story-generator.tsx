@@ -1,19 +1,6 @@
 /**
- * @module StoryGenerator
- * @description A component that generates stories from GitHub repository commit history.
- * Provides repository selection and story generation functionality.
- * 
- * @example
- * ```tsx
- * // Basic usage
- * import { logDebug } from '@/lib/utils/logger'
- * 
- * <StoryGenerator 
- *   onStoryGenerated={(story) => {
- *     logDebug('Story generated', { metadata: { story } })
- *   }} 
- * />
- * ```
+ * @module components/story/story-generator
+ * @description Story generator component for creating stories from repositories
  */
 
 'use client'
@@ -23,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { type Repository } from '@/types/vcs'
-import { type Story } from '@/lib/story'
+import { type Story } from '@/types/story'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { logError } from '@/lib/utils/logger'
 import { useRouter } from 'next/navigation'
@@ -49,17 +36,18 @@ interface StoryGeneratorProps {
  * @returns {JSX.Element} A card component with repository selection and story generation UI
  */
 export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null)
   const [repositories, setRepositories] = useState<Repository[]>([])
+  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
   useEffect(() => {
     async function loadRepositories() {
+      setIsLoading(true)
       try {
-        const response = await fetch('/api/repos')
+        const response = await fetch('/api/repositories')
         if (!response.ok) {
           if (response.status === 401) {
             // Don't redirect, just set repositories to empty array
@@ -71,7 +59,8 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
         const data = await response.json()
         setRepositories(data)
       } catch (error) {
-        logError(error instanceof Error ? error : new Error('Error loading repositories'), {
+        const errorMessage = error instanceof Error ? error.message : 'Error loading repositories'
+        logError(errorMessage, {
           context: 'StoryGenerator:loadRepositories'
         })
         toast({
@@ -129,7 +118,8 @@ export function StoryGenerator({ onStoryGenerated }: StoryGeneratorProps) {
         description: 'Your story has been generated',
       })
     } catch (error) {
-      logError(error instanceof Error ? error : new Error('Error generating story'), {
+      const errorMessage = error instanceof Error ? error.message : 'Error generating story'
+      logError(errorMessage, {
         context: 'StoryGenerator:generateStory',
         metadata: { repositoryId: selectedRepo?.id }
       })

@@ -3,7 +3,7 @@
  * @description Base VCS provider implementation with shared functionality
  */
 
-import { VCSProvider, VCSConfig } from '@/types'
+import type { VCSProvider, VCSProviderType, VCSConfig } from '@/types/vcs'
 
 export abstract class BaseVCSProvider implements VCSProvider {
   protected config: VCSConfig
@@ -12,6 +12,8 @@ export abstract class BaseVCSProvider implements VCSProvider {
   public name: string
   public icon: string
   public isActive: boolean = true
+  abstract description: string
+  abstract type: VCSProviderType
 
   constructor(config: VCSConfig, id: string, name: string, icon: string) {
     this.config = config

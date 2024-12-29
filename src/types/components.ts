@@ -3,7 +3,6 @@
  * @description Type definitions for React components and their props.
  */
 
-import type { ComponentProps } from 'react'
 import type { BaseProps, ComponentSize, ComponentVariant, AsyncStateProps } from './ui'
 
 /**

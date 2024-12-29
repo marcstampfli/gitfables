@@ -1,7 +1,9 @@
 /**
  * @module components/story/story-viewer
- * @description Story viewer component with export functionality
+ * @description Story viewer component for displaying generated stories
  */
+
+'use client'
 
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
@@ -10,7 +12,7 @@ import { Icons } from '@/components/ui/icons'
 import { ShareDialog } from '@/components/ui/share-dialog'
 import { toast } from '@/components/ui/use-toast'
 import { logError } from '@/lib/utils/logger'
-import type { Story } from '@/types'
+import type { Story } from '@/types/story'
 
 interface StoryViewerProps {
   story: Story
@@ -26,31 +28,20 @@ export function StoryViewer({
   const [exporting, setExporting] = useState(false)
 
   async function handleExport() {
+    setExporting(true)
     try {
-      setExporting(true)
-      const response = await fetch('/api/story/export', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ story }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to export story')
-      }
-
-      const blob = await response.blob()
+      const blob = new Blob([story.content], { type: 'text/markdown' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${story.title.toLowerCase().replace(/\s+/g, '-')}.md`
+      a.download = `${story.title}.md`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (error) {
-      logError(error instanceof Error ? error : new Error('Error exporting story'), {
+      const errorMessage = error instanceof Error ? error.message : 'Error exporting story'
+      logError(errorMessage, {
         context: 'StoryViewer:exportStory',
         metadata: { storyId: story.id }
       })

@@ -5,7 +5,6 @@
 
 'use client'
 
-import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -18,7 +17,7 @@ import type { UserSettings } from '@/types/database'
 
 export function AppearanceTab() {
   const { settings, updateSettings } = useSettings()
-  const { theme, setTheme } = useTheme()
+  const { theme: _theme, setTheme } = useTheme()
 
   // Handle theme change
   const handleThemeChange = async (value: UserSettings['theme']['mode']) => {

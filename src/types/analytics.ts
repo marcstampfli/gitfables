@@ -46,6 +46,8 @@ export interface ShareEvent {
   platform: SharePlatform
   storyId: string
   userId: string
+  timestamp: string
+  success: boolean
   metadata?: {
     url?: string
     title?: string
@@ -104,4 +106,8 @@ export interface ShareAnalytics {
 export interface IShareAnalytics {
   trackShare(event: ShareEvent): Promise<void>
   getShareAnalytics(userId: string, startDate?: string, endDate?: string): Promise<ShareAnalytics>
+  subscribe(listener: (analytics: ShareAnalytics) => void): () => void
+  exportAnalytics(): string
+  exportAnalyticsCSV(): string
+  clearAnalytics(): void
 } 

@@ -48,4 +48,32 @@ export interface UpdateStoryRequest {
   content?: string
   repository_url?: string
   commit_hash?: string
+}
+
+export type StoryStyle = 'epic' | 'technical' | 'casual'
+
+export interface CommitPattern {
+  type: string
+  description: string
+  commits: Array<{
+    sha: string
+    message: string
+    date: string
+  }>
+  significance: number
+  startDate: string
+  endDate: string
+}
+
+export interface DeveloperPersona {
+  type: string
+  confidence: number
+  traits: string[]
+}
+
+export interface StoryTemplate {
+  intro: (commitCount: number, persona: DeveloperPersona) => string
+  pattern: (pattern: CommitPattern) => string
+  achievement: (description: string) => string
+  conclusion: (period: { start: string; end: string }, persona: DeveloperPersona) => string
 } 

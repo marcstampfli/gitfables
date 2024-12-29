@@ -5,17 +5,8 @@
 
 import type { 
   StoryStyle,
-  CommitPattern,
-  DeveloperPersona,
-  StoryPersona
-} from '@/types'
-
-interface StoryTemplate {
-  intro: (commitCount: number, persona: DeveloperPersona) => string
-  pattern: (pattern: CommitPattern) => string
-  achievement: (description: string) => string
-  conclusion: (period: { start: string; end: string }, persona: DeveloperPersona) => string
-}
+  StoryTemplate
+} from '@/types/stories'
 
 const templates: Record<StoryStyle, StoryTemplate> = {
   epic: {

@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { ApiKey, ApiKeyWithToken, CreateApiKeyRequest, ApiKeyUsageStats } from '@/types/api/api-keys'
 import { logError } from '@/lib/utils/logger'
@@ -16,11 +16,27 @@ export function useApiKeys() {
   const [usageStats, setUsageStats] = useState<Record<string, ApiKeyUsageStats[]>>({})
   const supabase = createClientComponentClient()
 
-  useEffect(() => {
-    loadApiKeys()
-  }, [])
+  const loadKeyUsageStats = useCallback(async (keyId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('api_key_usage_stats')
+        .select('*')
+        .eq('api_key_id', keyId)
+        .order('hour', { ascending: false })
+        .limit(24) // Last 24 hours
 
-  async function loadApiKeys() {
+      if (error) throw error
+
+      setUsageStats(prev => ({
+        ...prev,
+        [keyId]: data || []
+      }))
+    } catch (error) {
+      logError('Failed to load API key usage stats', error)
+    }
+  }, [supabase])
+
+  const loadApiKeys = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -44,34 +60,17 @@ export function useApiKeys() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [supabase, loadKeyUsageStats])
 
-  async function loadKeyUsageStats(keyId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('api_key_usage_stats')
-        .select('*')
-        .eq('api_key_id', keyId)
-        .order('hour', { ascending: false })
-        .limit(24) // Last 24 hours
+  useEffect(() => {
+    loadApiKeys()
+  }, [loadApiKeys])
 
-      if (error) throw error
-
-      setUsageStats(prev => ({
-        ...prev,
-        [keyId]: data || []
-      }))
-    } catch (error) {
-      logError('Failed to load API key usage stats', error)
-    }
-  }
-
-  async function createApiKey(request: CreateApiKeyRequest): Promise<string | null> {
+  const createApiKey = useCallback(async (request: CreateApiKeyRequest): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null
 
-      // Calculate expiration date if provided
       const expires_at = request.expires_in_days
         ? new Date(Date.now() + request.expires_in_days * 24 * 60 * 60 * 1000).toISOString()
         : null
@@ -91,18 +90,15 @@ export function useApiKeys() {
 
       if (error) throw error
 
-      // Refresh the list
-      loadApiKeys()
-
-      // Return the token
+      await loadApiKeys()
       return (data as ApiKeyWithToken).token
     } catch (error) {
       logError('Failed to create API key', error)
       return null
     }
-  }
+  }, [supabase, loadApiKeys])
 
-  async function deleteApiKey(id: string): Promise<void> {
+  const deleteApiKey = useCallback(async (id: string): Promise<void> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -115,26 +111,23 @@ export function useApiKeys() {
 
       if (error) throw error
 
-      // Remove usage stats
       setUsageStats(prev => {
         const newStats = { ...prev }
         delete newStats[id]
         return newStats
       })
 
-      // Refresh the list
-      loadApiKeys()
+      await loadApiKeys()
     } catch (error) {
       logError('Failed to delete API key', error)
     }
-  }
+  }, [supabase, loadApiKeys])
 
-  async function renewApiKey(id: string): Promise<void> {
+  const renewApiKey = useCallback(async (id: string): Promise<void> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Extend expiration by 30 days from now
       const newExpiryDate = new Date()
       newExpiryDate.setDate(newExpiryDate.getDate() + 30)
 
@@ -148,13 +141,12 @@ export function useApiKeys() {
 
       if (error) throw error
 
-      // Refresh the list
-      loadApiKeys()
+      await loadApiKeys()
     } catch (error) {
       logError('Failed to renew API key', error)
       throw error
     }
-  }
+  }, [supabase, loadApiKeys])
 
   return {
     apiKeys,

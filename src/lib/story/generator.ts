@@ -3,13 +3,13 @@
  * @description Story generator implementation for creating narratives from commit data
  */
 
-import { type Repository, type Commit } from '@/lib/vcs/github-client'
-import { type Story } from '@/types'
+import { type Repository, type Commit } from '@/types/vcs'
+import { type Story, type StoryStyle } from '@/types/story'
 
 interface GenerateStoryOptions {
   repository: Repository
   commits: Commit[]
-  style?: 'epic' | 'casual' | 'technical'
+  style?: StoryStyle
   includeTimeContext?: boolean
   includeLanguageContext?: boolean
   includeLineChanges?: boolean
@@ -25,28 +25,57 @@ export async function generateStory({
 }: GenerateStoryOptions): Promise<Story> {
   // This is a placeholder implementation
   // The actual implementation would use AI to generate a story
+  const firstCommitDate = commits[0]?.date || new Date().toISOString()
+  const lastCommitDate = commits[commits.length - 1]?.date || new Date().toISOString()
+
   return {
     id: `story-${Date.now()}`,
     title: `The Tale of ${repository.name}`,
     description: repository.description || 'A story about code and collaboration',
     content: `Once upon a time, in the digital realm of GitHub, there was a repository named ${repository.name}. 
     It was maintained by brave developers who made ${commits.length} contributions to its codebase.`,
-    repository,
+    repository: {
+      name: repository.name,
+      owner: repository.owner,
+      url: repository.html_url,
+      description: repository.description || '',
+      html_url: repository.html_url
+    },
     metadata: {
       style,
       includeTimeContext,
       includeLanguageContext,
       includeLineChanges,
       generatedAt: new Date().toISOString(),
+      settings: {
+        style,
+        includeTimeContext,
+        includeLanguageContext,
+        includeLineChanges,
+        tone: 'enthusiastic',
+        length: 'standard'
+      },
+      totalCommits: commits.length,
+      timespan: {
+        start: firstCommitDate,
+        end: lastCommitDate
+      }
     },
-    characters: [repository.owner.login],
+    characters: [repository.owner],
     events: commits.map(commit => ({
       type: 'commit',
-      timestamp: commit.commit.author.date,
+      timestamp: commit.date,
       data: {
         id: commit.sha,
-        message: commit.commit.message,
-        author: commit.author?.login || commit.commit.author.name,
+        message: commit.message,
+        author: commit.author.name,
+        repository: {
+          name: repository.name,
+          owner: repository.owner,
+          url: repository.html_url,
+          description: repository.description || '',
+          html_url: repository.html_url
+        }
       }
     }))
   }

@@ -17,14 +17,12 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { type Repository } from '@/types/vcs'
-import { logError } from '@/lib/utils/logger'
 import { formatNumber } from '@/lib/utils/formatting'
-import { GitHubClient } from '@/lib/vcs/github-client'
 
 /**
  * Props for the RepositoryCard component
@@ -78,6 +76,8 @@ function RepositoryCard({ repository, isSelected, onSelect }: RepositoryCardProp
  * @interface
  */
 interface RepositorySelectorProps {
+  /** The list of repositories to display */
+  repositories: Repository[]
   /** Callback function when a repository is selected */
   onSelect: (repo: Repository) => void
 }
@@ -86,39 +86,17 @@ interface RepositorySelectorProps {
  * RepositorySelector Component
  * 
  * @component
- * @description A component that fetches and displays a searchable list of GitHub repositories.
+ * @description A component that displays a searchable list of GitHub repositories.
  * Provides search functionality and selection capability.
  * 
  * @param {Object} props - Component props
+ * @param {Repository[]} props.repositories - The list of repositories to display
  * @param {Function} props.onSelect - Callback function when a repository is selected
  * @returns {JSX.Element} A searchable list of repository cards
  */
-export function RepositorySelector({ onSelect }: RepositorySelectorProps) {
-  const [repositories, setRepositories] = useState<Repository[]>([])
+export function RepositorySelector({ repositories, onSelect }: RepositorySelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null)
-  const [_error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function loadRepositories() {
-      try {
-        const response = await fetch('/api/repos')
-        if (!response.ok) throw new Error('Failed to fetch repositories')
-        const data = await response.json()
-        setRepositories(data)
-      } catch (error) {
-        logError(error instanceof Error ? error : new Error('Error loading repositories'), {
-          context: 'RepositorySelector:loadRepositories'
-        })
-        setError('Failed to load repositories')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadRepositories()
-  }, [])
 
   const handleSelect = (repo: Repository) => {
     setSelectedRepo(repo)
@@ -129,14 +107,6 @@ export function RepositorySelector({ onSelect }: RepositorySelectorProps) {
     repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     repo.description?.toLowerCase().includes(searchQuery.toLowerCase())
   )
-
-  if (isLoading) {
-    return (
-      <Card className="p-6">
-        <p className="text-center text-muted-foreground">Loading repositories...</p>
-      </Card>
-    )
-  }
 
   if (repositories.length === 0) {
     return (

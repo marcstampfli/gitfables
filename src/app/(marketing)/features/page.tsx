@@ -75,7 +75,7 @@ export default function FeaturesPage() {
           <div className="container">
             <div className="max-w-[800px] mx-auto">
               <div className="prose prose-gray dark:prose-invert lg:prose-lg max-w-none">
-                {features.map((feature, i) => (
+                {features.map((feature, _i) => (
                   <div key={feature.title} className="mb-20 last:mb-0">
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

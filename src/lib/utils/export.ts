@@ -3,6 +3,10 @@
  * @description Utility functions for exporting data in various formats
  */
 
+type ExportableValue = string | number | boolean | null | undefined
+type ExportableObject = Record<string, ExportableValue>
+type ExportableData = ExportableObject | ExportableObject[]
+
 /**
  * Export statistics data to a file in CSV or JSON format
  * 
@@ -10,7 +14,7 @@
  * @param format - The format to export to ('csv' or 'json')
  * @param filename - The name of the file (without extension)
  */
-export function exportStats(data: any, format: 'csv' | 'json', filename: string) {
+export function exportStats(data: ExportableData, format: 'csv' | 'json', filename: string) {
   const blob = format === 'csv' 
     ? new Blob([convertToCSV(data)], { type: 'text/csv;charset=utf-8;' })
     : new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -29,7 +33,7 @@ export function exportStats(data: any, format: 'csv' | 'json', filename: string)
  * @param data - The data to convert
  * @returns The CSV string
  */
-function convertToCSV(data: any): string {
+function convertToCSV(data: ExportableData): string {
   if (!data) return ''
 
   // If data is an array of objects

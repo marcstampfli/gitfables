@@ -257,7 +257,7 @@ export function ExportAnalytics({ initialActivities }: ExportAnalyticsProps) {
                 </ResponsiveContainer>
               </div>
               <div className="space-y-2">
-                {stats.map((stat, index) => (
+                {stats.map((stat, _index) => (
                   <div key={stat.format} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {getFormatIcon(stat.format)}

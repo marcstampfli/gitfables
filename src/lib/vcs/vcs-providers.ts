@@ -3,7 +3,7 @@
  * @description Configuration for supported VCS providers
  */
 
-import { VCSProvider } from '@/types'
+import type { VCSProvider } from '@/types/vcs'
 
 /**
  * List of supported VCS providers
@@ -11,28 +11,31 @@ import { VCSProvider } from '@/types'
 export const SUPPORTED_PROVIDERS: VCSProvider[] = [
   {
     id: 'github',
+    type: 'github',
     name: 'GitHub',
-    icon: '/images/providers/github.svg',
+    icon: '/icons/github.svg',
     isActive: true,
-    baseUrl: 'https://api.github.com',
+    baseUrl: 'https://github.com',
     authUrl: 'https://github.com/login/oauth/authorize',
     description: 'Connect your GitHub repositories to generate stories from commits and pull requests.'
   },
   {
     id: 'gitlab',
+    type: 'gitlab',
     name: 'GitLab',
-    icon: '/images/providers/gitlab.svg',
+    icon: '/icons/gitlab.svg',
     isActive: false,
-    baseUrl: 'https://gitlab.com/api/v4',
+    baseUrl: 'https://gitlab.com',
     authUrl: 'https://gitlab.com/oauth/authorize',
     description: 'Support for GitLab repositories is coming soon. Stay tuned for updates!'
   },
   {
     id: 'bitbucket',
+    type: 'bitbucket',
     name: 'Bitbucket',
-    icon: '/images/providers/bitbucket.svg',
+    icon: '/icons/bitbucket.svg',
     isActive: false,
-    baseUrl: 'https://api.bitbucket.org/2.0',
+    baseUrl: 'https://bitbucket.org',
     authUrl: 'https://bitbucket.org/site/oauth2/authorize',
     description: 'Support for Bitbucket repositories is coming soon. Stay tuned for updates!'
   }

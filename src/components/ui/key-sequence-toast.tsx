@@ -18,14 +18,16 @@ export function KeySequenceToast({ sequence, isActive, onHide }: KeySequenceToas
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    if (isActive && sequence.length > 0) {
-      setIsVisible(true)
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        onHide()
-      }, 1000)
-      return () => clearTimeout(timer)
+    if (!isActive || sequence.length === 0) {
+      return undefined
     }
+
+    setIsVisible(true)
+    const timer = setTimeout(() => {
+      setIsVisible(false)
+      onHide()
+    }, 1000)
+    return () => clearTimeout(timer)
   }, [isActive, sequence, onHide])
 
   return (

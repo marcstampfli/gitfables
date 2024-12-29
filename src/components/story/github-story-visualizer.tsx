@@ -43,7 +43,7 @@ export function GitHubStoryVisualizer({
     onError?.(error)
   }, [onError])
 
-  const _generateVisualization = React.useCallback(async () => {
+  const generateVisualization = React.useCallback(async () => {
     if (!provider) {
       handleError(new Error('VCS provider not initialized'))
       return
@@ -62,6 +62,10 @@ export function GitHubStoryVisualizer({
       setIsLoading(false)
     }
   }, [provider, handleError])
+
+  React.useEffect(() => {
+    generateVisualization()
+  }, [generateVisualization])
 
   if (error) {
     return (

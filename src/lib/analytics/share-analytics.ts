@@ -1,34 +1,30 @@
 /**
  * @module lib/analytics/share-analytics
  * @description Analytics tracking for story sharing events.
- * 
- * @example
- * ```ts
- * import { trackShare, getShareAnalytics } from '@/lib/analytics/share-analytics'
- * import { logDebug } from '@/lib/logger'
- * 
- * // Track a share event
- * await trackShare('twitter', 'story-123')
- * 
- * // Get share analytics
- * const analytics = await getShareAnalytics('story-123')
- * logDebug('Share analytics', {
- *   context: 'analytics:share',
- *   metadata: { totalShares: analytics.totalShares }
- * })
- * ```
  */
 
 'use client'
 
-import type { Story, ShareEvent, ShareAnalytics, IShareAnalytics } from '@/types'
+import type { ShareEvent, ShareAnalytics, IShareAnalytics } from '@/types/analytics'
 
-class ShareAnalyticsImpl implements IShareAnalytics {
+interface ExtendedShareAnalytics extends IShareAnalytics {
+  subscribe(listener: (analytics: ShareAnalytics) => void): () => void
+  exportAnalytics(): string
+  exportAnalyticsCSV(): string
+  clearAnalytics(): void
+}
+
+class ShareAnalyticsImpl implements ExtendedShareAnalytics {
   private analytics: ShareAnalytics = {
     totalShares: 0,
-    platformShares: {},
-    successRate: 0,
-    events: []
+    platformBreakdown: {
+      twitter: 0,
+      linkedin: 0,
+      facebook: 0
+    },
+    topStories: [],
+    periodStart: new Date().toISOString(),
+    periodEnd: new Date().toISOString()
   }
   private listeners: ((analytics: ShareAnalytics) => void)[] = []
 
@@ -39,24 +35,25 @@ class ShareAnalyticsImpl implements IShareAnalytics {
     }
   }
 
-  trackShare(story: Story, platform: 'twitter' | 'linkedin' | 'facebook', success: boolean, error?: string): void {
-    const event: ShareEvent = {
-      storyId: story.id,
-      platform,
-      timestamp: new Date().toISOString(),
-      success,
-      error
+  async trackShare(event: ShareEvent): Promise<void> {
+    this.analytics.totalShares++
+    this.analytics.platformBreakdown[event.platform]++
+    
+    // Update top stories
+    const storyIndex = this.analytics.topStories.findIndex(s => s.id === event.storyId)
+    if (storyIndex >= 0) {
+      this.analytics.topStories[storyIndex].shares++
+    } else {
+      this.analytics.topStories.push({ id: event.storyId, shares: 1 })
     }
 
-    this.analytics.events.push(event)
-    this.analytics.totalShares++
-    this.analytics.platformShares[platform] = (this.analytics.platformShares[platform] || 0) + 1
-    this.analytics.successRate = this.analytics.events.filter(e => e.success).length / this.analytics.totalShares
+    // Update period end
+    this.analytics.periodEnd = new Date().toISOString()
 
     this.listeners.forEach(listener => listener(this.analytics))
   }
 
-  getAnalytics(): ShareAnalytics {
+  async getShareAnalytics(_userId: string, _startDate?: string, _endDate?: string): Promise<ShareAnalytics> {
     return { ...this.analytics }
   }
 
@@ -65,13 +62,12 @@ class ShareAnalyticsImpl implements IShareAnalytics {
   }
 
   exportAnalyticsCSV(): string {
-    const headers = ['storyId', 'platform', 'timestamp', 'success', 'error']
-    const rows = this.analytics.events.map(event => [
-      event.storyId,
-      event.platform,
-      event.timestamp,
-      event.success.toString(),
-      event.error || ''
+    const headers = ['id', 'platform', 'shares']
+    const rows = this.analytics.topStories.map(story => [
+      story.id,
+      Object.entries(this.analytics.platformBreakdown)
+        .find(([_, count]) => count > 0)?.[0] || 'unknown',
+      story.shares.toString()
     ])
     return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
   }
@@ -79,9 +75,14 @@ class ShareAnalyticsImpl implements IShareAnalytics {
   clearAnalytics(): void {
     this.analytics = {
       totalShares: 0,
-      platformShares: {},
-      successRate: 0,
-      events: []
+      platformBreakdown: {
+        twitter: 0,
+        linkedin: 0,
+        facebook: 0
+      },
+      topStories: [],
+      periodStart: new Date().toISOString(),
+      periodEnd: new Date().toISOString()
     }
     this.listeners.forEach(listener => listener(this.analytics))
   }

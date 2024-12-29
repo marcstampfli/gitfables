@@ -62,7 +62,7 @@ export function useSettings(): UseSettingsReturn {
         if (!user) throw new Error('No authenticated user')
 
         // First try to get existing settings
-        const { data: existingSettings, error: fetchError } = await supabase
+        const { data: existingSettings, error: _fetchError } = await supabase
           .from('user_settings')
           .select('settings')
           .eq('user_id', user.id)

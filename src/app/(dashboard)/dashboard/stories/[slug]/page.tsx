@@ -9,14 +9,26 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserId } from '@/lib/auth'
+import { Story } from '@/types/story'
 
-interface PageProps {
+type StoryBlock = {
+  type: 'section' | 'commit'
+  title?: string
+  content?: string
+  hash?: string
+  date?: string
+  message?: string
+  changes?: string
+}
+
+interface StoryPageProps {
   params: {
     slug: string
   }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function StoryPage({ params }: PageProps) {
+export default async function StoryPage({ params }: StoryPageProps) {
   const userId = await getCurrentUserId()
   if (!userId) {
     redirect('/login')
@@ -96,7 +108,7 @@ export default async function StoryPage({ params }: PageProps) {
           <div className="container">
             <div className="max-w-[800px] mx-auto">
               <div className="prose prose-gray dark:prose-invert lg:prose-lg max-w-none">
-                {story.content.map((block: any, index: number) => (
+                {(story.content as StoryBlock[]).map((block, index) => (
                   <div key={index} className="mb-12 last:mb-0">
                     {block.type === 'section' ? (
                       <div>

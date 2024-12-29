@@ -12,12 +12,12 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useSettings } from '@/hooks/use-settings'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/components/ui/use-toast'
 import { Loader2, Camera, Github, Twitter, Linkedin, Globe, MapPin, Clock, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { logError } from '@/lib/utils/logger'
+import Image from 'next/image'
 
 interface ProfileData {
   username: string
@@ -91,8 +91,8 @@ export function ProfileTab() {
           })
         }
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-        logError('Failed to load profile', error, {
+        const error_message = error instanceof Error ? error.message : 'Unknown error occurred'
+        logError('Failed to load profile', { error_message }, {
           context: 'profile',
           metadata: {
             action: 'load',
@@ -102,7 +102,7 @@ export function ProfileTab() {
         if (isMounted) {
           toast({
             title: 'Error',
-            description: 'Failed to load profile data',
+            description: error_message,
             variant: 'destructive'
           })
         }
@@ -435,10 +435,12 @@ export function ProfileTab() {
                 <Label>Profile Picture</Label>
                 <div className="mt-1 flex items-center space-x-4">
                   {profile.avatar_url && (
-                    <img
+                    <Image
                       src={profile.avatar_url}
                       alt="Profile"
-                      className="h-12 w-12 rounded-full object-cover"
+                      width={48}
+                      height={48}
+                      className="rounded-full object-cover"
                     />
                   )}
                   <Label

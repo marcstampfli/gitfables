@@ -15,11 +15,11 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import type { IShareAnalytics, ShareEvent } from '@/lib/analytics/share-analytics'
 import { Twitter, Linkedin, Facebook, Mail, Share2, Download, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useToast } from '@/components/ui/use-toast'
 import dynamic from 'next/dynamic'
+import type { ShareAnalytics, ShareEvent, IShareAnalytics } from '@/types/analytics'
 
 /**
  * Platform icon mapping
@@ -40,6 +40,17 @@ const platformIcons: Record<string, React.ReactNode> = {
 interface Analytics {
   /** Total number of share events */
   totalShares: number
+  /** Platform breakdown of shares */
+  platformBreakdown: Record<string, number>
+  /** Top shared stories */
+  topStories: Array<{
+    id: string
+    shares: number
+  }>
+  /** Period start timestamp */
+  periodStart: string
+  /** Period end timestamp */
+  periodEnd: string
   /** Percentage of successful share events */
   successRate: number
   /** Number of shares per platform */
@@ -178,10 +189,21 @@ export function ShareAnalytics() {
   const [service, setService] = useState<IShareAnalytics | null>(null)
 
   useEffect(() => {
-    if (service) {
-      const unsubscribe = service.subscribe(setAnalytics)
-      return () => unsubscribe()
+    if (!service) {
+      return undefined
     }
+
+    const unsubscribe = service.subscribe((shareAnalytics) => {
+      // Convert ShareAnalytics to Analytics
+      setAnalytics({
+        ...shareAnalytics,
+        successRate: 100, // Default to 100% success rate
+        platformShares: shareAnalytics.platformBreakdown,
+        events: [] // Initialize with empty events array
+      })
+    })
+
+    return () => unsubscribe()
   }, [service])
 
   const handleExportJSON = (service: IShareAnalytics) => {

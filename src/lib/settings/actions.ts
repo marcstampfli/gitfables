@@ -5,7 +5,6 @@
 
 'use server'
 
-import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
 import type { SettingsUpdate } from '@/types'

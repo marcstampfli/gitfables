@@ -9,6 +9,7 @@ import { useEffect, useCallback, useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAccessibility } from './use-accessibility'
 import { toast } from '@/components/ui/use-toast'
+import { logDebug, logError } from '@/lib/utils/logger'
 
 type KeySequence = string[]
 type KeyHandler = () => void
@@ -118,10 +119,13 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig = {}) {
           try {
             keyMap.handler()
             if (finalConfig.enableLogging) {
-              console.debug(`Executed shortcut: ${keyMap.description}`)
+              logDebug('Executed shortcut', { metadata: { description: keyMap.description } })
             }
           } catch (error) {
-            console.error(`Failed to execute shortcut: ${keyMap.description}`, error)
+            logError('Failed to execute shortcut', error, {
+              context: 'keyboard_shortcuts',
+              metadata: { description: keyMap.description }
+            })
             toast({
               title: 'Shortcut Error',
               description: 'Failed to execute keyboard shortcut',
@@ -146,7 +150,9 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig = {}) {
       setCurrentSequence(newSequence)
       setIsSequenceActive(true)
     } catch (error) {
-      console.error('Error handling keyboard shortcut:', error)
+      logError('Error handling keyboard shortcut', error, {
+        context: 'keyboard_shortcuts'
+      })
       resetSequence()
     }
   }, [keyboardShortcuts, keyMaps, resetSequence, finalConfig, currentSequence])
@@ -178,7 +184,7 @@ export function useKeyboardShortcuts(config: KeyboardShortcutsConfig = {}) {
 }
 
 // Helper function to compare arrays
-function arraysEqual(a: any[], b: any[]): boolean {
+function arraysEqual<T>(a: T[], b: T[]): boolean {
   if (a.length !== b.length) return false
   return a.every((val, idx) => val === b[idx])
 } 

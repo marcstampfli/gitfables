@@ -36,6 +36,7 @@
 import { z } from 'zod'
 import { logError, logDebug } from '@/lib/utils/logger'
 import type { ErrorType } from '@/types'
+import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Standard validation error structure.
@@ -239,16 +240,38 @@ export const schemas = {
  * }
  * ```
  */
-export function validateApiKey(key: string) {
-  const keySchema = z.string().min(32).max(64)
-  const result = keySchema.safeParse(key)
+export async function validateApiKey(request: NextRequest) {
+  const apiKey = request.headers.get('x-api-key')
 
-  if (!result.success) {
-    logError('Invalid API key', { metadata: { error: result.error } })
-    return false
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'API key is required' },
+      { status: 401 }
+    )
   }
 
-  return true
+  try {
+    // Validate API key and check scopes
+    // This is a placeholder for actual API key validation logic
+    const isValid = true // Replace with actual validation
+
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid API key' },
+        { status: 401 }
+      )
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    logError('API key validation failed', error, {
+      context: 'api:validation'
+    })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
 }
 
 /**

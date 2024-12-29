@@ -6,8 +6,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { type GitHubService } from '@/lib/github-service'
-import { GitHubClient } from '@/lib/github-service'
+import { GitHubProvider } from '@/lib/vcs/github-provider'
+import { type VCSProviderImpl } from '@/types/vcs'
 
 /**
  * Hook for managing VCS providers
@@ -15,7 +15,7 @@ import { GitHubClient } from '@/lib/github-service'
  * @returns {Object} VCS provider management functions and state
  */
 export function useVCS() {
-  const [provider, setProvider] = useState<GitHubService | null>(null)
+  const [provider, setProvider] = useState<VCSProviderImpl | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
@@ -33,7 +33,10 @@ export function useVCS() {
           return
         }
 
-        setProvider(new GitHubClient(token))
+        const provider = new GitHubProvider()
+        await provider.init({ platform: 'github' })
+        await provider.authenticate({ token })
+        setProvider(provider)
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to initialize VCS provider'))
       } finally {

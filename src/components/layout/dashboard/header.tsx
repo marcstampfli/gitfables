@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, Menu, User } from 'lucide-react'
+import { LogOut, User } from 'lucide-react'
 import Link from 'next/link'
 
 export function DashboardHeader() {

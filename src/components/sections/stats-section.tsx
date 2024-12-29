@@ -1,18 +1,11 @@
 /**
- * @module StatsSection
- * @description A component that displays various statistics about GitHub repositories
- * in a grid of cards.
- * 
- * @example
- * ```tsx
- * // Basic usage
- * <StatsSection repositories={repositories} />
- * ```
+ * @module components/sections/stats-section
+ * @description Statistics section component for displaying repository metrics
  */
 
 'use client'
 
-import { type Repository } from '@/lib/vcs/github-client'
+import { type Repository } from '@/types/vcs'
 import { Card } from '@/components/ui/card'
 import { formatNumber } from '@/lib/utils'
 

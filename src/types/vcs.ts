@@ -159,6 +159,7 @@ export interface VCSProvider {
   /** OAuth authorization URL */
   authUrl?: string
   description: string
+  type: VCSProviderType
 }
 
 /**
@@ -284,4 +285,14 @@ export interface CommitData {
     additions: number
     deletions: number
   }
+}
+
+export type VCSProviderType = 'github' | 'gitlab' | 'bitbucket'
+
+export interface VCSProvider {
+  name: string
+  description: string
+  icon: string
+  type: VCSProviderType
+  // ... rest of the existing code ...
 } 
