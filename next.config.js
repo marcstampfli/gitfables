@@ -22,16 +22,19 @@ const config = {
     ],
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
+    // Disable type checking in Next.js since we run it separately
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
+    // Disable ESLint during builds since we run it separately
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    // Enable modern features
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
+    typedRoutes: true,
   },
 }
 

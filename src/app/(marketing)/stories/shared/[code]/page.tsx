@@ -1,6 +1,11 @@
 /**
- * @module app/s/[code]/page
- * @description Shared story page
+ * @module app/(marketing)/stories/shared/[code]/page
+ * @description Public view for shared stories accessed via a unique code.
+ * This page handles:
+ * - Loading shared stories by code
+ * - Checking expiration status
+ * - Tracking view counts
+ * - Displaying story content in a public-friendly format
  */
 
 'use client'

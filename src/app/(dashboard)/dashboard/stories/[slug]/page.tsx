@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserId } from '@/lib/auth'
-import { Story } from '@/types/story'
+import type { Database } from '@/types/database'
 
 type StoryBlock = {
   type: 'section' | 'commit'
@@ -28,6 +28,11 @@ interface StoryPageProps {
   searchParams: { [key: string]: string | string[] | undefined }
 }
 
+type DbStory = Database['public']['Tables']['stories']['Row'] & {
+  content: StoryBlock[]
+  repository: Database['public']['Tables']['repositories']['Row']
+}
+
 export default async function StoryPage({ params }: StoryPageProps) {
   const userId = await getCurrentUserId()
   if (!userId) {
@@ -40,11 +45,17 @@ export default async function StoryPage({ params }: StoryPageProps) {
     .select('*, repository:repositories(*)')
     .eq('id', params.slug)
     .eq('user_id', userId)
-    .single()
+    .single<DbStory>()
 
   if (error || !story) {
     notFound()
   }
+
+  const storyData = story as DbStory
+
+  // Calculate read time based on content length (rough estimate)
+  const readTime = Math.max(1, Math.ceil(storyData.content.reduce((acc, block) => 
+    acc + (block.content?.length || 0) + (block.message?.length || 0), 0) / 1000))
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -79,24 +90,24 @@ export default async function StoryPage({ params }: StoryPageProps) {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <GitBranch className="w-4 h-4" />
-                    <span>{story.repository.name}</span>
+                    <span>{storyData.repository.name}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{new Date(story.created_at).toLocaleDateString()}</span>
+                    <span>{new Date(storyData.created_at).toLocaleDateString()}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{story.read_time || '5 min read'}</span>
+                    <span>{readTime} min read</span>
                   </div>
                 </div>
                 <h1 className="text-4xl font-bold tracking-tight">
-                  {story.title}
+                  {storyData.title}
                 </h1>
                 <p className="text-lg text-muted-foreground">
-                  {story.description}
+                  {storyData.repository.description}
                 </p>
               </div>
             </div>
@@ -108,7 +119,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
           <div className="container">
             <div className="max-w-[800px] mx-auto">
               <div className="prose prose-gray dark:prose-invert lg:prose-lg max-w-none">
-                {(story.content as StoryBlock[]).map((block, index) => (
+                {storyData.content.map((block, index) => (
                   <div key={index} className="mb-12 last:mb-0">
                     {block.type === 'section' ? (
                       <div>

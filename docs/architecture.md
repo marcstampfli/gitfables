@@ -4,10 +4,10 @@ GitFables follows a modern, modular architecture designed for scalability and ma
 
 ## Core Principles
 
-- **Server Components First**: Leveraging Next.js 14's server components for improved performance
-- **Type Safety**: Comprehensive TypeScript types throughout the codebase
-- **Modular Design**: Feature-based organization of components and logic
-- **Clean Architecture**: Clear separation of concerns and dependencies
+- **Server-First**: Leveraging Next.js 14's server components for optimal performance
+- **Type Safety**: End-to-end type safety with Supabase and TypeScript
+- **Modular Design**: Feature-based organization with clear boundaries
+- **Clean Architecture**: Separation of concerns and predictable data flow
 
 ## Key Components
 
@@ -15,29 +15,22 @@ GitFables follows a modern, modular architecture designed for scalability and ma
 
 ```
 components/
-├── analytics/     # Analytics visualization and reporting
-├── auth/         # Authentication UI components
-├── layout/       # Layout and structural components
-├── providers/    # React context providers
-├── repositories/ # Repository management UI
-├── sections/     # Page-specific sections
-├── story/        # Story display and management
-├── ui/          # Reusable UI components
-└── visualizations/ # Data visualization components
+├── analytics/     # Analytics and metrics
+├── auth/         # Authentication components
+├── dashboard/    # Dashboard features
+├── layout/       # Layout components
+├── story/        # Story rendering
+└── ui/           # Shadcn UI components
 ```
 
 ### Backend Architecture
 
 ```
 lib/
-├── analytics/    # Analytics data processing
-├── auth/        # Authentication logic
-├── redis/       # Redis client and rate limiting
-├── settings/    # Application settings
-├── story/       # Story generation engine
-├── supabase/    # Database client and queries
-├── utils/       # Utility functions
-└── vcs/         # Version control integration
+├── auth/         # Authentication logic
+├── story/        # Story generation
+├── supabase/     # Database client
+└── utils/        # Utility functions
 ```
 
 ## Data Flow
@@ -52,12 +45,13 @@ lib/
    participant GitHub
 
    User->>App: Click Login
-   App->>Supabase: Initiate Auth
+   App->>Supabase: Sign in with GitHub
    Supabase->>GitHub: OAuth Request
    GitHub->>User: Authorize
    User->>GitHub: Approve
    GitHub->>Supabase: Token
    Supabase->>App: Session
+   App->>User: Redirect to Dashboard
    ```
 
 2. **Story Generation Flow**:
@@ -66,6 +60,7 @@ lib/
    sequenceDiagram
    participant User
    participant App
+   participant Supabase
    participant GitHub
    participant StoryEngine
 
@@ -73,7 +68,8 @@ lib/
    App->>GitHub: Fetch Commits
    GitHub->>App: Commit History
    App->>StoryEngine: Process History
-   StoryEngine->>App: Generated Story
+   StoryEngine->>Supabase: Save Story
+   Supabase->>App: Story Data
    App->>User: Display Story
    ```
 
@@ -81,82 +77,80 @@ lib/
 
 ### Frontend
 
-- **Next.js 14**: React framework with App Router
-- **TailwindCSS**: Utility-first CSS framework
+- **Next.js 14**: React framework with App Router and RSC
+- **TailwindCSS**: Utility-first styling
 - **Shadcn UI**: Component library
-- **React Query**: Data fetching and caching
+- **TypeScript**: Type safety
 
 ### Backend
 
-- **Supabase**: PostgreSQL database and authentication
-- **Redis**: Rate limiting and caching
-- **GitHub API**: Repository data access
+- **Supabase**:
+  - PostgreSQL database
+  - Row Level Security
+  - Real-time subscriptions
+  - Authentication
+- **GitHub API**: Repository access
 
 ## State Management
 
 1. **Server State**:
 
-   - Database queries via Supabase
-   - API responses cached with React Query
+   - Server Components for data fetching
+   - Supabase for database queries
+   - Strong typing with generated types
 
 2. **Client State**:
-
-   - React Context for theme and auth
-   - Local state for UI interactions
-
-3. **Persistent State**:
-   - User preferences in localStorage
-   - Session data in Supabase
+   - React hooks for UI state
+   - Form state with react-hook-form
+   - Minimal client-side state
 
 ## Security
 
 1. **Authentication**:
 
-   - Supabase Auth with GitHub OAuth
-   - JWT token validation
-   - Session management
+   - Supabase Auth
+   - Row Level Security
+   - Protected routes
+   - Type-safe auth helpers
 
-2. **API Security**:
-
-   - Rate limiting with Redis
-   - API key validation
-   - CORS configuration
-
-3. **Data Protection**:
+2. **Data Protection**:
    - Input validation
    - SQL injection prevention
    - XSS protection
+   - CORS configuration
 
 ## Performance
 
-1. **Optimizations**:
+1. **Server Components**:
 
-   - Server components for reduced JS
+   - Reduced client JS
+   - Streaming with Suspense
+   - Optimized data fetching
+
+2. **Optimizations**:
    - Image optimization
+   - Font optimization
    - Code splitting
    - Edge caching
-
-2. **Monitoring**:
-   - Custom analytics
-   - Error tracking
-   - Performance metrics
 
 ## Development Workflow
 
 1. **Code Organization**:
 
-   - Feature-based directory structure
+   - Feature-based structure
    - Clear naming conventions
-   - Comprehensive documentation
+   - Type-safe APIs
+   - Comprehensive docs
 
 2. **Quality Assurance**:
 
-   - TypeScript for type safety
-   - ESLint for code quality
-   - Prettier for formatting
-   - Husky for git hooks
+   - TypeScript strict mode
+   - ESLint configuration
+   - Prettier formatting
+   - Git hooks with Husky
 
 3. **Deployment**:
-   - Vercel for hosting
-   - Automated deployments
+   - Vercel deployment
    - Environment management
+   - Error monitoring
+   - Analytics tracking

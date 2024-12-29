@@ -5,34 +5,38 @@
 
 import type { NextRequest } from 'next/server'
 
-export interface PageProps<T = Record<string, never>> {
+export type DynamicRouteParams = Record<string, string>
+
+export interface PageProps<T extends DynamicRouteParams = DynamicRouteParams> {
   params: T
   searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export interface RouteContext<T = Record<string, never>> {
+export interface RouteContext<T extends DynamicRouteParams = DynamicRouteParams> {
   params: T
 }
 
-export interface RouteHandlerContext<T = Record<string, never>> {
+export interface RouteHandlerContext<T extends DynamicRouteParams = DynamicRouteParams> {
   params: T
 }
 
-export type RouteHandler = (
+export type RouteHandler<T extends DynamicRouteParams = DynamicRouteParams> = (
   request: NextRequest,
-  context: RouteHandlerContext
+  context: RouteHandlerContext<T>
 ) => Promise<Response> | Response
 
 // Re-export Next.js types to ensure compatibility
 declare module 'next' {
-  interface PageProps {
-    params: Record<string, string>
+  // Override Next.js PageProps type
+  export interface PageProps<T extends DynamicRouteParams = DynamicRouteParams> {
+    params: T
     searchParams: { [key: string]: string | string[] | undefined }
   }
 }
 
 declare module 'next/server' {
-  interface RouteHandlerContext {
-    params: Record<string, string>
+  // Override Next.js RouteHandlerContext type
+  export interface RouteHandlerContext<T extends DynamicRouteParams = DynamicRouteParams> {
+    params: T
   }
 } 
