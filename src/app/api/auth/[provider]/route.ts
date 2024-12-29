@@ -4,16 +4,22 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { logError } from '@/lib/utils/logger'
 
-export async function GET(request: Request, context: { params: { provider: string } }) {
+interface RouteContext {
+  params: {
+    provider: string
+  }
+}
+
+export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const supabase = await createClient()
 
     // Initiate OAuth flow with Supabase
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: context.params.provider as 'github',
+      provider: params.provider as 'github',
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
         scopes: 'repo read:user user:email',
@@ -28,7 +34,7 @@ export async function GET(request: Request, context: { params: { provider: strin
     logError('Failed to initiate OAuth flow', { 
       metadata: { 
         error,
-        provider: context.params.provider,
+        provider: params.provider,
         url: request.url 
       }
     })

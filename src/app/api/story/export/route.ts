@@ -3,7 +3,7 @@
  * @description API route for exporting stories to Markdown format
  */
 
-import { type Story } from '@/types'
+import { type Story } from '@/types/story'
 
 export async function POST(request: Request) {
   try {

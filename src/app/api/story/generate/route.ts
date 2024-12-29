@@ -4,17 +4,42 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getGitHubClient } from '@/lib/github-service'
+import { GitHubProvider } from '@/lib/vcs/github-provider'
 import { generateStory } from '@/lib/story/generator'
-import { type Repository } from '@/lib/github-client'
+import { type Repository, type Commit } from '@/types/vcs'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
     const { repository } = await request.json() as { repository: Repository }
     const [owner, repo] = repository.full_name.split('/')
 
-    const client = await getGitHubClient()
-    const commits = await client.listCommits(owner, repo)
+    // Get GitHub token from Supabase auth
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.provider_token) {
+      throw new Error('GitHub token not found')
+    }
+
+    // Initialize GitHub provider
+    const provider = new GitHubProvider()
+    await provider.init({ platform: 'github' })
+    await provider.authenticate({ token: session.provider_token })
+
+    const commitData = await provider.fetchCommits({ owner, repo })
+    
+    // Convert CommitData to Commit type
+    const commits: Commit[] = commitData.map(data => ({
+      sha: data.id,
+      message: data.message,
+      author: {
+        name: data.author,
+        email: '', // Not available in CommitData
+        date: data.date
+      },
+      date: data.date,
+      url: '' // Not available in CommitData
+    }))
 
     const story = await generateStory({
       repository,
