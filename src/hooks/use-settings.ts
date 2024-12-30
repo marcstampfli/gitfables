@@ -9,20 +9,47 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/hooks/use-toast'
 import { logError } from '@/lib/utils/logger'
-import type { UserSettings } from '@/types/database'
+import type { SettingsUpdate } from '@/types/settings'
 
 interface UseSettingsReturn {
-  settings: UserSettings
-  updateSettings: (update: { settings: Partial<UserSettings> }) => Promise<void>
+  settings: SettingsUpdate
+  updateSettings: (update: Partial<SettingsUpdate>) => Promise<void>
   resetSettings: () => Promise<void>
   isLoading: boolean
 }
 
-export function useSettings(initialSettings: UserSettings): UseSettingsReturn {
-  const [settings, setSettings] = useState<UserSettings>(initialSettings)
+const defaultSettings: SettingsUpdate = {
+  theme: 'system',
+  notifications: {
+    email: true,
+    push: true,
+    inApp: true
+  },
+  privacy: {
+    shareAnalytics: true,
+    shareUsage: true
+  },
+  display: {
+    compactMode: false,
+    showAvatars: true,
+    showTimestamps: true
+  },
+  accessibility: {
+    reduceMotion: false,
+    highContrast: false,
+    largeText: false
+  },
+  advanced: {
+    experimentalFeatures: false,
+    debugMode: false
+  }
+}
+
+export function useSettings(initialSettings?: SettingsUpdate): UseSettingsReturn {
+  const [settings, setSettings] = useState<SettingsUpdate>(initialSettings || defaultSettings)
   const [isLoading, setIsLoading] = useState(false)
 
-  const updateSettings = async (update: { settings: Partial<UserSettings> }) => {
+  const updateSettings = async (update: Partial<SettingsUpdate>) => {
     try {
       setIsLoading(true)
       const supabase = await createClient()
@@ -31,7 +58,7 @@ export function useSettings(initialSettings: UserSettings): UseSettingsReturn {
 
       const newSettings = {
         ...settings,
-        ...update.settings
+        ...update
       }
 
       const { error } = await supabase
@@ -42,14 +69,23 @@ export function useSettings(initialSettings: UserSettings): UseSettingsReturn {
       if (error) throw error
 
       setSettings(newSettings)
+      toast({
+        title: 'Settings Updated',
+        description: 'Your settings have been saved successfully.'
+      })
     } catch (error) {
       logError('Failed to update settings', error, {
         context: 'settings',
         metadata: {
           action: 'update',
-          updateData: update.settings,
+          updateData: update,
           timestamp: new Date().toISOString()
         }
+      })
+      toast({
+        title: 'Error',
+        description: 'Failed to update settings. Please try again.',
+        variant: 'destructive'
       })
       throw error
     } finally {
@@ -66,12 +102,12 @@ export function useSettings(initialSettings: UserSettings): UseSettingsReturn {
 
       const { error } = await supabase
         .from('user_settings')
-        .update({ settings: initialSettings })
+        .update({ settings: defaultSettings })
         .eq('user_id', user.id)
 
       if (error) throw error
 
-      setSettings(initialSettings)
+      setSettings(defaultSettings)
       toast({
         title: 'Settings Reset',
         description: 'Your settings have been reset to default values.'

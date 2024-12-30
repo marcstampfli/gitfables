@@ -6,37 +6,43 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useSettings } from './use-settings'
+import { useSettings } from '@/hooks/use-settings'
+import type { SettingsUpdate } from '@/types/settings'
 
-export function useAccessibility() {
-  const { settings } = useSettings()
+interface UseAccessibilityReturn {
+  fontSize: boolean
+  highContrast: boolean
+  reduceMotion: boolean
+  setAccessibility: (settings: Partial<SettingsUpdate['accessibility']>) => Promise<void>
+}
+
+export function useAccessibility(): UseAccessibilityReturn {
+  const { settings, updateSettings } = useSettings()
 
   useEffect(() => {
-    // Apply font size
-    document.documentElement.setAttribute('data-font-size', settings.accessibility.font_size)
-
-    // Apply high contrast mode
-    document.documentElement.setAttribute(
-      'data-high-contrast',
-      settings.accessibility.high_contrast.toString()
-    )
-
-    // Apply reduced animations
-    document.documentElement.setAttribute(
-      'data-reduce-animations',
-      settings.accessibility.reduce_animations.toString()
-    )
+    const root = document.documentElement
+    root.classList.toggle('large-text', settings?.accessibility?.largeText || false)
+    root.classList.toggle('high-contrast', settings?.accessibility?.highContrast || false)
+    root.classList.toggle('reduce-motion', settings?.accessibility?.reduceMotion || false)
   }, [
-    settings.accessibility.font_size,
-    settings.accessibility.high_contrast,
-    settings.accessibility.reduce_animations
+    settings?.accessibility?.largeText,
+    settings?.accessibility?.highContrast,
+    settings?.accessibility?.reduceMotion
   ])
 
-  // Return settings for components that need to check them
+  const setAccessibility = async (accessibilitySettings: Partial<SettingsUpdate['accessibility']>) => {
+    await updateSettings({
+      accessibility: {
+        ...settings?.accessibility,
+        ...accessibilitySettings
+      }
+    })
+  }
+
   return {
-    fontSize: settings.accessibility.font_size,
-    highContrast: settings.accessibility.high_contrast,
-    reduceAnimations: settings.accessibility.reduce_animations,
-    keyboardShortcuts: settings.accessibility.keyboard_shortcuts
+    fontSize: settings?.accessibility?.largeText || false,
+    highContrast: settings?.accessibility?.highContrast || false,
+    reduceMotion: settings?.accessibility?.reduceMotion || false,
+    setAccessibility
   }
 } 

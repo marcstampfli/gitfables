@@ -27,7 +27,7 @@ export interface ActivitySummary {
 export function useActivity() {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const trackActivity = useCallback(async (
     type: ActivityType,

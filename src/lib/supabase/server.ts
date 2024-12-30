@@ -1,51 +1,29 @@
 /**
  * @module lib/supabase/server
- * @description Server-side Supabase client
+ * @description Server-side Supabase client with cookie handling
  */
 
 import { createServerClient } from '@supabase/ssr'
-import { type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import type { Database } from '@/types/database'
-import type { CookieOptions } from '@supabase/ssr'
 
-let supabaseClient: SupabaseClient<Database> | null = null
-
-export async function createClient(): Promise<SupabaseClient<Database>> {
-  if (supabaseClient) return supabaseClient
-
+export async function createClient() {
   const cookieStore = cookies()
 
-  supabaseClient = createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name: string) {
-          const cookie = await cookieStore.get(name)
-          return cookie?.value
+        get(name) {
+          return cookieStore.get(name)?.value
         },
-        async set(name: string, value: string, options: CookieOptions) {
-          await cookieStore.set(name, value, {
-            ...options,
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-          })
+        set(name, value, options) {
+          cookieStore.set(name, value, options)
         },
-        async remove(name: string, options: CookieOptions) {
-          await cookieStore.delete(name, {
-            ...options,
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-          })
-        }
-      }
+        remove(name, options) {
+          cookieStore.set(name, '', { ...options, maxAge: 0 })
+        },
+      },
     }
   )
-
-  return supabaseClient
 } 

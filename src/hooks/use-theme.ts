@@ -6,37 +6,36 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useSettings } from './use-settings'
-import type { UserSettings } from '@/types/database'
+import { useSettings } from '@/hooks/use-settings'
+import type { SettingsUpdate } from '@/types/settings'
 
-type ThemeMode = UserSettings['theme']['mode']
+type Theme = 'light' | 'dark' | 'system'
 
-export function useTheme() {
+interface UseThemeReturn {
+  theme: Theme
+  setTheme: (theme: Theme) => Promise<void>
+}
+
+export function useTheme(): UseThemeReturn {
   const { settings, updateSettings } = useSettings()
 
   useEffect(() => {
-    // Apply theme to document
-    const root = window.document.documentElement
+    const root = document.documentElement
     root.classList.remove('light', 'dark')
 
-    if (settings.theme.mode === 'system') {
+    if (settings?.theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
       root.classList.add(systemTheme)
     } else {
-      root.classList.add(settings.theme.mode)
+      root.classList.add(settings?.theme || 'system')
     }
-  }, [settings.theme.mode])
+  }, [settings?.theme])
 
-  const setTheme = async (mode: ThemeMode) => {
-    await updateSettings({ 
-      settings: { 
-        theme: { 
-          ...settings.theme, 
-          mode 
-        } 
-      } 
+  const setTheme = async (theme: Theme) => {
+    await updateSettings({
+      theme
     })
   }
 
-  return { theme: settings.theme.mode, setTheme }
+  return { theme: settings?.theme || 'system', setTheme }
 } 

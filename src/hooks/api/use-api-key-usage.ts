@@ -8,122 +8,114 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { logError } from '@/lib/utils/logger'
 
 export interface APIKeyUsage {
   total_requests: number
   avg_response_time: number
   success_rate: number
-  requests_over_time: Array<{
-    timestamp: string
-    count: number
-  }>
-  response_times_over_time: Array<{
-    timestamp: string
-    value: number
-  }>
   requests_by_endpoint: Record<string, number>
   requests_by_status: Record<string, number>
+  requests_over_time: Array<{ timestamp: string; count: number }>
+  response_times_over_time: Array<{ timestamp: string; value: number }>
 }
 
 interface APIKeyUsageRecord {
-  created_at: string
-  response_time?: number
-  status_code: number
+  id: string
+  api_key_id: string
+  timestamp: string
   endpoint: string
-}
-
-function processRequestsOverTime(data: APIKeyUsageRecord[]) {
-  const timeGroups = data.reduce<Record<number, number>>((acc, curr) => {
-    const hour = new Date(curr.created_at).setMinutes(0, 0, 0)
-    acc[hour] = (acc[hour] || 0) + 1
-    return acc
-  }, {})
-
-  return Object.entries(timeGroups).map(([timestamp, count]) => ({
-    timestamp: new Date(parseInt(timestamp)).toISOString(),
-    count
-  }))
-}
-
-function processResponseTimesOverTime(data: APIKeyUsageRecord[]) {
-  const timeGroups = data.reduce<Record<number, number[]>>((acc, curr) => {
-    const hour = new Date(curr.created_at).setMinutes(0, 0, 0)
-    if (!acc[hour]) {
-      acc[hour] = []
-    }
-    acc[hour].push(curr.response_time || 0)
-    return acc
-  }, {})
-
-  return Object.entries(timeGroups).map(([timestamp, values]) => ({
-    timestamp: new Date(parseInt(timestamp)).toISOString(),
-    value: values.reduce((a, b) => a + b, 0) / values.length
-  }))
+  method: string
+  status_code: number
+  response_time: number
 }
 
 export function useAPIKeyUsage() {
-  const [loading, setLoading] = useState(false)
-  const [usage, setUsage] = useState<APIKeyUsage | null>(null)
+  const [usage, setUsage] = useState<APIKeyUsageRecord[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
   const { toast } = useToast()
-  const supabase = await createClient()
 
-  const getUsageStats = useCallback(async (apiKeyId: string, startDate: Date) => {
+  const fetchUsage = useCallback(async (apiKeyId: string, startDate: Date) => {
     try {
-      setLoading(true)
+      setIsLoading(true)
+      const supabase = await createClient()
 
       const { data, error } = await supabase
         .from('api_key_usage')
         .select('*')
         .eq('api_key_id', apiKeyId)
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: true })
+        .gte('timestamp', startDate.toISOString())
+        .order('timestamp', { ascending: false })
 
       if (error) throw error
 
-      const records = data as APIKeyUsageRecord[]
-
-      // Process the raw data into the required format
-      const stats: APIKeyUsage = {
-        total_requests: records.length,
-        avg_response_time: records.reduce((acc, curr) => acc + (curr.response_time || 0), 0) / records.length,
-        success_rate: (records.filter(d => d.status_code < 400).length / records.length) * 100,
-        requests_over_time: processRequestsOverTime(records),
-        response_times_over_time: processResponseTimesOverTime(records),
-        requests_by_endpoint: records.reduce((acc, curr) => {
-          acc[curr.endpoint] = (acc[curr.endpoint] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
-        requests_by_status: records.reduce((acc, curr) => {
-          acc[curr.status_code] = (acc[curr.status_code] || 0) + 1
-          return acc
-        }, {} as Record<string, number>)
-      }
-
-      setUsage(stats)
-      return stats
-    } catch (error) {
-      logError('Error fetching API key usage stats', {
-        metadata: {
-          error,
-          apiKeyId,
-          startDate
-        }
-      })
+      setUsage(data || [])
+      return data
+    } catch (err) {
+      const error = err as Error
+      setError(error)
       toast({
         title: 'Error',
-        description: 'Failed to fetch API key usage statistics',
+        description: 'Failed to fetch API key usage',
         variant: 'destructive'
       })
       return null
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }, [supabase, toast])
+  }, [toast])
+
+  const getUsageStats = useCallback((records: APIKeyUsageRecord[]): APIKeyUsage => {
+    const total = records.length
+    const avgResponseTime = records.reduce((sum, r) => sum + r.response_time, 0) / total
+    const successCount = records.filter(r => r.status_code >= 200 && r.status_code < 300).length
+    const successRate = (successCount / total) * 100
+
+    const byEndpoint: Record<string, number> = {}
+    const byStatus: Record<string, number> = {}
+    const overTime: Record<string, number> = {}
+    const responseTimes: Record<string, number[]> = {}
+
+    records.forEach(record => {
+      // Group by endpoint
+      byEndpoint[record.endpoint] = (byEndpoint[record.endpoint] || 0) + 1
+
+      // Group by status code
+      byStatus[record.status_code] = (byStatus[record.status_code] || 0) + 1
+
+      // Group by hour
+      const hour = record.timestamp.split(':')[0]
+      overTime[hour] = (overTime[hour] || 0) + 1
+
+      // Collect response times
+      if (!responseTimes[hour]) {
+        responseTimes[hour] = []
+      }
+      responseTimes[hour].push(record.response_time)
+    })
+
+    // Convert response times to averages
+    const responseTimesOverTime = Object.entries(responseTimes).map(([timestamp, times]) => ({
+      timestamp,
+      value: times.reduce((sum, time) => sum + time, 0) / times.length
+    }))
+
+    return {
+      total_requests: total,
+      avg_response_time: avgResponseTime,
+      success_rate: successRate,
+      requests_by_endpoint: byEndpoint,
+      requests_by_status: byStatus,
+      requests_over_time: Object.entries(overTime).map(([timestamp, count]) => ({ timestamp, count })),
+      response_times_over_time: responseTimesOverTime
+    }
+  }, [])
 
   return {
-    loading,
     usage,
+    isLoading,
+    error,
+    fetchUsage,
     getUsageStats
   }
 } 
