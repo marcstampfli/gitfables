@@ -51,12 +51,17 @@ export function Logo({ showText = true, className, size = 'md' }: LogoProps) {
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <div className={cn(
-        'bg-primary text-primary-foreground rounded-lg relative',
+        'rounded-lg relative overflow-hidden',
         sizeClasses[size].container
       )}>
-        <GitBranch className={sizeClasses[size].icon} />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_50%)]" />
+        <GitBranch className={cn(
+          'relative text-white',
+          sizeClasses[size].icon
+        )} />
         <BookOpen className={cn(
-          'absolute',
+          'absolute text-white/90',
           sizeClasses[size].bookIcon
         )} />
       </div>
