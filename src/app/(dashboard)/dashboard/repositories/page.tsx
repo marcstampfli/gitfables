@@ -9,15 +9,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GitBranch, Plus, ArrowRight, RefreshCw, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatDistanceToNow } from 'date-fns'
+import { RepositoryActions } from '@/components/repositories/repository-actions'
 
 async function getRepositories() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (!user) {
+    return []
+  }
+
   const { data: repositories } = await supabase
     .from('repositories')
     .select('*')
-    .eq('user_id', user?.id)
+    .eq('user_id', user.id)
     .order('last_synced_at', { ascending: false })
 
   return repositories || []
@@ -57,16 +62,7 @@ export default async function RepositoriesPage() {
                     </div>
                     <CardDescription>{repo.description}</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <RefreshCw className="h-4 w-4" />
-                      <span className="sr-only">Sync repository</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Remove repository</span>
-                    </Button>
-                  </div>
+                  <RepositoryActions repository={repo} />
                 </div>
               </CardHeader>
               <CardContent>
@@ -84,7 +80,9 @@ export default async function RepositoriesPage() {
                     <div>
                       <p className="text-sm font-medium">Last Synced</p>
                       <p className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(repo.last_synced_at), { addSuffix: true })}
+                        {repo.last_synced_at 
+                          ? formatDistanceToNow(new Date(repo.last_synced_at), { addSuffix: true })
+                          : 'Never'}
                       </p>
                     </div>
                   </div>
@@ -92,7 +90,7 @@ export default async function RepositoriesPage() {
                   {/* Actions */}
                   <div className="flex justify-end">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/repositories/${repo.id}`}>
+                      <Link href={`/dashboard/repositories/${repo.id}`}>
                         View Details <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>

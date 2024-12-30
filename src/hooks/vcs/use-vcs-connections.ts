@@ -1,74 +1,63 @@
-import { useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { logError } from '@/lib/utils/logger'
+import { useToast } from '@/hooks/use-toast'
 
-export interface VCSConnection {
-  provider: string
-  connected: boolean
-  username?: string
-  avatarUrl?: string
-}
-
-interface IdentityData {
-  provider: string
-  identity_data?: {
-    preferred_username?: string
-    avatar_url?: string
-  }
+interface VCSConnection {
+  id: string
+  user_id: string
+  provider: 'github' | 'gitlab' | 'bitbucket'
+  provider_user_id: string
+  provider_username: string
+  provider_email: string
+  provider_avatar_url: string | null
+  access_token: string
+  refresh_token: string | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export function useVCSConnections() {
   const [connections, setConnections] = useState<VCSConnection[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = await createClient()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+  const { toast } = useToast()
 
-  useEffect(() => {
-    async function loadConnections() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (!user) {
-          setConnections([])
-          return
-        }
+  const fetchConnections = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('No authenticated user')
 
-        // Get user identities
-        const identities = user.identities as IdentityData[] | null
-        
-        if (!identities?.length) {
-          setConnections([])
-          return
-        }
+      const { data, error } = await supabase
+        .from('vcs_connections')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
 
-        // Map identities to connections
-        const vcsConnections = identities.map(identity => ({
-          provider: identity.provider,
-          connected: true,
-          username: identity.identity_data?.preferred_username,
-          avatarUrl: identity.identity_data?.avatar_url,
-        }))
+      if (error) throw error
 
-        setConnections(vcsConnections)
-      } catch (err) {
-        logError('Failed to load VCS connections', {
-          metadata: {
-            error: err,
-            userId: supabase.auth.getUser().then(({ data }) => data.user?.id)
-          }
-        })
-        setError('Failed to load connected providers')
-      } finally {
-        setIsLoading(false)
-      }
+      setConnections(data || [])
+      return data
+    } catch (err) {
+      const error = err as Error
+      setError(error)
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch VCS connections',
+        variant: 'destructive'
+      })
+      return null
+    } finally {
+      setIsLoading(false)
     }
-
-    loadConnections()
-  }, [supabase])
+  }, [toast])
 
   return {
     connections,
     isLoading,
     error,
+    fetchConnections
   }
 } 
