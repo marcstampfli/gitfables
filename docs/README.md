@@ -9,19 +9,23 @@ Welcome to the GitFables documentation! This documentation will help you underst
    - Project structure
    - Design patterns
    - Technical decisions
+   - Performance considerations
 
 2. [Components](./components/README.md)
 
    - UI components
    - Layout components
-   - Shared components
+   - Marketing components
+   - Feature components
+   - Best practices
 
 3. [Features](./features/README.md)
 
    - Core features
    - Story generation
    - VCS integration
-   - Analytics
+   - Settings management
+   - Marketing pages
 
 4. [Guides](./guides/)
    - [Getting Started](./guides/getting-started.md)
@@ -31,27 +35,50 @@ Welcome to the GitFables documentation! This documentation will help you underst
 
 ## About GitFables
 
-GitFables is a web application that transforms GitHub repository histories into engaging stories. It uses AI to analyze commit patterns, code changes, and development timelines to create narratives that showcase your development journey.
+GitFables is a modern web application that transforms Git repository histories into engaging stories. It uses AI to analyze commit patterns, code changes, and development timelines to create narratives that showcase your development journey.
 
 ### Key Features
 
-- 🔄 Multi-platform VCS support
+- 🔄 Git integration with multiple providers
 - 📝 AI-powered story generation
 - 📊 Development analytics
-- 🌓 Dark/light mode
-- 🎨 Modern UI/UX
-- 🚀 High performance
+- 🎨 Beautiful UI with consistent design language
+- 🌓 Dark/light mode support
+- 🚀 Edge-optimized performance
+- 📱 Fully responsive design
+- 🔒 Secure authentication
+- 🎯 Customizable story focus
 
 ### Tech Stack
 
-- Next.js 14
+- Next.js 14 (App Router)
 - TypeScript
 - TailwindCSS
 - Supabase
-- shadcn/ui
+- Shadcn UI
+- Lucide Icons
+
+### Marketing Features
+
+- 🎨 Modern, gradient-rich design
+- 📱 Responsive marketing pages
+- 🧩 Reusable components
+  - Page headers
+  - Feature grids
+  - Process steps
+  - Call-to-action sections
+- 🎯 Conversion-focused layouts
+
+## Quick Links
+
+- [API Reference](./api-reference.md)
+- [Authentication](./authentication.md)
+- [Contributing](./contributing.md)
+- [Development](./DEVELOPMENT.md)
+- [Story Generation](./story-generation.md)
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/marcstampfli/gitfables/issues)
+- [GitHub Issues](https://github.com/gitfables/gitfables/issues)
 - [Discord Community](https://discord.gg/gitfables)
 - Email: support@gitfables.com

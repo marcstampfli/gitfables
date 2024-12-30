@@ -7,6 +7,7 @@
 - **Supabase**: Authentication and PostgreSQL database
 - **TailwindCSS**: Utility-first CSS framework
 - **Shadcn UI**: Accessible component library
+- **Lucide Icons**: Consistent icon system
 
 ## Application Structure
 
@@ -22,7 +23,9 @@ src/
 │   ├── auth/          # Authentication components
 │   ├── dashboard/     # Dashboard components
 │   ├── layout/        # Layout components
+│   ├── marketing/     # Marketing components
 │   ├── repositories/  # Repository components
+│   ├── sections/      # Page sections
 │   ├── settings/      # Settings components
 │   ├── story/         # Story components
 │   └── ui/            # Shadcn UI components
@@ -43,18 +46,66 @@ src/
 ### 1. Authentication
 
 - Supabase Auth integration
-- OAuth providers (GitHub)
+- Multiple OAuth providers
 - Protected routes
 - Session management
 
 ### 2. VCS Integration
 
-- GitHub OAuth authentication
+- Multiple VCS provider support
 - Repository connection
 - Commit history sync
 - Provider abstraction layer
 
-### 3. Settings Management
+### 3. Story Generation
+
+- AI-powered analysis
+- Multiple narrative styles
+- Code snippet integration
+- Export capabilities
+
+### 4. Marketing System
+
+```typescript
+// Example marketing component props
+interface MarketingProps {
+  // Page Header
+  header: {
+    title: string
+    titleGradient?: string
+    description: string
+    size?: 'default' | 'large'
+  }
+  // Features Grid
+  features: Array<{
+    title: string
+    description: string
+    icon: LucideIcon
+  }>
+  // Process Steps
+  steps: Array<{
+    step: string
+    title: string
+    description: string
+  }>
+  // CTA Section
+  cta: {
+    title: string
+    titleHighlight?: string
+    description: string
+    primaryCta: {
+      text: string
+      href: string
+    }
+    secondaryCta?: {
+      text: string
+      href: string
+    }
+  }
+}
+```
+
+### 5. Settings Management
 
 ```typescript
 interface SettingsUpdate {
@@ -80,245 +131,121 @@ interface SettingsUpdate {
 }
 ```
 
-### 4. API Key Management
+## Design Principles
 
-```typescript
-interface APIKeyUsage {
-  total_requests: number
-  avg_response_time: number
-  success_rate: number
-  requests_by_endpoint: Record<string, number>
-  requests_by_status: Record<string, number>
-  requests_over_time: Array<{ timestamp: string; count: number }>
-  response_times_over_time: Array<{ timestamp: string; value: number }>
-}
+### 1. Server-First Approach
+
+- React Server Components by default
+- Server Actions for mutations
+- Edge-optimized data fetching
+- Streaming responses
+
+### 2. Type Safety
+
+- TypeScript throughout
+- Zod schema validation
+- Type-safe API routes
+- Strict prop types
+
+### 3. Design System
+
+- Consistent color palette
+- Primary-to-purple gradients
+- Responsive design patterns
+- Component-based architecture
+- Reusable marketing sections
+- Accessible UI patterns
+
+### 4. Performance
+
+- Edge runtime optimization
+- Image optimization
+- Component code splitting
+- Minimal client JavaScript
+- Optimized loading states
+
+## Data Flow
+
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant Supabase
+    participant GitHub
+
+    User->>App: Click Login
+    App->>Supabase: Init Auth
+    Supabase->>GitHub: OAuth Request
+    GitHub->>User: Auth Consent
+    User->>GitHub: Approve
+    GitHub->>Supabase: Auth Token
+    Supabase->>App: Session
+    App->>User: Redirect to Dashboard
 ```
 
-## Database Schema
+### Story Generation Flow
 
-### VCS Connections
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant GitHub
+    participant AI
+    participant DB
 
-```sql
-create table vcs_connections (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade,
-  provider text not null check (provider in ('github', 'gitlab', 'bitbucket')),
-  provider_user_id text not null,
-  provider_username text not null,
-  provider_email text not null,
-  provider_avatar_url text,
-  access_token text not null,
-  refresh_token text,
-  expires_at timestamp with time zone,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now(),
-  unique (user_id, provider)
-);
+    User->>App: Select Repository
+    App->>GitHub: Fetch Commits
+    GitHub->>App: Commit History
+    App->>AI: Process History
+    AI->>App: Generate Story
+    App->>DB: Save Story
+    DB->>User: Display Story
 ```
 
-### User Settings
+## Performance Considerations
 
-```sql
-create table user_settings (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade,
-  settings jsonb not null default '{
-    "theme": {
-      "mode": "system",
-      "accent_color": "default",
-      "language": "en"
-    },
-    "notifications": {
-      "email": true,
-      "web": true,
-      "digest": "weekly"
-    },
-    "privacy": {
-      "show_activity": true,
-      "default_story_visibility": "private"
-    },
-    "repository": {
-      "auto_sync": true,
-      "default_branch": "main",
-      "sync_frequency": "daily"
-    },
-    "accessibility": {
-      "font_size": "medium",
-      "high_contrast": false,
-      "reduce_animations": false,
-      "keyboard_shortcuts": true
-    }
-  }',
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now(),
-  unique (user_id)
-);
-```
+### 1. Edge Computing
 
-## Component Architecture
+- Deploy close to users
+- Minimize latency
+- Optimize caching
+- Streaming responses
 
-### Server Components (Default)
+### 2. Data Fetching
 
-```typescript
-// Example server component
-export default async function SettingsPage() {
-  const userSettings = await getSettings()
+- Parallel requests
+- Streaming responses
+- Incremental loading
+- Suspense boundaries
 
-  // Convert UserSettings to SettingsUpdate format
-  const initialSettings: SettingsUpdate = {
-    theme: userSettings.theme.mode,
-    notifications: {
-      email: userSettings.notifications.email,
-      push: userSettings.notifications.web,
-      inApp: userSettings.notifications.web
-    },
-    // ... other settings
-  }
+### 3. Asset Optimization
 
-  return <SettingsContent initialSettings={initialSettings} />
-}
-```
-
-### Client Components
-
-```typescript
-'use client'
-
-export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
-  const { settings, updateSettings, isLoading } = useSettings(initialSettings)
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
-
-  // Initialize state from settings
-  React.useEffect(() => {
-    if (settings) {
-      setThemeMode((settings.theme as ThemeMode) ?? 'system')
-    }
-  }, [settings])
-
-  const handleThemeChange = async (mode: ThemeMode) => {
-    setThemeMode(mode)
-    await updateSettings({
-      theme: mode
-    })
-  }
-
-  return (
-    // Component JSX
-  )
-}
-```
-
-## State Management
-
-### Server State
-
-- React Server Components
-- Server Actions
-- Database queries
-
-### Client State
-
-- React hooks
-- Local component state
-- Form state management
-
-## API Design
-
-### REST Endpoints
-
-```typescript
-// Example API route
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const apiKey = searchParams.get('api_key')
-
-    // Validate API key
-    // Process request
-    // Return response
-
-    return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-}
-```
-
-### Server Actions
-
-```typescript
-'use server'
-
-export async function updateSettings(settings: SettingsUpdate) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('No authenticated user')
-
-  const { error } = await supabase
-    .from('user_settings')
-    .update({ settings })
-    .eq('user_id', user.id)
-
-  if (error) throw error
-  return { success: true }
-}
-```
-
-## Security
-
-### Authentication
-
-- Supabase Auth
-- OAuth providers
-- Session management
-- Protected routes
-
-### Authorization
-
-- Row Level Security (RLS)
-- API key validation
-- Rate limiting
-- Scope checking
-
-## Performance
-
-### Optimizations
-
-- React Server Components
-- Edge caching
-- Incremental Static Regeneration
-- Dynamic imports
-
-### Monitoring
-
-- Error tracking
-- Performance metrics
-- Usage analytics
-- API monitoring
+- Image optimization
+- Font subsetting
+- Code splitting
+- Bundle analysis
 
 ## Future Enhancements
 
-1. **Additional VCS Providers**
+### 1. Additional VCS Providers
 
-   - GitLab integration
-   - Bitbucket integration
-   - Custom provider framework
+- GitLab integration
+- Bitbucket integration
+- Custom provider framework
+- Migration tools
 
-2. **Enhanced Analytics**
+### 2. Enhanced Analytics
 
-   - Advanced metrics
-   - Custom reports
-   - Data visualization
+- Advanced metrics
+- Custom reports
+- Data visualization
+- User insights
 
-3. **Performance Improvements**
-   - Edge functions
-   - Caching strategies
-   - Bundle optimization
+### 3. Performance Improvements
+
+- Edge functions
+- Caching strategies
+- Bundle optimization
+- Real-time updates

@@ -42,6 +42,56 @@ export function Button({
 }
 ```
 
+### Marketing Components (`src/components/marketing/`)
+
+Components for marketing pages and sections:
+
+```typescript
+// Example PageHeader component
+interface PageHeaderProps {
+  title: string
+  titleGradient?: string
+  description: string
+  size?: 'default' | 'large'
+  children?: React.ReactNode
+}
+
+export function PageHeader({
+  title,
+  titleGradient,
+  description,
+  size = 'default',
+  children
+}: PageHeaderProps) {
+  return (
+    <div className="text-center py-20">
+      <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
+        {titleGradient ? (
+          <>
+            {title.replace(titleGradient, '')}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+              {titleGradient}
+            </span>
+          </>
+        ) : (
+          title
+        )}
+      </h1>
+      <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
+        {description}
+      </p>
+      {children}
+    </div>
+  )
+}
+```
+
+Other marketing components include:
+
+- `CTASection`: Call-to-action sections with gradient backgrounds
+- `FeaturesGrid`: Grid layout for feature showcases
+- `ProcessSteps`: Step-by-step process visualization
+
 ### Layout Components (`src/components/layout/`)
 
 Components for page structure and layout:
@@ -398,3 +448,41 @@ Each component should have:
    - Dependency management
    - Version control
    - Documentation
+
+### Component Design
+
+1. **Props Interface**
+
+   - Always define TypeScript interfaces for props
+   - Use descriptive names and JSDoc comments
+   - Make optional props explicit with `?`
+
+2. **Composition**
+
+   - Keep components focused and single-purpose
+   - Use composition over inheritance
+   - Extract reusable logic into hooks
+
+3. **Styling**
+   - Use Tailwind CSS for styling
+   - Follow the design system
+   - Use `cn()` utility for conditional classes
+
+### Marketing Components
+
+1. **Visual Hierarchy**
+
+   - Use consistent spacing (padding, margins)
+   - Follow gradient patterns
+   - Maintain responsive behavior
+
+2. **Accessibility**
+
+   - Use semantic HTML elements
+   - Include proper ARIA attributes
+   - Ensure keyboard navigation
+
+3. **Performance**
+   - Optimize images and animations
+   - Use proper loading strategies
+   - Minimize layout shifts
