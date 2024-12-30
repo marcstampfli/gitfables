@@ -23,24 +23,27 @@ export function AnalyticsHeader({ service, onExportJSON, onExportCSV, onClear }:
           variant="outline"
           size="sm"
           onClick={() => onExportJSON(service)}
+          icon={<Download className="h-4 w-4" />}
+          iconPosition="left"
         >
-          <Download className="h-4 w-4 mr-2" />
           Export JSON
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => onExportCSV(service)}
+          icon={<Download className="h-4 w-4" />}
+          iconPosition="left"
         >
-          <Download className="h-4 w-4 mr-2" />
           Export CSV
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => onClear(service)}
+          icon={<Trash2 className="h-4 w-4" />}
+          iconPosition="left"
         >
-          <Trash2 className="h-4 w-4 mr-2" />
           Clear Data
         </Button>
       </div>

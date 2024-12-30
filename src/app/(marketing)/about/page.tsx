@@ -110,10 +110,9 @@ export default function AboutPage() {
               <p className="text-lg text-muted-foreground">
                 Ready to transform your Git history into engaging stories?
               </p>
-              <Button size="lg" asChild>
+              <Button size="lg" asChild icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 <Link href="/login">
                   Get Started Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

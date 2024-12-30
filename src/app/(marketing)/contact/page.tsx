@@ -85,11 +85,11 @@ export default function ContactPage() {
                       <div className="flex items-center text-primary">
                         <Link
                           href={method.href}
-                          className="text-sm font-medium hover:underline"
+                          className="flex items-center space-x-1 text-sm font-medium hover:underline"
                         >
-                          {method.linkText}
+                          <span>{method.linkText}</span>
+                          <ArrowRight className="w-4 h-4" />
                         </Link>
-                        <ArrowRight className="ml-1 w-4 h-4" />
                       </div>
                     </div>
                   </div>
@@ -149,9 +149,14 @@ export default function ContactPage() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" size="lg" className="w-full">
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full" 
+                    icon={<ArrowRight className="h-4 w-4" />}
+                    iconPosition="right"
+                  >
                     Send Message
-                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
               </div>

@@ -113,10 +113,9 @@ export default function FeaturesPage() {
               <p className="text-lg text-muted-foreground">
                 Transform your Git history into engaging stories today.
               </p>
-              <Button size="lg" className="h-12 px-8" asChild>
+              <Button size="lg" className="h-12 px-8" asChild icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 <Link href="/login">
                   Try GitFables Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

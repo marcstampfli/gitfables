@@ -38,10 +38,12 @@ export function AnalyticsMetrics({ totalShares, successRate, platformShares }: A
         <h3 className="text-sm font-medium">Platform Distribution</h3>
         <div className="mt-2 space-y-2">
           {Object.entries(platformShares).map(([platform, count]) => (
-            <div key={platform} className="flex items-center gap-2">
-              {platformIcons[platform] || platformIcons.default}
-              <span className="text-sm capitalize">{platform}</span>
-              <span className="text-sm text-muted-foreground ml-auto">{count}</span>
+            <div key={platform} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {platformIcons[platform] || platformIcons.default}
+                <span className="text-sm capitalize">{platform}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">{count}</span>
             </div>
           ))}
         </div>

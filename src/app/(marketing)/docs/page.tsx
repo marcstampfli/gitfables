@@ -138,10 +138,9 @@ export default function DocsPage() {
               <p className="text-lg text-muted-foreground">
                 Can&apos;t find what you&apos;re looking for? Get in touch with me for support.
               </p>
-              <Button size="lg" asChild>
+              <Button size="lg" asChild icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 <Link href="/contact">
                   Contact Support
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

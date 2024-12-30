@@ -57,10 +57,10 @@ export function EmptyState({
         <Button
           variant="outline"
           onClick={action.onClick}
-          className="space-x-2"
+          icon={<Icons.add className="h-4 w-4" />}
+          iconPosition="left"
         >
-          <Icons.add className="h-4 w-4" />
-          <span>{action.label}</span>
+          {action.label}
         </Button>
       )}
     </div>

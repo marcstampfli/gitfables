@@ -32,9 +32,9 @@ export default function HomePage() {
               GitFables uses AI to transform your repository&apos;s commit history into engaging, shareable stories that showcase your development journey.
             </p>
             <div className="flex items-center gap-4">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 <Link href="/login">
-                  Start Your Story <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Your Story
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
@@ -212,9 +212,9 @@ export default function HomePage() {
               <p className="text-lg opacity-90 max-w-[600px] mx-auto mb-8">
                 Join thousands of developers who are already sharing their development journey with GitFables.
               </p>
-              <Button size="lg" variant="secondary" asChild>
+              <Button size="lg" variant="secondary" asChild icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 <Link href="/login">
-                  Get Started for Free <ArrowRight className="ml-2 h-4 w-4" />
+                  Get Started for Free
                 </Link>
               </Button>
             </div>
