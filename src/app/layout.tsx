@@ -4,14 +4,19 @@
  */
 
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Outfit, Fira_Code } from 'next/font/google'
 import { Providers } from '@/components/providers/providers'
 import { Toaster } from '@/components/ui/toaster'
 import '@/styles/globals.css'
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-sans',
+})
+
+const firaCode = Fira_Code({
+  subsets: ['latin'],
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
@@ -25,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${firaCode.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
           {children}
