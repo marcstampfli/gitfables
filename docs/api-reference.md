@@ -1,52 +1,74 @@
 # API Reference
 
-GitFables provides a RESTful API for programmatic access to story generation and repository management.
+## Overview
+
+GitFables provides a RESTful API for interacting with the platform programmatically. This document outlines the available endpoints, authentication methods, and usage examples.
 
 ## Authentication
 
-All API requests require authentication using an API key. Include it in the `Authorization` header:
+### API Keys
 
-```http
-Authorization: Bearer your_api_key_here
+All API requests must include an API key in the `Authorization` header:
+
+```bash
+Authorization: Bearer your-api-key
 ```
 
-## Rate Limiting
+To obtain an API key:
 
-API requests are rate-limited to:
+1. Log in to your GitFables account
+2. Navigate to Settings > API Keys
+3. Generate a new API key
+4. Copy and securely store your API key
 
-- 100 requests per minute for free tier
-- 1000 requests per minute for pro tier
+### Rate Limiting
+
+- 100 requests per minute per API key
+- Rate limit headers included in responses:
+  - `X-RateLimit-Limit`
+  - `X-RateLimit-Remaining`
+  - `X-RateLimit-Reset`
 
 ## Endpoints
 
 ### Stories
 
-#### Generate Story
+#### List Stories
 
 ```http
-POST /api/stories
-Content-Type: application/json
-Authorization: Bearer your_api_key_here
-
-{
-  "repository": "owner/repo",
-  "branch": "main",
-  "style": "technical|casual|formal",
-  "tone": "professional|fun|dramatic",
-  "length": "short|medium|long"
-}
+GET /api/stories
 ```
+
+Query Parameters:
+
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10)
+- `repository` (optional): Filter by repository ID
+- `status` (optional): Filter by status (draft, published)
 
 Response:
 
 ```json
 {
-  "id": "story_id",
-  "content": "Generated story content...",
-  "metadata": {
-    "repository": "owner/repo",
-    "commitCount": 42,
-    "generatedAt": "2024-01-01T00:00:00Z"
+  "data": [
+    {
+      "id": "story_123",
+      "title": "Story Title",
+      "summary": "Story summary",
+      "repository": {
+        "id": "repo_456",
+        "name": "user/repo",
+        "provider": "github"
+      },
+      "status": "published",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_items": 50
   }
 }
 ```
@@ -54,204 +76,446 @@ Response:
 #### Get Story
 
 ```http
-GET /api/stories/{story_id}
-Authorization: Bearer your_api_key_here
+GET /api/stories/:id
 ```
 
 Response:
 
 ```json
 {
-  "id": "story_id",
+  "id": "story_123",
+  "title": "Story Title",
   "content": "Story content...",
+  "summary": "Story summary",
+  "repository": {
+    "id": "repo_456",
+    "name": "user/repo",
+    "provider": "github"
+  },
   "metadata": {
-    "repository": "owner/repo",
-    "commitCount": 42,
-    "generatedAt": "2024-01-01T00:00:00Z"
+    "commit_count": 50,
+    "date_range": {
+      "start": "2024-01-01T00:00:00Z",
+      "end": "2024-01-31T23:59:59Z"
+    },
+    "contributors": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "commit_count": 25
+      }
+    ]
+  },
+  "status": "published",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+#### Generate Story
+
+```http
+POST /api/stories/generate
+```
+
+Request Body:
+
+```json
+{
+  "repository_id": "repo_456",
+  "settings": {
+    "style": "technical",
+    "date_range": {
+      "start": "2024-01-01T00:00:00Z",
+      "end": "2024-01-31T23:59:59Z"
+    },
+    "include_contributors": true,
+    "include_statistics": true
   }
 }
 ```
 
-#### List Stories
+Response:
+
+```json
+{
+  "id": "story_123",
+  "status": "processing",
+  "estimated_completion": "2024-01-01T00:01:00Z"
+}
+```
+
+#### Update Story
 
 ```http
-GET /api/stories
-Authorization: Bearer your_api_key_here
+PATCH /api/stories/:id
+```
+
+Request Body:
+
+```json
+{
+  "title": "Updated Title",
+  "content": "Updated content...",
+  "status": "published"
+}
 ```
 
 Response:
 
 ```json
 {
-  "stories": [
-    {
-      "id": "story_id",
-      "content": "Story content...",
-      "metadata": {
-        "repository": "owner/repo",
-        "commitCount": 42,
-        "generatedAt": "2024-01-01T00:00:00Z"
-      }
-    }
-  ],
-  "pagination": {
-    "total": 100,
-    "page": 1,
-    "perPage": 10
-  }
+  "id": "story_123",
+  "title": "Updated Title",
+  "content": "Updated content...",
+  "status": "published",
+  "updated_at": "2024-01-01T00:00:00Z"
 }
 ```
 
 ### Repositories
 
-#### Connect Repository
-
-```http
-POST /api/repositories
-Content-Type: application/json
-Authorization: Bearer your_api_key_here
-
-{
-  "owner": "username",
-  "repo": "repository",
-  "branch": "main"
-}
-```
-
-Response:
-
-```json
-{
-  "id": "repo_id",
-  "owner": "username",
-  "repo": "repository",
-  "branch": "main",
-  "status": "connected"
-}
-```
-
-#### List Connected Repositories
+#### List Repositories
 
 ```http
 GET /api/repositories
-Authorization: Bearer your_api_key_here
+```
+
+Query Parameters:
+
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10)
+- `provider` (optional): Filter by provider (github, gitlab, bitbucket)
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "repo_456",
+      "name": "user/repo",
+      "provider": "github",
+      "description": "Repository description",
+      "default_branch": "main",
+      "visibility": "public",
+      "stats": {
+        "stars": 100,
+        "forks": 10,
+        "open_issues": 5
+      },
+      "connected_at": "2024-01-01T00:00:00Z",
+      "last_synced_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_items": 50
+  }
+}
+```
+
+#### Get Repository
+
+```http
+GET /api/repositories/:id
 ```
 
 Response:
 
 ```json
 {
-  "repositories": [
-    {
-      "id": "repo_id",
-      "owner": "username",
-      "repo": "repository",
-      "branch": "main",
-      "status": "connected"
-    }
-  ],
-  "pagination": {
-    "total": 10,
-    "page": 1,
-    "perPage": 10
+  "id": "repo_456",
+  "name": "user/repo",
+  "provider": "github",
+  "description": "Repository description",
+  "default_branch": "main",
+  "visibility": "public",
+  "stats": {
+    "stars": 100,
+    "forks": 10,
+    "open_issues": 5
+  },
+  "settings": {
+    "auto_sync": true,
+    "sync_frequency": "daily",
+    "default_story_visibility": "public"
+  },
+  "connected_at": "2024-01-01T00:00:00Z",
+  "last_synced_at": "2024-01-01T00:00:00Z"
+}
+```
+
+#### Update Repository Settings
+
+```http
+PATCH /api/repositories/:id/settings
+```
+
+Request Body:
+
+```json
+{
+  "auto_sync": true,
+  "sync_frequency": "daily",
+  "default_story_visibility": "public"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "repo_456",
+  "settings": {
+    "auto_sync": true,
+    "sync_frequency": "daily",
+    "default_story_visibility": "public"
+  },
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### User Settings
+
+#### Get Settings
+
+```http
+GET /api/settings
+```
+
+Response:
+
+```json
+{
+  "theme": {
+    "mode": "system",
+    "accent_color": "default",
+    "language": "en"
+  },
+  "notifications": {
+    "email": true,
+    "web": true,
+    "digest": "weekly"
+  },
+  "privacy": {
+    "show_activity": true,
+    "default_story_visibility": "private"
+  },
+  "repository": {
+    "auto_sync": true,
+    "default_branch": "main",
+    "sync_frequency": "daily"
+  },
+  "accessibility": {
+    "font_size": "medium",
+    "high_contrast": false,
+    "reduce_animations": false,
+    "keyboard_shortcuts": true
   }
+}
+```
+
+#### Update Settings
+
+```http
+PATCH /api/settings
+```
+
+Request Body:
+
+```json
+{
+  "theme": {
+    "mode": "dark"
+  },
+  "notifications": {
+    "email": false
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "theme": {
+    "mode": "dark",
+    "accent_color": "default",
+    "language": "en"
+  },
+  "notifications": {
+    "email": false,
+    "web": true,
+    "digest": "weekly"
+  },
+  "updated_at": "2024-01-01T00:00:00Z"
 }
 ```
 
 ### API Keys
 
-#### Create API Key
-
-```http
-POST /api/keys
-Content-Type: application/json
-Authorization: Bearer your_api_key_here
-
-{
-  "name": "My API Key",
-  "expiration": "2025-01-01T00:00:00Z"
-}
-```
-
-Response:
-
-```json
-{
-  "id": "key_id",
-  "key": "api_key_value",
-  "name": "My API Key",
-  "expiration": "2025-01-01T00:00:00Z",
-  "createdAt": "2024-01-01T00:00:00Z"
-}
-```
-
 #### List API Keys
 
 ```http
 GET /api/keys
-Authorization: Bearer your_api_key_here
 ```
 
 Response:
 
 ```json
 {
-  "keys": [
+  "data": [
     {
-      "id": "key_id",
-      "name": "My API Key",
-      "expiration": "2025-01-01T00:00:00Z",
-      "createdAt": "2024-01-01T00:00:00Z"
+      "id": "key_789",
+      "name": "Development Key",
+      "last_used": "2024-01-01T00:00:00Z",
+      "created_at": "2024-01-01T00:00:00Z",
+      "expires_at": "2025-01-01T00:00:00Z"
     }
   ]
 }
 ```
 
+#### Create API Key
+
+```http
+POST /api/keys
+```
+
+Request Body:
+
+```json
+{
+  "name": "New API Key",
+  "expires_in": "1y"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "key_789",
+  "name": "New API Key",
+  "key": "gf_key_123...", // Only shown once
+  "created_at": "2024-01-01T00:00:00Z",
+  "expires_at": "2025-01-01T00:00:00Z"
+}
+```
+
+#### Revoke API Key
+
+```http
+DELETE /api/keys/:id
+```
+
+Response:
+
+```json
+{
+  "id": "key_789",
+  "status": "revoked"
+}
+```
+
 ## Error Handling
 
-The API uses conventional HTTP response codes:
-
-- 200: Success
-- 400: Bad Request
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not Found
-- 429: Too Many Requests
-- 500: Internal Server Error
-
-Error Response Format:
+### Error Response Format
 
 ```json
 {
   "error": {
-    "code": "error_code",
-    "message": "Human readable message",
-    "details": {}
+    "code": "invalid_request",
+    "message": "Detailed error message",
+    "details": {
+      "field": "specific_field",
+      "reason": "validation_failed"
+    }
   }
 }
 ```
+
+### Common Error Codes
+
+- `unauthorized`: Invalid or missing API key
+- `forbidden`: Insufficient permissions
+- `not_found`: Resource not found
+- `invalid_request`: Invalid request parameters
+- `rate_limited`: Rate limit exceeded
+- `internal_error`: Server error
+
+### HTTP Status Codes
+
+- `200`: Success
+- `201`: Created
+- `204`: No Content
+- `400`: Bad Request
+- `401`: Unauthorized
+- `403`: Forbidden
+- `404`: Not Found
+- `429`: Too Many Requests
+- `500`: Internal Server Error
 
 ## Webhooks
 
-GitFables can send webhook notifications for various events:
+### Available Events
 
-```http
-POST your_webhook_url
-Content-Type: application/json
-X-GitFables-Signature: sha256=...
+- `story.generated`
+- `story.published`
+- `repository.connected`
+- `repository.synced`
 
+### Webhook Format
+
+```json
 {
-  "event": "story.generated",
+  "id": "evt_123",
+  "type": "story.generated",
+  "created_at": "2024-01-01T00:00:00Z",
   "data": {
-    "id": "story_id",
-    "repository": "owner/repo",
-    "generatedAt": "2024-01-01T00:00:00Z"
+    "story_id": "story_123",
+    "repository_id": "repo_456",
+    "status": "completed"
   }
 }
 ```
 
-Available Events:
+### Webhook Security
 
-- `story.generated`: When a new story is generated
-- `repository.connected`: When a repository is connected
-- `repository.synced`: When repository data is synced
+- HMAC signatures included in `X-GitFables-Signature` header
+- Verify webhooks using your webhook secret
+- Retry logic for failed deliveries
+
+## SDKs
+
+Official SDKs are available for:
+
+- JavaScript/TypeScript
+- Python
+- Ruby
+- Go
+
+Example (TypeScript):
+
+```typescript
+import { GitFables } from '@gitfables/sdk'
+
+const client = new GitFables('your-api-key')
+
+// Generate a story
+const story = await client.stories.generate({
+  repository_id: 'repo_456',
+  settings: {
+    style: 'technical',
+  },
+})
+```
+
+## Support
+
+- [API Status Page](https://status.gitfables.com)
+- [Developer Documentation](https://docs.gitfables.com)
+- [API Support Email](mailto:api@gitfables.com)
+- [Discord Community](https://discord.gg/gitfables)

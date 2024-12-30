@@ -1,156 +1,324 @@
-# Architecture
+# Architecture Overview
 
-GitFables follows a modern, modular architecture designed for scalability and maintainability.
+## Core Technologies
 
-## Core Principles
+- **Next.js 14**: Full-stack React framework with App Router
+- **TypeScript**: Type-safe development
+- **Supabase**: Authentication and PostgreSQL database
+- **TailwindCSS**: Utility-first CSS framework
+- **Shadcn UI**: Accessible component library
 
-- **Server-First**: Leveraging Next.js 14's server components for optimal performance
-- **Type Safety**: End-to-end type safety with Supabase and TypeScript
-- **Modular Design**: Feature-based organization with clear boundaries
-- **Clean Architecture**: Separation of concerns and predictable data flow
-
-## Key Components
-
-### Frontend Architecture
+## Application Structure
 
 ```
-components/
-├── analytics/     # Analytics and metrics
-├── auth/         # Authentication components
-├── dashboard/    # Dashboard features
-├── layout/       # Layout components
-├── story/        # Story rendering
-└── ui/           # Shadcn UI components
+src/
+├── app/                # Next.js app router pages
+│   ├── (auth)/        # Authentication routes
+│   ├── (dashboard)/   # Protected dashboard routes
+│   ├── (marketing)/   # Public marketing pages
+│   └── api/           # API routes
+├── components/         # React components
+│   ├── analytics/     # Analytics components
+│   ├── auth/          # Authentication components
+│   ├── dashboard/     # Dashboard components
+│   ├── layout/        # Layout components
+│   ├── repositories/  # Repository components
+│   ├── settings/      # Settings components
+│   ├── story/         # Story components
+│   └── ui/            # Shadcn UI components
+├── hooks/             # Custom React hooks
+│   ├── api/          # API-related hooks
+│   ├── settings/     # Settings hooks
+│   └── vcs/          # VCS provider hooks
+├── lib/              # Core libraries
+│   ├── actions/      # Server actions
+│   ├── supabase/     # Database client
+│   ├── utils/        # Utility functions
+│   └── vcs/          # VCS provider implementations
+└── types/           # TypeScript types
 ```
 
-### Backend Architecture
+## Key Features
 
+### 1. Authentication
+
+- Supabase Auth integration
+- OAuth providers (GitHub)
+- Protected routes
+- Session management
+
+### 2. VCS Integration
+
+- GitHub OAuth authentication
+- Repository connection
+- Commit history sync
+- Provider abstraction layer
+
+### 3. Settings Management
+
+```typescript
+interface SettingsUpdate {
+  theme?: 'light' | 'dark' | 'system'
+  notifications?: {
+    email?: boolean
+    push?: boolean
+    inApp?: boolean
+  }
+  privacy?: {
+    shareAnalytics?: boolean
+    shareUsage?: boolean
+  }
+  accessibility?: {
+    reduceMotion?: boolean
+    highContrast?: boolean
+    largeText?: boolean
+  }
+  advanced?: {
+    experimentalFeatures?: boolean
+    debugMode?: boolean
+  }
+}
 ```
-lib/
-├── auth/         # Authentication logic
-├── story/        # Story generation
-├── supabase/     # Database client
-└── utils/        # Utility functions
+
+### 4. API Key Management
+
+```typescript
+interface APIKeyUsage {
+  total_requests: number
+  avg_response_time: number
+  success_rate: number
+  requests_by_endpoint: Record<string, number>
+  requests_by_status: Record<string, number>
+  requests_over_time: Array<{ timestamp: string; count: number }>
+  response_times_over_time: Array<{ timestamp: string; value: number }>
+}
 ```
 
-## Data Flow
+## Database Schema
 
-1. **Authentication Flow**:
+### VCS Connections
 
-   ```mermaid
-   sequenceDiagram
-   participant User
-   participant App
-   participant Supabase
-   participant GitHub
+```sql
+create table vcs_connections (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references auth.users(id) on delete cascade,
+  provider text not null check (provider in ('github', 'gitlab', 'bitbucket')),
+  provider_user_id text not null,
+  provider_username text not null,
+  provider_email text not null,
+  provider_avatar_url text,
+  access_token text not null,
+  refresh_token text,
+  expires_at timestamp with time zone,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  unique (user_id, provider)
+);
+```
 
-   User->>App: Click Login
-   App->>Supabase: Sign in with GitHub
-   Supabase->>GitHub: OAuth Request
-   GitHub->>User: Authorize
-   User->>GitHub: Approve
-   GitHub->>Supabase: Token
-   Supabase->>App: Session
-   App->>User: Redirect to Dashboard
-   ```
+### User Settings
 
-2. **Story Generation Flow**:
+```sql
+create table user_settings (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references auth.users(id) on delete cascade,
+  settings jsonb not null default '{
+    "theme": {
+      "mode": "system",
+      "accent_color": "default",
+      "language": "en"
+    },
+    "notifications": {
+      "email": true,
+      "web": true,
+      "digest": "weekly"
+    },
+    "privacy": {
+      "show_activity": true,
+      "default_story_visibility": "private"
+    },
+    "repository": {
+      "auto_sync": true,
+      "default_branch": "main",
+      "sync_frequency": "daily"
+    },
+    "accessibility": {
+      "font_size": "medium",
+      "high_contrast": false,
+      "reduce_animations": false,
+      "keyboard_shortcuts": true
+    }
+  }',
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  unique (user_id)
+);
+```
 
-   ```mermaid
-   sequenceDiagram
-   participant User
-   participant App
-   participant Supabase
-   participant GitHub
-   participant StoryEngine
+## Component Architecture
 
-   User->>App: Select Repository
-   App->>GitHub: Fetch Commits
-   GitHub->>App: Commit History
-   App->>StoryEngine: Process History
-   StoryEngine->>Supabase: Save Story
-   Supabase->>App: Story Data
-   App->>User: Display Story
-   ```
+### Server Components (Default)
 
-## Key Technologies
+```typescript
+// Example server component
+export default async function SettingsPage() {
+  const userSettings = await getSettings()
 
-### Frontend
+  // Convert UserSettings to SettingsUpdate format
+  const initialSettings: SettingsUpdate = {
+    theme: userSettings.theme.mode,
+    notifications: {
+      email: userSettings.notifications.email,
+      push: userSettings.notifications.web,
+      inApp: userSettings.notifications.web
+    },
+    // ... other settings
+  }
 
-- **Next.js 14**: React framework with App Router and RSC
-- **TailwindCSS**: Utility-first styling
-- **Shadcn UI**: Component library
-- **TypeScript**: Type safety
+  return <SettingsContent initialSettings={initialSettings} />
+}
+```
 
-### Backend
+### Client Components
 
-- **Supabase**:
-  - PostgreSQL database
-  - Row Level Security
-  - Real-time subscriptions
-  - Authentication
-- **GitHub API**: Repository access
+```typescript
+'use client'
+
+export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
+  const { settings, updateSettings, isLoading } = useSettings(initialSettings)
+  const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
+
+  // Initialize state from settings
+  React.useEffect(() => {
+    if (settings) {
+      setThemeMode((settings.theme as ThemeMode) ?? 'system')
+    }
+  }, [settings])
+
+  const handleThemeChange = async (mode: ThemeMode) => {
+    setThemeMode(mode)
+    await updateSettings({
+      theme: mode
+    })
+  }
+
+  return (
+    // Component JSX
+  )
+}
+```
 
 ## State Management
 
-1. **Server State**:
+### Server State
 
-   - Server Components for data fetching
-   - Supabase for database queries
-   - Strong typing with generated types
+- React Server Components
+- Server Actions
+- Database queries
 
-2. **Client State**:
-   - React hooks for UI state
-   - Form state with react-hook-form
-   - Minimal client-side state
+### Client State
+
+- React hooks
+- Local component state
+- Form state management
+
+## API Design
+
+### REST Endpoints
+
+```typescript
+// Example API route
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const apiKey = searchParams.get('api_key')
+
+    // Validate API key
+    // Process request
+    // Return response
+
+    return new Response(JSON.stringify(data), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+}
+```
+
+### Server Actions
+
+```typescript
+'use server'
+
+export async function updateSettings(settings: SettingsUpdate) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('No authenticated user')
+
+  const { error } = await supabase
+    .from('user_settings')
+    .update({ settings })
+    .eq('user_id', user.id)
+
+  if (error) throw error
+  return { success: true }
+}
+```
 
 ## Security
 
-1. **Authentication**:
+### Authentication
 
-   - Supabase Auth
-   - Row Level Security
-   - Protected routes
-   - Type-safe auth helpers
+- Supabase Auth
+- OAuth providers
+- Session management
+- Protected routes
 
-2. **Data Protection**:
-   - Input validation
-   - SQL injection prevention
-   - XSS protection
-   - CORS configuration
+### Authorization
+
+- Row Level Security (RLS)
+- API key validation
+- Rate limiting
+- Scope checking
 
 ## Performance
 
-1. **Server Components**:
+### Optimizations
 
-   - Reduced client JS
-   - Streaming with Suspense
-   - Optimized data fetching
+- React Server Components
+- Edge caching
+- Incremental Static Regeneration
+- Dynamic imports
 
-2. **Optimizations**:
-   - Image optimization
-   - Font optimization
-   - Code splitting
-   - Edge caching
+### Monitoring
 
-## Development Workflow
+- Error tracking
+- Performance metrics
+- Usage analytics
+- API monitoring
 
-1. **Code Organization**:
+## Future Enhancements
 
-   - Feature-based structure
-   - Clear naming conventions
-   - Type-safe APIs
-   - Comprehensive docs
+1. **Additional VCS Providers**
 
-2. **Quality Assurance**:
+   - GitLab integration
+   - Bitbucket integration
+   - Custom provider framework
 
-   - TypeScript strict mode
-   - ESLint configuration
-   - Prettier formatting
-   - Git hooks with Husky
+2. **Enhanced Analytics**
 
-3. **Deployment**:
-   - Vercel deployment
-   - Environment management
-   - Error monitoring
-   - Analytics tracking
+   - Advanced metrics
+   - Custom reports
+   - Data visualization
+
+3. **Performance Improvements**
+   - Edge functions
+   - Caching strategies
+   - Bundle optimization

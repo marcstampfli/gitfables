@@ -2,19 +2,22 @@
 
 ## Overview
 
-GitFables is designed to support multiple Version Control Systems (VCS), allowing users to connect and manage repositories from various providers. Currently, GitHub integration is available, with GitLab, Bitbucket, and Azure DevOps support planned for future releases.
+GitFables is designed to support multiple Version Control Systems (VCS), allowing users to connect and manage repositories from various providers. Currently, GitHub integration is available, with GitLab and Bitbucket support planned for future releases.
 
 ## Supported Providers
 
 ### Active Providers
 
 - **GitHub**: Full integration with repository connection, sync, and story generation
+  - OAuth authentication
+  - Repository listing and selection
+  - Commit history synchronization
+  - User profile integration
 
 ### Future Providers (Currently Disabled)
 
 - **GitLab**: Coming soon
 - **Bitbucket**: Coming soon
-- **Azure DevOps**: Coming soon
 
 ## Connection Flow
 
@@ -27,11 +30,12 @@ sequenceDiagram
 
     User->>App: Select VCS Provider
     User->>App: Click "Connect Repository"
+    App->>VCS: OAuth Authentication
+    VCS->>App: Return Access Token
+    App->>Supabase: Store Connection
     App->>VCS: Request Repository List
     VCS->>App: Return Available Repos
     User->>App: Select Repository
-    App->>VCS: Request Repository Access
-    VCS->>App: Grant Access
     App->>Supabase: Store Repository Info
     App->>VCS: Initial Sync
     VCS->>App: Commit History
@@ -39,361 +43,186 @@ sequenceDiagram
     App->>User: Show Success
 ```
 
-## Features
+## Implementation Details
 
-### 1. Provider Selection
+### VCS Provider Interface
 
 ```typescript
-interface VCSProvider {
+interface VCSConnection {
   id: string
-  name: string
-  type: 'github' | 'gitlab' | 'bitbucket' | 'azure_devops'
-  isActive: boolean
-  icon: string
-  authUrl: string
-  scopes: string[]
+  user_id: string
+  provider: 'github' | 'gitlab' | 'bitbucket'
+  provider_user_id: string
+  provider_username: string
+  provider_email: string
+  provider_avatar_url: string | null
+  access_token: string
+  refresh_token: string | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
-const SUPPORTED_PROVIDERS: VCSProvider[] = [
+interface VCSProviderItem {
+  id: string
+  name: string
+  icon: React.ComponentType<{ className?: string }>
+  isActive: boolean
+  comingSoon?: boolean
+}
+```
+
+### Provider Configuration
+
+```typescript
+const providers: VCSProviderItem[] = [
   {
     id: 'github',
     name: 'GitHub',
-    type: 'github',
+    icon: GithubIcon,
     isActive: true,
-    icon: '/icons/github.svg',
-    authUrl: 'https://github.com/login/oauth/authorize',
-    scopes: ['repo', 'read:user', 'read:org'],
   },
   {
     id: 'gitlab',
     name: 'GitLab',
-    type: 'gitlab',
+    icon: GitlabIcon,
     isActive: false,
-    icon: '/icons/gitlab.svg',
-    authUrl: '',
-    scopes: [],
+    comingSoon: true,
   },
-  // Additional providers...
+  // Additional providers to be added
 ]
 ```
 
-### 2. Repository Connection
-
-- Provider-agnostic interface
-- OAuth-based authentication
-- Repository selection interface
-- Connection status tracking
-
-### 3. Sync Mechanism
+### OAuth Authentication
 
 ```typescript
-interface SyncOptions {
-  provider: string
-  fullSync?: boolean
-  branch?: string
-  since?: Date
-  until?: Date
-}
+const handleConnect = async (provider: VCSProviderItem) => {
+  if (!provider.isActive) return
 
-async function syncRepository(repositoryId: string, options: SyncOptions) {
-  const provider = getProviderClient(options.provider)
-  // 1. Fetch repository metadata
-  // 2. Get commit history
-  // 3. Process commits
-  // 4. Update sync status
-}
-```
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider.id as 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'repo read:user user:email',
+      },
+    })
 
-#### Sync Types
-
-1. **Initial Sync**
-
-   - Full repository history
-   - All branches
-   - Complete metadata
-
-2. **Incremental Sync**
-
-   - New commits only
-   - Active branch
-   - Changed metadata
-
-3. **Manual Sync**
-   - User-triggered
-   - Selected range
-   - Specific branches
-
-### 4. Data Management
-
-#### Repository Data
-
-```typescript
-interface Repository {
-  id: string
-  user_id: string
-  name: string
-  description: string
-  github_id: string
-  default_branch: string
-  last_synced_at: Date
-  story_count: number
-  commit_count: number
-  created_at: Date
-  updated_at: Date
-}
-```
-
-#### Sync Status
-
-```typescript
-interface SyncStatus {
-  status: 'pending' | 'in_progress' | 'completed' | 'failed'
-  progress: number
-  total_commits: number
-  processed_commits: number
-  error?: string
-}
-```
-
-### 5. GitHub Integration
-
-#### Required Scopes
-
-- `repo`: Repository access
-- `read:user`: User information
-- `read:org`: Organization repositories
-
-#### API Usage
-
-```typescript
-// Example: Fetching repository data
-async function getRepositoryData(githubId: string) {
-  const response = await octokit.request('GET /repositories/{id}', {
-    id: githubId,
-    headers: {
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-  })
-  return response.data
-}
-```
-
-## User Interface
-
-### 1. Provider Selection
-
-```typescript
-// Components/repositories/provider-selector.tsx
-interface ProviderSelectorProps {
-  providers: VCSProvider[]
-  onSelect: (provider: VCSProvider) => void
-}
-```
-
-Features:
-
-- Provider cards with icons
-- Active/disabled status indicators
-- Coming soon badges
-- Provider descriptions
-
-### 2. Repository List
-
-```typescript
-// Components/repositories/repository-list.tsx
-interface RepositoryListProps {
-  provider: VCSProvider
-  repositories: Repository[]
-  onSync: (id: string) => void
-  onDelete: (id: string) => void
-}
-```
-
-Features:
-
-- Repository cards
-- Sync status indicators
-- Action buttons
-- Sort and filter options
-
-### 3. Connection Dialog
-
-```typescript
-// Components/repositories/connect-dialog.tsx
-interface ConnectDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  onConnect: (repo: GitHubRepository) => void
-}
-```
-
-Steps:
-
-1. GitHub authorization
-2. Repository selection
-3. Permission confirmation
-4. Connection status
-
-### 4. Repository Details
-
-```typescript
-// Components/repositories/repository-details.tsx
-interface RepositoryDetailsProps {
-  repository: Repository
-  syncStatus: SyncStatus
-  stories: Story[]
-}
-```
-
-Information:
-
-- Repository metadata
-- Sync history
-- Generated stories
-- Analytics
-
-## Permissions
-
-### 1. Access Control
-
-```sql
--- Repository access policy
-CREATE POLICY "Users can access own repositories"
-ON repositories
-FOR ALL USING (
-  auth.uid() = user_id
-);
-```
-
-### 2. Organization Access
-
-- Organization member validation
-- Repository visibility check
-- Team permission check
-
-### 3. Rate Limiting
-
-```typescript
-const RATE_LIMITS = {
-  connections_per_day: 10,
-  syncs_per_hour: 5,
-  concurrent_syncs: 2,
-}
-```
-
-## Error Handling
-
-### 1. Connection Errors
-
-```typescript
-try {
-  await connectRepository(githubId)
-} catch (error) {
-  if (error.code === 'github/rate_limit') {
-    // Handle rate limit
-  } else if (error.code === 'github/not_found') {
-    // Handle missing repository
-  } else {
-    // Handle other errors
+    if (error) throw error
+  } catch (err) {
+    logError('Failed to connect to VCS provider', {
+      metadata: {
+        error: err,
+        providerId: provider.id,
+        providerName: provider.name,
+      },
+    })
   }
 }
 ```
 
-### 2. Sync Errors
+### Connection Management
 
-- Network failures
-- API limitations
-- Permission changes
-- Invalid states
-
-### 3. Recovery Strategies
-
-1. **Automatic Retry**
-
-   - Exponential backoff
-   - Maximum attempts
-   - Status tracking
-
-2. **Manual Recovery**
-   - User notification
-   - Retry options
-   - Error details
-
-## Monitoring
-
-### 1. Sync Metrics
+The `useVCSConnections` hook provides functionality for managing VCS connections:
 
 ```typescript
-interface SyncMetrics {
-  total_repositories: number
-  active_syncs: number
-  failed_syncs: number
-  average_sync_time: number
-}
+const { connections, isLoading } = useVCSConnections()
 ```
 
-### 2. Performance Tracking
+Features:
 
-- API response times
-- Sync duration
-- Resource usage
-- Error rates
+- List active connections
+- Connection status tracking
+- Error handling
+- Loading states
 
-### 3. Usage Analytics
+### UI Components
 
-- Connection patterns
-- Sync frequency
-- Story generation
-- User engagement
+#### Provider List
 
-## Best Practices
+```typescript
+<div className="grid gap-4">
+  {providers.map((provider) => {
+    const connection = connections.find(c => c.provider === provider.id)
+    const isConnected = !!connection
 
-### 1. Repository Management
+    return (
+      <Button
+        key={provider.id}
+        variant={provider.isActive ? 'outline' : 'secondary'}
+        className={cn(
+          "justify-start",
+          isConnected && "border-green-500"
+        )}
+        onClick={() => handleConnect(provider)}
+        disabled={!provider.isActive || isLoading}
+      >
+        <provider.icon className="mr-2 h-5 w-5" />
+        <span className="flex-1 text-left">
+          {provider.name}
+          {connection?.provider_username && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              Connected as {connection.provider_username}
+            </span>
+          )}
+          {provider.comingSoon && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              Coming soon
+            </span>
+          )}
+        </span>
+        {isConnected && (
+          <CheckCircle2Icon className="ml-2 h-4 w-4 text-green-500" />
+        )}
+      </Button>
+    )
+  })}
+</div>
+```
 
-- Regular syncs
-- Incremental updates
-- Cache optimization
-- Resource cleanup
+## Database Schema
 
-### 2. Error Prevention
+### VCS Connections Table
 
-- Validation checks
-- Permission verification
-- Rate limit awareness
-- Status monitoring
+```sql
+create table vcs_connections (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references auth.users(id) on delete cascade,
+  provider text not null check (provider in ('github', 'gitlab', 'bitbucket')),
+  provider_user_id text not null,
+  provider_username text not null,
+  provider_email text not null,
+  provider_avatar_url text,
+  access_token text not null,
+  refresh_token text,
+  expires_at timestamp with time zone,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  unique (user_id, provider)
+);
+```
 
-### 3. User Experience
+## Future Enhancements
 
-- Clear feedback
-- Progress indicators
-- Error messages
-- Recovery options
+1. **GitLab Integration**
 
-## Future Improvements
+   - OAuth implementation
+   - Repository sync
+   - User profile integration
 
-1. **Additional Providers**
+2. **Bitbucket Integration**
 
-   - GitLab integration (Planned)
-   - Bitbucket support (Planned)
-   - Azure DevOps integration (Planned)
-   - Self-hosted Git servers
+   - OAuth implementation
+   - Repository sync
+   - User profile integration
 
-2. **Provider Features**
+3. **Enhanced Sync Features**
 
-   - Provider-specific optimizations
-   - Custom authentication flows
-   - Provider-specific metadata
-   - Cross-provider stories
+   - Selective branch sync
+   - Commit filtering
+   - Incremental updates
 
-3. **Integration Framework**
-
-   - Provider adapter system
-   - Common interface layer
-   - Provider-specific extensions
-   - Migration tools
-
-4. **Performance**
-   - Provider-optimized syncing
-   - Parallel processing
-   - Smart caching strategies
-   - Resource management
+4. **Advanced Repository Management**
+   - Batch operations
+   - Advanced filtering
+   - Custom sync schedules

@@ -4,40 +4,50 @@ This section details the features implemented in GitFables, their current status
 
 ## Core Features
 
-### 1. GitHub Integration
+### 1. VCS Integration
 
-- [x] OAuth authentication
+- [x] GitHub OAuth authentication
 - [x] Repository listing and selection
 - [x] Commit history fetching
-- [ ] Webhook support for real-time updates
-- [ ] Branch and tag support
+- [x] Repository settings management
+- [x] Auto-sync configuration
+- [ ] GitLab integration (coming soon)
+- [ ] Bitbucket integration (coming soon)
+- [ ] Webhook support
 
 ### 2. Story Generation
 
-- [x] Basic commit analysis
+- [x] Commit history analysis
 - [x] Multiple narrative styles
-- [x] Developer personas
+- [x] Technical details inclusion
+- [x] Code snippets
+- [x] Contributor insights
+- [x] Custom date ranges
+- [x] Focus area selection
 - [ ] Custom templates
 - [ ] AI-powered insights
-- [ ] Code change analysis
 
-### 3. Story Sharing
+### 3. User Settings
 
-- [x] Shareable links
-- [x] Export as Markdown
-- [x] Export as image
-- [ ] Social media integration
-- [ ] Embed support
-- [ ] Team sharing
+- [x] Theme customization
+- [x] Notification preferences
+- [x] Privacy settings
+- [x] Accessibility options
+- [x] API key management
+- [x] Repository defaults
+- [ ] Team preferences
+- [ ] Custom workflows
 
-### 4. User Interface
+### 4. API Access
 
-- [x] Responsive design
-- [x] Dark mode support
-- [x] Animations
-- [x] Loading states
-- [ ] Advanced transitions
-- [ ] Keyboard shortcuts
+- [x] API key generation
+- [x] Usage tracking
+- [x] Rate limiting
+- [x] Webhook delivery
+- [x] SDK support
+- [ ] Advanced analytics
+- [ ] Custom integrations
+- [ ] Batch operations
 
 ## Feature Details
 
@@ -45,96 +55,169 @@ This section details the features implemented in GitFables, their current status
 
 The story generation process involves:
 
-1. **Data Collection**
+1. **Repository Analysis**
 
-   - Repository metadata
-   - Commit history
-   - Author information
-   - File changes
+   - Commit history fetching
+   - Metadata extraction
+   - Code change analysis
+   - Contributor tracking
 
-2. **Analysis**
+2. **Content Generation**
 
-   - Commit patterns
-   - Development timeline
-   - Code impact
-   - Collaboration metrics
+   - Style application
+   - Technical detail inclusion
+   - Contributor insights
+   - Code snippet selection
 
-3. **Narrative Generation**
-   - Story structure
-   - Writing style
-   - Key highlights
+3. **Output Formatting**
+   - Multiple formats (article, story, report)
+   - Code block highlighting
+   - Statistics visualization
+   - Export options
+
+### Generation Options
+
+Available customization options:
+
+1. **Style**
+
+   - Technical (detailed, code-focused)
+   - Narrative (story-driven, engaging)
+   - Casual (informal, accessible)
+
+2. **Content Focus**
+
+   - Features and enhancements
+   - Bug fixes and improvements
+   - Code refactoring
+   - Documentation updates
+
+3. **Included Elements**
    - Technical details
+   - Code snippets
+   - Contributor insights
+   - Project statistics
 
-### Story Styles
+## Settings Management
 
-Available narrative styles:
+### Theme Options
 
-1. **Epic Journey**
+- Light mode
+- Dark mode
+- System preference
+- High contrast
+- Custom colors
 
-   - Dramatic storytelling
-   - Major milestones
-   - Development challenges
-   - Success stories
+### Notification Settings
 
-2. **Technical Report**
+- Email notifications
+- Web notifications
+- Weekly digest
+- Custom frequency
 
-   - Code-focused
-   - Performance improvements
-   - Architecture changes
-   - Technical decisions
+### Privacy Controls
 
-3. **Team Collaboration**
-   - Multiple contributors
-   - Communication patterns
-   - Project coordination
-   - Team dynamics
+- Activity visibility
+- Story sharing defaults
+- Data collection
+- Analytics sharing
+
+### Accessibility Features
+
+- Font size adjustment
+- Motion reduction
+- Keyboard navigation
+- Screen reader support
+
+## API Integration
+
+### Authentication
+
+- API key generation
+- Token management
+- OAuth integration
+- Scope control
+
+### Rate Limiting
+
+- Per-key limits
+- Burst allowance
+- Usage tracking
+- Overage handling
+
+### SDK Support
+
+- JavaScript/TypeScript
+- Python
+- Ruby
+- Go
 
 ## Planned Features
 
 ### Short Term (1-2 months)
 
-1. **Enhanced Analytics**
+1. **VCS Providers**
 
-   - Code complexity metrics
-   - Team contribution graphs
-   - Impact visualization
-   - Time-based analysis
+   - GitLab integration
+   - Bitbucket integration
+   - Provider selection UI
+   - Migration tools
 
-2. **Collaboration Tools**
+2. **Analytics**
 
+   - Usage dashboards
+   - Performance metrics
+   - Error tracking
+   - User insights
+
+3. **Collaboration**
    - Team workspaces
    - Shared stories
-   - Comment system
+   - Comments system
    - Review workflow
-
-3. **Template System**
-   - Custom templates
-   - Style editor
-   - Variable support
-   - Preview mode
 
 ### Long Term (3-6 months)
 
-1. **Advanced Integration**
+1. **Enterprise Features**
 
-   - Multiple VCS support
-   - CI/CD integration
-   - Project management tools
-   - Documentation platforms
+   - Team management
+   - Access control
+   - Audit logging
+   - Custom branding
 
 2. **AI Enhancements**
 
    - Code quality analysis
    - Pattern recognition
    - Predictive insights
-   - Natural language processing
+   - Smart suggestions
 
-3. **Enterprise Features**
-   - Team management
-   - Access control
-   - Audit logs
-   - Custom branding
+3. **Integration Platform**
+   - Webhook management
+   - Custom integrations
+   - Workflow automation
+   - Third-party apps
 
 ## Feature Requests
 
-See our [GitHub Issues](https://github.com/marcstampfli/gitfables/issues) for current feature requests and to submit new ones.
+We welcome feature requests and feedback! Please submit them through:
+
+1. [GitHub Issues](https://github.com/gitfables/gitfables/issues)
+2. [Discord Community](https://discord.gg/gitfables)
+3. [Email Support](mailto:support@gitfables.com)
+
+## Documentation
+
+Detailed documentation for each feature is available in the following sections:
+
+- [Story Generation](./story-generation.md)
+- [Repositories](./repositories.md)
+- [Stories](./stories.md)
+- [Users](./users.md)
+
+For development guidelines and API documentation, see:
+
+- [API Reference](../api-reference.md)
+- [Architecture](../architecture.md)
+- [Contributing](../contributing.md)
+- [Development Guide](../DEVELOPMENT.md)

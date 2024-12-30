@@ -1,223 +1,251 @@
 # Contributing to GitFables
 
-We love your input! We want to make contributing to GitFables as easy and transparent as possible.
+Thank you for your interest in contributing to GitFables! This document provides guidelines and instructions for contributing to the project.
 
-## Development Process
+## Getting Started
 
-1. Fork the repo and create your branch from `main`
-2. Make your changes
-3. Ensure the test suite passes
-4. Submit a pull request
+1. **Fork the Repository**
+
+   - Fork the repository on GitHub
+   - Clone your fork locally
+   - Add the upstream repository as a remote
+
+2. **Set Up Development Environment**
+
+   ```bash
+   # Install dependencies
+   npm install
+
+   # Set up environment variables
+   cp .env.example .env.local
+
+   # Start development server
+   npm run dev
+   ```
+
+3. **Create a Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+## Development Guidelines
+
+### Code Style
+
+- Use TypeScript for all new code
+- Follow the existing code style
+- Use ESLint and Prettier for formatting
+- Run `npm run lint` before committing
+
+### Component Guidelines
+
+1. **Server vs Client Components**
+
+   - Use Server Components by default
+   - Only use Client Components when necessary (e.g., for interactivity)
+   - Add 'use client' directive at the top of client components
+
+2. **Component Structure**
+
+   ```typescript
+   // server component example
+   export default async function FeatureComponent() {
+     // Fetch data
+     const data = await getData()
+
+     return <ClientComponent data={data} />
+   }
+
+   // client component example
+   'use client'
+
+   interface Props {
+     data: Data
+   }
+
+   export function ClientComponent({ data }: Props) {
+     const [state, setState] = useState(data)
+
+     return (
+       // JSX
+     )
+   }
+   ```
+
+3. **Props and Types**
+   - Define explicit interfaces for props
+   - Use TypeScript utility types where appropriate
+   - Export shared types from `types/` directory
+
+### State Management
+
+1. **Server State**
+
+   - Use Server Components for data fetching
+   - Implement Server Actions for mutations
+   - Handle loading and error states
+
+2. **Client State**
+   - Use React hooks for local state
+   - Minimize client-side state
+   - Handle form state with react-hook-form
+
+### Testing
+
+1. **Unit Tests**
+
+   ```bash
+   # Run tests
+   npm run test
+
+   # Run tests in watch mode
+   npm run test:watch
+   ```
+
+2. **Integration Tests**
+
+   ```bash
+   # Run Playwright tests
+   npm run test:e2e
+   ```
+
+3. **Test Guidelines**
+   - Write tests for new features
+   - Update tests when modifying existing features
+   - Aim for good coverage but focus on critical paths
+
+### Documentation
+
+1. **Code Documentation**
+
+   - Add JSDoc comments for functions and components
+   - Document complex logic and algorithms
+   - Keep comments up to date
+
+2. **Feature Documentation**
+   - Add new features to `docs/features/`
+   - Update existing documentation when needed
+   - Include code examples and usage patterns
 
 ## Pull Request Process
 
-1. Update documentation
-2. Update the README.md if needed
-3. Update the CHANGELOG.md
-4. The PR template will guide you through the rest
+1. **Before Submitting**
 
-## Code Style
+   - Ensure all tests pass
+   - Update documentation if needed
+   - Add tests for new features
+   - Run linting and type checking
 
-We use ESLint and Prettier to maintain code quality. Our style guide is enforced through these tools.
+2. **PR Guidelines**
 
-### TypeScript
+   - Create a descriptive PR title
+   - Fill out the PR template
+   - Link related issues
+   - Add screenshots for UI changes
 
-```typescript
-// ✅ Do: Use proper typing
-interface User {
-  id: string
-  name: string
-  email: string
-}
+3. **Review Process**
+   - Address review comments
+   - Keep commits clean and organized
+   - Squash commits before merging
 
-// ❌ Don't: Use any
-const user: any = { ... }
-```
+## Working with VCS Providers
 
-### React Components
+### Adding a New Provider
 
-```typescript
-// ✅ Do: Use functional components with proper typing
-interface ButtonProps {
-  label: string
-  onClick: () => void
-}
+1. **Implementation**
 
-const Button = ({ label, onClick }: ButtonProps) => {
-  return <button onClick={onClick}>{label}</button>
-}
+   ```typescript
+   // lib/vcs/providers/new-provider.ts
+   import { VCSProvider } from '../types'
 
-// ❌ Don't: Use class components
-class Button extends React.Component { ... }
-```
+   export class NewProvider implements VCSProvider {
+     async connect(): Promise<void> {
+       // Implementation
+     }
 
-### File Organization
+     async getRepositories(): Promise<Repository[]> {
+       // Implementation
+     }
 
-```
-components/
-├── feature/
-│   ├── component.tsx
-│   ├── component.test.tsx
-│   └── index.ts
-```
-
-## Testing
-
-### Unit Tests
-
-```typescript
-describe('StoryGenerator', () => {
-  it('should generate a story with correct format', async () => {
-    const story = await generateStory({
-      repository: 'test/repo',
-      style: 'technical',
-    })
-
-    expect(story).toHaveProperty('content')
-    expect(story).toHaveProperty('metadata')
-  })
-})
-```
-
-### Integration Tests
-
-```typescript
-describe('API Integration', () => {
-  it('should connect to GitHub successfully', async () => {
-    const connection = await connectToGitHub({
-      token: 'test-token',
-    })
-
-    expect(connection.status).toBe('connected')
-  })
-})
-```
-
-## Documentation
-
-### JSDoc Comments
-
-```typescript
-/**
- * Generates a story from repository commit history
- * @param {StorySettings} settings - Story generation settings
- * @returns {Promise<Story>} Generated story
- * @throws {ValidationError} If settings are invalid
- */
-async function generateStory(settings: StorySettings): Promise<Story> {
-  // Implementation
-}
-```
-
-### Markdown Files
-
-- Keep documentation up to date
-- Use clear headings
-- Include code examples
-- Add screenshots when helpful
-
-## Git Commit Messages
-
-Format: `<type>(<scope>): <subject>`
-
-Examples:
-
-```
-feat(story): add new story generation style
-fix(auth): resolve token refresh issue
-docs(api): update API documentation
-test(components): add tests for Button component
-```
-
-## Branch Naming
-
-Format: `<type>/<description>`
-
-Examples:
-
-```
-feature/story-styles
-bugfix/auth-token
-docs/api-reference
-```
-
-## Development Setup
-
-1. **Prerequisites**:
-
-   ```bash
-   node -v  # Should be >= 18
-   npm -v   # Should be >= 8
+     // ... other methods
+   }
    ```
 
-2. **Installation**:
+2. **Provider Registration**
 
-   ```bash
-   git clone https://github.com/yourusername/gitfables.git
-   cd gitfables
-   npm install
+   ```typescript
+   // lib/vcs/provider-registry.ts
+   import { NewProvider } from './providers/new-provider'
+
+   export const providers = {
+     github: new GitHubProvider(),
+     gitlab: new GitLabProvider(),
+     'new-provider': new NewProvider(),
+   }
    ```
 
-3. **Environment**:
+3. **Configuration**
+   - Add provider configuration to `.env.example`
+   - Update provider selection UI
+   - Add provider documentation
 
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your values
+### OAuth Integration
+
+1. **Configuration**
+
+   ```typescript
+   // lib/vcs/oauth-config.ts
+   export const oauthConfig = {
+     'new-provider': {
+       clientId: process.env.NEW_PROVIDER_CLIENT_ID,
+       clientSecret: process.env.NEW_PROVIDER_CLIENT_SECRET,
+       scopes: ['read:user', 'read:repo'],
+     },
+   }
    ```
 
-4. **Development**:
+2. **Authentication Flow**
+   - Implement OAuth callback handler
+   - Add token refresh logic
+   - Handle error cases
+
+## Deployment
+
+1. **Environment Setup**
+
+   - Configure production environment variables
+   - Set up monitoring and logging
+   - Configure error tracking
+
+2. **Deployment Process**
+
    ```bash
-   npm run dev     # Start development server
-   npm run test    # Run tests
-   npm run lint    # Run linter
+   # Build application
+   npm run build
+
+   # Run type checking
+   npm run type-check
+
+   # Run tests
+   npm run test
    ```
 
-## Issue Reporting
+3. **Post-Deployment**
+   - Monitor error rates
+   - Check performance metrics
+   - Verify feature flags
 
-### Bug Reports
+## Need Help?
 
-Include:
+- Check existing issues and discussions
+- Join our Discord community
+- Read the [FAQ](./FAQ.md)
+- Contact the maintainers
 
-- Clear description
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots if applicable
-- Environment details
+## Code of Conduct
 
-### Feature Requests
+Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md). We expect all contributors to adhere to it.
 
-Include:
+## License
 
-- Clear description
-- Use cases
-- Expected behavior
-- Optional: Implementation suggestions
-
-## Code Review Process
-
-1. **Automated Checks**:
-
-   - TypeScript compilation
-   - ESLint rules
-   - Test coverage
-   - Build success
-
-2. **Manual Review**:
-   - Code quality
-   - Performance impact
-   - Security implications
-   - Documentation updates
-
-## Community
-
-- Be welcoming and inclusive
-- Follow our Code of Conduct
-- Help others learn and grow
-- Share knowledge and experience
-
-## Questions?
-
-- Open a Discussion
-- Join our Discord
-- Check the FAQ
-- Email the maintainers
+By contributing to GitFables, you agree that your contributions will be licensed under the project's MIT license.

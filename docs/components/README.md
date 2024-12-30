@@ -1,133 +1,400 @@
 # Components
 
-This section documents the components used in GitFables, their usage, and best practices.
+This section documents the components used in GitFables, their organization, and best practices.
 
-## Component Categories
+## Component Organization
 
 ### UI Components (`src/components/ui/`)
 
-Base UI components that form the foundation of our design system.
-
-- [Button](./ui/button.md)
-- [Card](./ui/card.md)
-- [Dialog](./ui/dialog.md)
-- [Input](./ui/input.md)
-- [Select](./ui/select.md)
-- [Toast](./ui/toast.md)
-- [Animated](./ui/animated.md)
-
-### Layout Components (`src/components/layout/`)
-
-Components that define the overall structure of the application.
-
-- [Header](./layout/header.md)
-- [Footer](./layout/footer.md)
-- [ThemeProvider](./layout/theme-provider.md)
-
-### Section Components (`src/components/sections/`)
-
-Major sections that make up the pages.
-
-- [Hero](./sections/hero.md)
-- [HowItWorks](./sections/how-it-works.md)
-- [Examples](./sections/examples.md)
-- [StatsSection](./sections/stats-section.md)
-
-### Feature Components (`src/components/`)
-
-Components that implement specific features.
-
-- [StoryGenerator](./features/story-generator.md)
-- [StoryViewer](./features/story-viewer.md)
-- [RepositorySelector](./features/repository-selector.md)
-- [ShareMenu](./features/share-menu.md)
-
-## Component Guidelines
-
-### 1. Component Structure
-
-Each component should follow this structure:
+Shadcn UI components and base UI elements:
 
 ```typescript
-/**
- * @module components/example
- * @description Brief description of the component
- */
-
-import { type Dependencies } from 'dependency'
-
-interface ExampleProps {
-  // Props with JSDoc comments
+// Example Button component
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'outline' | 'ghost'
+  size?: 'sm' | 'md' | 'lg'
+  loading?: boolean
+  icon?: ReactNode
 }
 
-export function Example({ prop1, prop2 }: ExampleProps) {
-  // Implementation
+export function Button({
+  variant = 'default',
+  size = 'md',
+  loading,
+  icon,
+  children,
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      className={cn(
+        buttonVariants({ variant, size }),
+        loading && 'opacity-50 cursor-not-allowed'
+      )}
+      disabled={loading}
+      {...props}
+    >
+      {loading && <Spinner className="mr-2 h-4 w-4" />}
+      {icon && <span className="mr-2">{icon}</span>}
+      {children}
+    </button>
+  )
 }
 ```
 
-### 2. Props Interface
+### Layout Components (`src/components/layout/`)
 
-- Clear prop names
-- TypeScript types
-- JSDoc comments
-- Default values where appropriate
-- Required vs optional props
+Components for page structure and layout:
 
-### 3. Styling
+```typescript
+// Example Header component
+export function Header() {
+  const { session } = useAuth()
+  const { theme } = useTheme()
 
-- Tailwind CSS classes
-- CSS variables for theming
-- Responsive design
-- Dark mode support
-- Animation considerations
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <MainNav />
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center space-x-2">
+            <ThemeToggle />
+            {session ? (
+              <UserNav />
+            ) : (
+              <Button variant="outline" asChild>
+                <Link href="/auth/signin">Sign In</Link>
+              </Button>
+            )}
+          </nav>
+        </div>
+      </div>
+    </header>
+  )
+}
+```
 
-### 4. Best Practices
+### Feature Components
 
-1. **Server vs Client Components**
+#### Story Components (`src/components/story/`)
 
-   - Use Server Components by default
-   - Add 'use client' only when needed
-   - Document client-side dependencies
+Components for story generation and display:
 
-2. **Performance**
+```typescript
+// Example StoryGenerator component
+'use client'
 
-   - Memoization when needed
-   - Lazy loading for large components
-   - Optimized re-renders
-   - Bundle size consideration
+interface StoryGeneratorProps {
+  repository: Repository
+  onGenerate: (story: Story) => void
+}
 
-3. **Accessibility**
+export function StoryGenerator({
+  repository,
+  onGenerate
+}: StoryGeneratorProps) {
+  const [settings, setSettings] = useState<StoryGenerationSettings>({
+    style: 'technical',
+    tone: 'professional',
+    format: 'article'
+  })
 
-   - ARIA labels
-   - Keyboard navigation
-   - Screen reader support
-   - Color contrast
+  const { mutate: generateStory, isLoading } = useGenerateStory({
+    onSuccess: onGenerate
+  })
 
-4. **Testing**
-   - Unit tests
-   - Integration tests
-   - Visual regression tests
-   - Accessibility tests
+  return (
+    <div className="space-y-6">
+      <StorySettings
+        settings={settings}
+        onChange={setSettings}
+      />
+      <Button
+        onClick={() => generateStory({ repository, settings })}
+        loading={isLoading}
+      >
+        Generate Story
+      </Button>
+    </div>
+  )
+}
+```
 
-## Component Development
+#### Repository Components (`src/components/repositories/`)
 
-### Adding New Components
+Components for repository management:
 
-1. Create component file
-2. Add TypeScript types
-3. Implement component
-4. Add documentation
-5. Create tests
-6. Update index exports
+```typescript
+// Example RepositoryList component
+interface RepositoryListProps {
+  repositories: Repository[]
+  onSelect: (repository: Repository) => void
+}
 
-### Modifying Components
+export function RepositoryList({
+  repositories,
+  onSelect
+}: RepositoryListProps) {
+  return (
+    <div className="grid gap-4">
+      {repositories.map((repository) => (
+        <RepositoryCard
+          key={repository.id}
+          repository={repository}
+          onClick={() => onSelect(repository)}
+        />
+      ))}
+    </div>
+  )
+}
+```
 
-1. Document changes
-2. Update types
-3. Update tests
-4. Update documentation
-5. Consider backwards compatibility
+#### Settings Components (`src/components/settings/`)
 
-## Component Examples
+Components for user settings and preferences:
 
-See individual component documentation for detailed examples and usage guidelines.
+```typescript
+// Example AppearanceTab component
+'use client'
+
+interface AppearanceTabProps {
+  settings: SettingsUpdate
+}
+
+export function AppearanceTab({
+  settings: initialSettings
+}: AppearanceTabProps) {
+  const { settings, updateSettings } = useSettings(initialSettings)
+  const [themeMode, setThemeMode] = useState<ThemeMode>(
+    settings?.theme ?? 'system'
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">Theme</h3>
+        <p className="text-sm text-muted-foreground">
+          Customize the appearance of the app
+        </p>
+      </div>
+      <ThemeSelector
+        value={themeMode}
+        onChange={async (theme) => {
+          setThemeMode(theme)
+          await updateSettings({ theme })
+        }}
+      />
+    </div>
+  )
+}
+```
+
+## Component Guidelines
+
+### 1. Server vs Client Components
+
+- Use Server Components by default
+- Add 'use client' only when needed:
+  - Interactivity (event handlers)
+  - Browser APIs
+  - Component state
+  - Effects
+
+### 2. Props and Types
+
+```typescript
+// Good
+interface ComponentProps {
+  /** Description of the prop */
+  data: Data
+  /** Optional configuration */
+  config?: Config
+  /** Callback when something happens */
+  onEvent: (data: EventData) => void
+}
+
+// Bad
+interface Props {
+  d: any
+  cfg?: object
+  callback: Function
+}
+```
+
+### 3. State Management
+
+```typescript
+// Good
+function Component() {
+  const [state, setState] = useState(initialState)
+  const { data, isLoading } = useQuery(queryKey, queryFn)
+  const { mutate, isError } = useMutation(mutationFn)
+
+  // Handle loading and error states
+  if (isLoading) return <Loading />
+  if (isError) return <Error />
+
+  return <div>{/* Component JSX */}</div>
+}
+```
+
+### 4. Error Handling
+
+```typescript
+// Good
+function Component() {
+  const [error, setError] = useState<Error | null>(null)
+
+  const handleAction = async () => {
+    try {
+      await performAction()
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'))
+      // Log error
+      console.error('Action failed:', err)
+    }
+  }
+
+  if (error) {
+    return <ErrorDisplay error={error} />
+  }
+
+  return <div>{/* Component JSX */}</div>
+}
+```
+
+### 5. Performance
+
+- Use React.memo for expensive renders
+- Implement useMemo for expensive computations
+- Use useCallback for function props
+- Lazy load large components
+
+```typescript
+// Good
+const MemoizedComponent = React.memo(Component)
+const expensiveValue = useMemo(() => compute(deps), [deps])
+const callback = useCallback(arg => handle(arg), [deps])
+const LazyComponent = lazy(() => import('./Component'))
+```
+
+### 6. Accessibility
+
+- Use semantic HTML
+- Add ARIA labels
+- Support keyboard navigation
+- Ensure color contrast
+- Test with screen readers
+
+```typescript
+// Good
+function Component() {
+  return (
+    <button
+      aria-label="Close dialog"
+      onClick={onClose}
+      className="text-foreground bg-background"
+    >
+      <span className="sr-only">Close</span>
+      <XIcon className="h-4 w-4" />
+    </button>
+  )
+}
+```
+
+## Testing
+
+### Unit Tests
+
+```typescript
+// Example test
+describe('Component', () => {
+  it('renders correctly', () => {
+    render(<Component />)
+    expect(screen.getByRole('button')).toBeInTheDocument()
+  })
+
+  it('handles user interaction', async () => {
+    const onAction = vi.fn()
+    render(<Component onAction={onAction} />)
+
+    await userEvent.click(screen.getByRole('button'))
+    expect(onAction).toHaveBeenCalled()
+  })
+})
+```
+
+### Integration Tests
+
+```typescript
+// Example test
+describe('FeatureFlow', () => {
+  it('completes the flow successfully', async () => {
+    render(<FeatureFlow />)
+
+    // Step 1
+    await userEvent.click(screen.getByText('Start'))
+    expect(screen.getByText('Step 1')).toBeInTheDocument()
+
+    // Step 2
+    await userEvent.click(screen.getByText('Next'))
+    expect(screen.getByText('Step 2')).toBeInTheDocument()
+
+    // Completion
+    await userEvent.click(screen.getByText('Finish'))
+    expect(screen.getByText('Success')).toBeInTheDocument()
+  })
+})
+```
+
+## Documentation
+
+Each component should have:
+
+1. **JSDoc Comments**
+
+   - Component description
+   - Prop descriptions
+   - Usage examples
+
+2. **Storybook Stories**
+
+   - Default state
+   - Various prop combinations
+   - Interactive examples
+   - Documentation
+
+3. **README**
+   - Component purpose
+   - Installation
+   - Props API
+   - Examples
+
+## Best Practices
+
+1. **Code Organization**
+
+   - One component per file
+   - Clear file naming
+   - Logical grouping
+   - Index exports
+
+2. **Styling**
+
+   - Use Tailwind CSS
+   - Follow design system
+   - Responsive design
+   - Dark mode support
+
+3. **Performance**
+
+   - Optimize renders
+   - Lazy loading
+   - Code splitting
+   - Bundle size
+
+4. **Maintenance**
+   - Regular updates
+   - Dependency management
+   - Version control
+   - Documentation
