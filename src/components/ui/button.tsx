@@ -46,13 +46,14 @@ export interface ButtonProps
   asChild?: boolean
   loading?: boolean
   icon?: React.ReactNode
+  iconPosition?: 'left' | 'right'
 }
 
 /**
  * Button component for consistent button styles
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, icon, asChild = false, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, loading, icon, iconPosition = 'left', asChild = false, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
@@ -62,7 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center gap-2">
             <svg
               className="h-4 w-4 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
@@ -86,9 +87,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <span>Loading...</span>
           </div>
         ) : (
-          <div className="flex items-center space-x-2">
-            {icon && <span className="shrink-0">{icon}</span>}
-            {children && <span>{children}</span>}
+          <div className="inline-flex items-center gap-2">
+            {iconPosition === 'left' && icon}
+            {children}
+            {iconPosition === 'right' && icon}
           </div>
         )}
       </Comp>
