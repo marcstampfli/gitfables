@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { User, Mail, Globe } from 'lucide-react'
+import { User, Globe } from 'lucide-react'
 import { toast } from 'sonner'
 import type { SettingsTabProps } from './types'
 

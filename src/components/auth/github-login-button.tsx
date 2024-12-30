@@ -30,8 +30,8 @@ export function GitHubLoginButton({ className }: GitHubLoginButtonProps) {
       variant="outline"
       onClick={handleGitHubLogin}
       className={className}
+      icon={<GithubIcon className="h-4 w-4" />}
     >
-      <GithubIcon className="mr-2 h-4 w-4" />
       Continue with GitHub
     </Button>
   )

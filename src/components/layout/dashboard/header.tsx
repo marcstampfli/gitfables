@@ -7,7 +7,7 @@
 
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
+import { Button, IconButton } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Logo } from '@/components/ui/logo'
 import {
@@ -69,10 +69,12 @@ export function DashboardHeader() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">User menu</span>
-                </Button>
+                <IconButton
+                  variant="ghost"
+                  size="icon"
+                  label="User menu"
+                  icon={<User className="h-5 w-5" />}
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
@@ -86,8 +88,13 @@ export function DashboardHeader() {
                   className="text-destructive"
                   onClick={handleSignOut}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 text-destructive hover:text-destructive hover:bg-transparent"
+                    icon={<LogOut className="h-4 w-4" />}
+                  >
+                    Sign out
+                  </Button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

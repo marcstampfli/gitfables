@@ -47,10 +47,6 @@ export function AdvancedTab({ settings: _settings }: SettingsTabProps) {
     errorRate: 0.1
   })
 
-  const handleClearCache = () => {
-    // Handle cache clearing
-  }
-
   const handleLogLevelChange = (level: LogLevel) => {
     setLogLevel(level)
   }

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { GithubIcon, GitlabIcon, CheckCircle2Icon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useVCSConnections, type VCSConnection } from '@/hooks/vcs/use-vcs-connections'
+import { useVCSConnections } from '@/hooks/vcs/use-vcs-connections'
 import { cn } from '@/lib/utils/styles'
 import { logError } from '@/lib/utils/logger'
 
@@ -15,6 +15,21 @@ interface VCSProviderItem {
   icon: React.ComponentType<{ className?: string }>
   isActive: boolean
   comingSoon?: boolean
+}
+
+interface VCSConnection {
+  id: string
+  user_id: string
+  provider: 'github' | 'gitlab' | 'bitbucket'
+  provider_user_id: string
+  provider_username: string
+  provider_email: string
+  provider_avatar_url: string | null
+  access_token: string
+  refresh_token: string | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 const providers: VCSProviderItem[] = [
@@ -86,23 +101,23 @@ export function VCSProviderList() {
               )}
               onClick={() => handleConnect(provider)}
               disabled={!provider.isActive || isLoading}
+              icon={<provider.icon className="h-5 w-5" />}
             >
-              <provider.icon className="mr-2 h-5 w-5" />
               <span className="flex-1 text-left">
                 {provider.name}
-                {connection?.username && (
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    Connected as {connection.username}
+                {connection?.provider_username && (
+                  <span className="text-xs text-muted-foreground ml-2">
+                    Connected as {connection.provider_username}
                   </span>
                 )}
                 {provider.comingSoon && (
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground ml-2">
                     Coming soon
                   </span>
                 )}
               </span>
               {isConnected && (
-                <CheckCircle2Icon className="ml-2 h-4 w-4 text-green-500" />
+                <CheckCircle2Icon className="h-4 w-4 text-green-500" />
               )}
             </Button>
           )

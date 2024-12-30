@@ -11,81 +11,44 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  Bell,
-  MessageSquare,
-  Heart,
-  AtSign,
-  Mail
-} from 'lucide-react'
-import type { SettingsTabProps } from './types'
+import { Bell } from 'lucide-react'
 import { useSettings } from '@/hooks/use-settings'
-import { toast } from '@/hooks/use-toast'
-
-type EmailFrequency = 'daily' | 'weekly' | 'never'
-
-const EMAIL_FREQUENCIES: Array<{ value: EmailFrequency; label: string }> = [
-  { value: 'daily', label: 'Daily digest' },
-  { value: 'weekly', label: 'Weekly digest' },
-  { value: 'never', label: 'Never' }
-]
+import type { SettingsTabProps, EmailFrequency } from './types'
 
 export function NotificationsTab({ settings: initialSettings }: SettingsTabProps) {
   const { settings, updateSettings, isLoading } = useSettings(initialSettings)
-  const [emailEnabled, setEmailEnabled] = React.useState(settings.notifications.email)
-  const [emailFrequency, setEmailFrequency] = React.useState<EmailFrequency>(settings.notifications.digest)
-  const [notifications, setNotifications] = React.useState({
-    comments: true,
-    likes: true,
-    mentions: true
-  })
+  const [emailEnabled, setEmailEnabled] = React.useState(settings?.notifications?.email ?? false)
+  const [pushEnabled, setPushEnabled] = React.useState(settings?.notifications?.push ?? false)
+  const [inAppEnabled, setInAppEnabled] = React.useState(settings?.notifications?.inApp ?? false)
 
-  const handleEmailToggle = async (checked: boolean) => {
-    try {
-      await updateSettings({
-        settings: {
-          notifications: {
-            ...settings.notifications,
-            email: checked
-          }
-        }
-      })
-      setEmailEnabled(checked)
-      toast({
-        title: 'Email Notifications Updated',
-        description: `Email notifications have been ${checked ? 'enabled' : 'disabled'}`
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update email preferences. Please try again.',
-        variant: 'destructive'
-      })
-    }
+  const handleEmailToggle = async (enabled: boolean) => {
+    setEmailEnabled(enabled)
+    await updateSettings({
+      notifications: {
+        ...settings?.notifications,
+        email: enabled
+      }
+    })
   }
 
-  const handleFrequencyChange = async (value: EmailFrequency) => {
-    try {
-      await updateSettings({
-        settings: {
-          notifications: {
-            ...settings.notifications,
-            digest: value
-          }
-        }
-      })
-      setEmailFrequency(value)
-      toast({
-        title: 'Email Frequency Updated',
-        description: 'Your email notification frequency has been updated'
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update email frequency. Please try again.',
-        variant: 'destructive'
-      })
-    }
+  const handlePushToggle = async (enabled: boolean) => {
+    setPushEnabled(enabled)
+    await updateSettings({
+      notifications: {
+        ...settings?.notifications,
+        push: enabled
+      }
+    })
+  }
+
+  const handleInAppToggle = async (enabled: boolean) => {
+    setInAppEnabled(enabled)
+    await updateSettings({
+      notifications: {
+        ...settings?.notifications,
+        inApp: enabled
+      }
+    })
   }
 
   return (
@@ -93,18 +56,24 @@ export function NotificationsTab({ settings: initialSettings }: SettingsTabProps
       <div>
         <h3 className="text-2xl font-semibold tracking-tight">Notifications</h3>
         <p className="text-sm text-muted-foreground">
-          Choose how you want to be notified about activity
+          Configure how you want to be notified about updates and activity
         </p>
       </div>
 
-      <div className="grid gap-6">
-        {/* Email Preferences */}
-        <Card className="p-6">
-          <div className="space-y-6">
+      <Card className="p-6">
+        <div className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <h4 className="font-medium">Notification Preferences</h4>
+          </div>
+          <Separator />
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-5 w-5 text-primary" />
-                <h4 className="font-medium">Email Preferences</h4>
+              <div className="space-y-0.5">
+                <Label>Email Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive notifications via email
+                </p>
               </div>
               <Switch
                 checked={emailEnabled}
@@ -112,101 +81,35 @@ export function NotificationsTab({ settings: initialSettings }: SettingsTabProps
                 disabled={isLoading}
               />
             </div>
-            <Separator />
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Email Frequency</Label>
-                <Select 
-                  value={emailFrequency}
-                  onValueChange={handleFrequencyChange}
-                  disabled={!emailEnabled || isLoading}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EMAIL_FREQUENCIES.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>
-                        {freq.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Push Notifications</Label>
                 <p className="text-sm text-muted-foreground">
-                  Choose how often you want to receive email notifications
+                  Receive push notifications on your devices
                 </p>
               </div>
+              <Switch
+                checked={pushEnabled}
+                onCheckedChange={handlePushToggle}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>In-App Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Show notifications within the application
+                </p>
+              </div>
+              <Switch
+                checked={inAppEnabled}
+                onCheckedChange={handleInAppToggle}
+                disabled={isLoading}
+              />
             </div>
           </div>
-        </Card>
-
-        {/* Activity Notifications */}
-        <Card className="p-6">
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <Bell className="h-5 w-5 text-primary" />
-              <h4 className="font-medium">Activity Notifications</h4>
-            </div>
-            <Separator />
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Comments</Label>
-                    <p className="text-sm text-muted-foreground">
-                      When someone comments on your stories
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifications.comments}
-                  onCheckedChange={(checked) => 
-                    setNotifications(prev => ({ ...prev, comments: checked }))
-                  }
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Heart className="h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Likes</Label>
-                    <p className="text-sm text-muted-foreground">
-                      When someone likes your stories
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifications.likes}
-                  onCheckedChange={(checked) => 
-                    setNotifications(prev => ({ ...prev, likes: checked }))
-                  }
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <AtSign className="h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Mentions</Label>
-                    <p className="text-sm text-muted-foreground">
-                      When someone mentions you
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={notifications.mentions}
-                  onCheckedChange={(checked) => 
-                    setNotifications(prev => ({ ...prev, mentions: checked }))
-                  }
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
     </div>
   )
 } 
