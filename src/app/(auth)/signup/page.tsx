@@ -181,8 +181,12 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              <Button variant="outline" type="button" onClick={handleGitHubSignup}>
-                <Github className="mr-2 h-4 w-4" />
+              <Button 
+                variant="outline" 
+                type="button" 
+                onClick={handleGitHubSignup}
+                icon={<Github className="h-4 w-4" />}
+              >
                 GitHub
               </Button>
 
