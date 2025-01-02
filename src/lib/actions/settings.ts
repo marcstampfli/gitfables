@@ -3,11 +3,11 @@
  * @description Server actions for settings management
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
-import type { UserSettings } from '@/types/database'
+import type { Settings, SettingsUpdate } from '@/types/settings'
 
-export const DEFAULT_SETTINGS: UserSettings = {
+export const DEFAULT_SETTINGS: Settings = {
   theme: {
     mode: 'system',
     accent_color: 'default',
@@ -32,58 +32,130 @@ export const DEFAULT_SETTINGS: UserSettings = {
     reduce_animations: false,
     high_contrast: false,
     keyboard_shortcuts: true
+  },
+  debugMode: false,
+  apiAccess: false,
+  betaFeatures: false
+}
+
+/**
+ * Deep merge two objects
+ */
+function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
+  return {
+    ...target,
+    ...Object.fromEntries(
+      Object.entries(source).map(([key, value]) => [
+        key,
+        isObject(value) && isObject(target[key])
+          ? deepMerge(target[key], value)
+          : value
+      ])
+    )
+  } as T
+}
+
+function isObject(item: unknown): item is Record<string, any> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item)
+}
+
+/**
+ * Get user settings
+ */
+export async function getSettings(userId: string): Promise<Settings> {
+  const supabase = await createServerClient()
+
+  try {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('settings')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Create default settings
+        const { data: newSettings, error: createError } = await supabase
+          .from('user_settings')
+          .insert({
+            user_id: userId,
+            settings: DEFAULT_SETTINGS
+          })
+          .select('settings')
+          .single()
+
+        if (createError) {
+          logError('Failed to create settings:', { context: 'settings:getSettings', metadata: { error: createError } })
+          return DEFAULT_SETTINGS
+        }
+
+        return newSettings.settings as Settings
+      }
+
+      logError('Failed to fetch settings:', { context: 'settings:getSettings', metadata: { error } })
+      return DEFAULT_SETTINGS
+    }
+
+    return data.settings as Settings
+  } catch (error) {
+    logError('Error in settings function:', { context: 'settings:getSettings', metadata: { error } })
+    return DEFAULT_SETTINGS
   }
 }
 
-export async function getSettings(): Promise<UserSettings> {
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('No authenticated user')
+/**
+ * Update user settings
+ */
+export async function updateSettings(userId: string, update: SettingsUpdate): Promise<Settings> {
+  const supabase = await createServerClient()
 
-    // First try to get existing settings
-    const { data: existingSettings, error: _fetchError } = await supabase
+  try {
+    const currentSettings = await getSettings(userId)
+    const newSettings = deepMerge(currentSettings, update)
+
+    const { data, error } = await supabase
       .from('user_settings')
+      .update({ settings: newSettings })
+      .eq('user_id', userId)
       .select('settings')
-      .eq('user_id', user.id)
       .single()
 
-    if (existingSettings) {
-      return existingSettings.settings
+    if (error) {
+      logError('Failed to update settings:', { context: 'settings:updateSettings', metadata: { error } })
+      return currentSettings
     }
 
-    // If no settings exist, create them
-    const { error: insertError } = await supabase
+    return data.settings as Settings
+  } catch (error) {
+    logError('Error in settings function:', { context: 'settings:updateSettings', metadata: { error } })
+    return await getSettings(userId)
+  }
+}
+
+/**
+ * Reset user settings to defaults
+ */
+export async function resetSettings(userId: string): Promise<Settings> {
+  const supabase = await createServerClient()
+
+  try {
+    const { data, error } = await supabase
       .from('user_settings')
-      .insert({
-        user_id: user.id,
+      .upsert({
+        user_id: userId,
         settings: DEFAULT_SETTINGS
       })
+      .select('settings')
+      .single()
 
-    if (insertError) {
-      // If insert fails due to race condition, try to get settings again
-      const { data: retrySettings, error: retryError } = await supabase
-        .from('user_settings')
-        .select('settings')
-        .eq('user_id', user.id)
-        .single()
-
-      if (retryError) {
-        throw retryError
-      }
-
-      return retrySettings?.settings || DEFAULT_SETTINGS
+    if (error) {
+      logError('Failed to reset settings:', { context: 'settings:resetSettings', metadata: { error } })
+      return DEFAULT_SETTINGS
     }
 
-    return DEFAULT_SETTINGS
+    return data.settings as Settings
   } catch (error) {
-    logError('Failed to load settings', error, {
-      context: 'settings',
-      metadata: {
-        action: 'load',
-        timestamp: new Date().toISOString()
-      }
-    })
+    logError('Error in settings function:', { context: 'settings:resetSettings', metadata: { error } })
     return DEFAULT_SETTINGS
   }
 } 

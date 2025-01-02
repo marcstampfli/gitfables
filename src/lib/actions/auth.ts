@@ -6,12 +6,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
 import { type User } from '@supabase/supabase-js'
 
 export async function signIn() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -34,7 +34,7 @@ export async function signIn() {
 }
 
 export async function signOut() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   try {
     const { error } = await supabase.auth.signOut()
@@ -44,7 +44,7 @@ export async function signOut() {
       return { error }
     }
 
-    redirect('/login')
+    return { success: true }
   } catch (error) {
     logError('Error in auth function:', { context: 'auth:signOut', metadata: { error } })
     return { error }
@@ -55,53 +55,37 @@ export async function signOut() {
  * Get current session
  */
 export async function getSession() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   try {
     const { data: { session }, error } = await supabase.auth.getSession()
 
     if (error) {
       logError('Error getting session:', { context: 'auth:getSession', metadata: { error } })
-      redirect('/login')
-    }
-
-    if (!session) {
-      redirect('/login')
+      return null
     }
 
     return session
   } catch (error) {
     logError('Error in auth function:', { context: 'auth:getSession', metadata: { error } })
-    redirect('/login')
+    return null
   }
 }
 
 /**
  * Get current user
- * @description Redirects to login if no user is found
- * @returns The authenticated user
+ * @description Returns null if no user is found
+ * @returns The authenticated user or null
  */
-export async function getUser(): Promise<User> {
-  const supabase = await createClient()
+export async function getUser(): Promise<User | null> {
+  const supabase = await createServerClient()
 
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
-
-    if (error) {
-      logError('Error getting user:', { context: 'auth:getUser', metadata: { error } })
-      redirect('/login')
-    }
-
-    if (!user) {
-      redirect('/login')
-    }
-
-    // After redirect, TypeScript knows this can't be null
-    return user as NonNullable<typeof user>
-  } catch (error) {
-    logError('Error in auth function:', { context: 'auth:getUser', metadata: { error } })
-    redirect('/login')
-    // This line is never reached but needed for type safety
-    return null as never
+    if (error) throw error
+    return user
+  } catch (err) {
+    console.error('Error getting user:', err)
+    return null
   }
 } 

@@ -4,14 +4,18 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { getUser } from '@/lib/actions/auth'
 import { logError } from '@/lib/utils/logger'
 
 export async function GET(request: Request) {
   try {
     const user = await getUser()
-    const supabase = await createClient()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const supabase = await createServerClient()
 
     const { searchParams } = new URL(request.url)
     const storyId = searchParams.get('id')

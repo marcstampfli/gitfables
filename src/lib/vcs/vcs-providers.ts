@@ -4,6 +4,8 @@
  */
 
 import type { VCSPlatform } from '@/types/vcs'
+import { Github, Gitlab, FileCode2 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 /**
  * VCS provider configuration
@@ -12,7 +14,7 @@ export interface VCSProviderConfig {
   id: string
   type: VCSPlatform
   name: string
-  icon: string
+  icon: LucideIcon
   isActive: boolean
   baseUrl: string
   authUrl: string
@@ -27,7 +29,7 @@ export const SUPPORTED_PROVIDERS: VCSProviderConfig[] = [
     id: 'github',
     type: 'github',
     name: 'GitHub',
-    icon: '/images/providers/github.svg',
+    icon: Github,
     isActive: true,
     baseUrl: 'https://github.com',
     authUrl: 'https://github.com/login/oauth/authorize',
@@ -37,7 +39,7 @@ export const SUPPORTED_PROVIDERS: VCSProviderConfig[] = [
     id: 'gitlab',
     type: 'gitlab',
     name: 'GitLab',
-    icon: '/images/providers/gitlab.svg',
+    icon: Gitlab,
     isActive: false,
     baseUrl: 'https://gitlab.com',
     authUrl: 'https://gitlab.com/oauth/authorize',
@@ -47,7 +49,7 @@ export const SUPPORTED_PROVIDERS: VCSProviderConfig[] = [
     id: 'bitbucket',
     type: 'bitbucket',
     name: 'Bitbucket',
-    icon: '/images/providers/bitbucket.svg',
+    icon: FileCode2,
     isActive: false,
     baseUrl: 'https://bitbucket.org',
     authUrl: 'https://bitbucket.org/site/oauth2/authorize',

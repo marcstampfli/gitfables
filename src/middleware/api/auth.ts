@@ -3,7 +3,7 @@
  * @description Middleware for API key validation and authorization
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createHash } from 'crypto'
@@ -78,7 +78,7 @@ export async function validateApiKey(
   }
 
   // Create Supabase client
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   // Get API key from database
   const { data: keyData, error } = await supabase
