@@ -1,4 +1,3 @@
-import { GitBranch, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
@@ -12,62 +11,96 @@ interface LogoProps {
 
 /**
  * Logo component for GitFables
- * 
- * @component
- * @example
- * ```tsx
- * // Default with text
- * <Logo />
- * 
- * // Icon only
- * <Logo showText={false} />
- * 
- * // Custom size
- * <Logo size="sm" />
- * ```
  */
 export function Logo({ showText = true, className, size = 'md' }: LogoProps) {
   const sizeClasses = {
     sm: {
-      container: 'p-2',
-      icon: 'w-6 h-6',
-      bookIcon: 'w-3 h-3 -top-0.5 -right-0.5',
+      container: 'w-8',
       text: 'text-lg'
     },
     md: {
-      container: 'p-3',
-      icon: 'w-8 h-8',
-      bookIcon: 'w-4 h-4 -top-1 -right-1',
+      container: 'w-10',
       text: 'text-2xl'
     },
     lg: {
-      container: 'p-4',
-      icon: 'w-12 h-12',
-      bookIcon: 'w-6 h-6 -top-1 -right-1',
+      container: 'w-14',
       text: 'text-3xl'
     }
   }
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      <div className={cn(
-        'rounded-lg relative overflow-hidden',
-        sizeClasses[size].container
-      )}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-600" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_50%)]" />
-        <GitBranch className={cn(
-          'relative text-white',
-          sizeClasses[size].icon
-        )} />
-        <BookOpen className={cn(
-          'absolute text-white/90',
-          sizeClasses[size].bookIcon
-        )} />
+      <div className={cn('relative aspect-square rounded-[3px] overflow-hidden shadow-sm dark:shadow-none', sizeClasses[size].container)}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" className="w-full h-full">
+          <defs>
+            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#9333EA' }}/>
+              <stop offset="100%" style={{ stopColor: '#6B21A8' }}/>
+            </linearGradient>
+            <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: 'white', stopOpacity: 0.3 }}/>
+              <stop offset="50%" style={{ stopColor: 'white', stopOpacity: 0.15 }}/>
+              <stop offset="100%" style={{ stopColor: 'white', stopOpacity: 0.3 }}/>
+            </linearGradient>
+          </defs>
+
+          {/* Background with gradient */}
+          <rect x="0" y="0" width="80" height="80" fill="url(#bgGradient)"/>
+
+          {/* Open Book */}
+          <path d="M20 52 L40 48 L60 52 L60 68 L40 64 L20 68 Z"
+                fill="url(#bookGradient)" 
+                stroke="white" 
+                strokeWidth="2.5"
+                strokeLinejoin="round"/>
+
+          {/* Main Branch - Emerging from book */}
+          <path d="M40 48 C40 42, 35 38, 35 32 C35 26, 40 22, 40 16" 
+                fill="none" 
+                stroke="white" 
+                strokeWidth="3.5" 
+                strokeLinecap="round"/>
+
+          {/* Left Branch */}
+          <path d="M35 32 C30 32, 25 28, 22 24" 
+                fill="none" 
+                stroke="white" 
+                strokeWidth="3"
+                strokeLinecap="round"/>
+
+          {/* Right Branch */}
+          <path d="M35 32 C40 32, 50 28, 54 24" 
+                fill="none" 
+                stroke="white" 
+                strokeWidth="3"
+                strokeLinecap="round"/>
+
+          {/* Commit Nodes */}
+          <circle cx="40" cy="16" r="3.5" fill="white"/>
+          <circle cx="35" cy="32" r="3.5" fill="white"/>
+          <circle cx="40" cy="48" r="3.5" fill="white"/>
+
+          {/* Story Elements */}
+          <circle cx="22" cy="24" r="5" fill="white" opacity="0.95"/>
+          <circle cx="54" cy="24" r="5" fill="white" opacity="0.95"/>
+
+          {/* Book Pages */}
+          <path d="M40 48 L40 64" 
+                stroke="white" 
+                strokeWidth="1.5"
+                strokeDasharray="2 3"
+                opacity="0.7"/>
+
+          {/* Magical Sparkles */}
+          <circle cx="30" cy="20" r="1.2" fill="white" opacity="0.9"/>
+          <circle cx="48" cy="20" r="1.2" fill="white" opacity="0.9"/>
+          <circle cx="44" cy="36" r="1.2" fill="white" opacity="0.9"/>
+          <circle cx="32" cy="40" r="1.2" fill="white" opacity="0.9"/>
+        </svg>
       </div>
       {showText && (
         <span className={cn(
-          'font-bold tracking-tight',
+          'font-bold tracking-tight text-gray-900 dark:text-white',
           sizeClasses[size].text
         )}>
           GitFables

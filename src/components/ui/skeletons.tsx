@@ -1,45 +1,50 @@
-import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
-export function MetricSkeleton() {
-  return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-4" />
-        <Skeleton className="h-4 w-24" />
-      </div>
-      <Skeleton className="mt-2 h-8 w-16" />
-    </Card>
-  )
+interface SkeletonProps {
+  className?: string
 }
 
-export function ContentCardSkeleton() {
+export function MetricSkeleton({ className }: SkeletonProps) {
   return (
-    <Card className="p-6">
-      <div className="flex items-start justify-between">
+    <div className={cn("p-4", className)}>
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-8 w-8 rounded" />
         <div className="space-y-2">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-6 w-16" />
         </div>
-        <Skeleton className="h-4 w-4" />
       </div>
-    </Card>
-  )
-}
-
-export function HeaderSkeleton() {
-  return (
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-8 w-32" />
     </div>
   )
 }
 
-export function SectionHeaderSkeleton() {
+export function ContentCardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-6 w-32" />
+    <Skeleton className={cn("w-full rounded-lg", className)} />
+  )
+}
+
+export function SectionHeaderSkeleton({ className }: SkeletonProps) {
+  return (
+    <div className={cn("flex items-center justify-between", className)}>
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <Skeleton className="h-8 w-24" />
+    </div>
+  )
+}
+
+export function HeaderSkeleton({ className }: SkeletonProps) {
+  return (
+    <div className={cn("flex items-center justify-between", className)}>
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <Skeleton className="h-10 w-32" />
     </div>
   )
 } 
