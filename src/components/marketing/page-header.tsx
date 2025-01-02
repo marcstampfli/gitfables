@@ -9,65 +9,58 @@ import { cn } from '@/lib/utils'
 interface PageHeaderProps {
   title: string
   titleGradient?: string
-  description?: string
+  description: string
+  size?: 'default' | 'large'
   className?: string
   children?: React.ReactNode
-  size?: 'default' | 'large'
 }
 
 export function PageHeader({
   title,
   titleGradient,
   description,
+  size = 'default',
   className,
-  children,
-  size = 'default'
+  children
 }: PageHeaderProps) {
-  const [titleStart, titleEnd] = titleGradient 
+  const titleParts = titleGradient 
     ? title.split(titleGradient)
     : [title]
 
   return (
-    <section className={cn(
-      "relative py-20",
-      size === 'large' && "sm:py-32",
+    <div className={cn(
+      "relative",
+      size === 'large' ? "py-24 md:py-28" : "py-16 md:py-20",
       className
     )}>
       <div className="container relative">
-        <div className="max-w-[800px] mx-auto text-center space-y-8">
-          <div className="space-y-6">
-            <h1 className={cn(
-              "font-bold tracking-tight",
-              size === 'default' && "text-4xl sm:text-5xl",
-              size === 'large' && "text-4xl sm:text-6xl lg:text-7xl"
-            )}>
-              {titleStart}
-              {titleGradient && (
-                <>
-                  <br />
-                  <span className="relative">
-                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 blur-2xl opacity-25" />
-                    <span className="relative bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                      {titleGradient}
-                    </span>
+        <div className="mx-auto max-w-[800px] text-center">
+          <h1 className={cn(
+            "font-bold tracking-tight",
+            size === 'large' ? "text-4xl md:text-5xl lg:text-6xl" : "text-3xl md:text-4xl lg:text-5xl"
+          )}>
+            {titleGradient ? (
+              <>
+                {titleParts[0]}
+                <span className="relative inline-flex items-center">
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary-dark blur-2xl opacity-25" />
+                  <span className="relative bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                    {titleGradient}
                   </span>
-                  {titleEnd}
-                </>
-              )}
-            </h1>
-            {description && (
-              <p className={cn(
-                "text-muted-foreground max-w-[600px] mx-auto",
-                size === 'default' && "text-lg",
-                size === 'large' && "text-xl"
-              )}>
-                {description}
-              </p>
-            )}
-          </div>
+                </span>
+                {titleParts[1]}
+              </>
+            ) : title}
+          </h1>
+          <p className={cn(
+            "mt-6 text-muted-foreground",
+            size === 'large' ? "text-lg md:text-xl" : "text-base md:text-lg"
+          )}>
+            {description}
+          </p>
           {children}
         </div>
       </div>
-    </section>
+    </div>
   )
 } 

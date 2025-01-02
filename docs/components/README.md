@@ -1,488 +1,292 @@
-# Components
+# GitFables Component Library
 
-This section documents the components used in GitFables, their organization, and best practices.
+## Overview
 
-## Component Organization
+GitFables uses a modular component architecture built with React and TypeScript. Our components are designed to be reusable, accessible, and maintainable.
 
-### UI Components (`src/components/ui/`)
+## Component Categories
 
-Shadcn UI components and base UI elements:
+### 🎨 UI Components
+
+Core UI building blocks used throughout the application.
+
+#### Buttons
+
+- `Button`: Primary action button
+- `IconButton`: Button with icon
+- `ButtonGroup`: Group of related buttons
+- `LinkButton`: Button that acts as a link
 
 ```typescript
-// Example Button component
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+interface ButtonProps {
+  variant: 'default' | 'primary' | 'secondary' | 'ghost'
+  size: 'sm' | 'md' | 'lg'
+  disabled?: boolean
   loading?: boolean
-  icon?: ReactNode
-}
-
-export function Button({
-  variant = 'default',
-  size = 'md',
-  loading,
-  icon,
-  children,
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      className={cn(
-        buttonVariants({ variant, size }),
-        loading && 'opacity-50 cursor-not-allowed'
-      )}
-      disabled={loading}
-      {...props}
-    >
-      {loading && <Spinner className="mr-2 h-4 w-4" />}
-      {icon && <span className="mr-2">{icon}</span>}
-      {children}
-    </button>
-  )
+  onClick?: () => void
+  children: React.ReactNode
 }
 ```
 
-### Marketing Components (`src/components/marketing/`)
+#### Forms
 
-Components for marketing pages and sections:
+- `Input`: Text input field
+- `Select`: Dropdown selection
+- `Checkbox`: Checkbox input
+- `RadioGroup`: Radio button group
+- `Switch`: Toggle switch
+- `Textarea`: Multi-line text input
 
 ```typescript
-// Example PageHeader component
-interface PageHeaderProps {
+interface InputProps {
+  type: 'text' | 'email' | 'password' | 'number'
+  label: string
+  placeholder?: string
+  error?: string
+  disabled?: boolean
+  required?: boolean
+  onChange: (value: string) => void
+}
+```
+
+#### Layout
+
+- `Container`: Content container
+- `Grid`: Grid layout system
+- `Stack`: Vertical/horizontal stack
+- `Divider`: Content separator
+- `Card`: Content card container
+
+```typescript
+interface ContainerProps {
+  maxWidth: 'sm' | 'md' | 'lg' | 'xl'
+  padding?: boolean
+  center?: boolean
+  children: React.ReactNode
+}
+```
+
+#### Navigation
+
+- `Header`: Application header
+- `Footer`: Application footer
+- `Navbar`: Navigation bar
+- `Sidebar`: Side navigation
+- `Breadcrumbs`: Navigation breadcrumbs
+
+#### Feedback
+
+- `Alert`: Alert messages
+- `Toast`: Toast notifications
+- `Progress`: Progress indicators
+- `Spinner`: Loading spinner
+- `Skeleton`: Loading placeholder
+
+```typescript
+interface AlertProps {
+  type: 'info' | 'success' | 'warning' | 'error'
   title: string
-  titleGradient?: string
-  description: string
-  size?: 'default' | 'large'
-  children?: React.ReactNode
-}
-
-export function PageHeader({
-  title,
-  titleGradient,
-  description,
-  size = 'default',
-  children
-}: PageHeaderProps) {
-  return (
-    <div className="text-center py-20">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
-        {titleGradient ? (
-          <>
-            {title.replace(titleGradient, '')}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-              {titleGradient}
-            </span>
-          </>
-        ) : (
-          title
-        )}
-      </h1>
-      <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
-        {description}
-      </p>
-      {children}
-    </div>
-  )
+  message?: string
+  dismissible?: boolean
+  onDismiss?: () => void
 }
 ```
 
-Other marketing components include:
+### 📱 Marketing Components
 
-- `CTASection`: Call-to-action sections with gradient backgrounds
-- `FeaturesGrid`: Grid layout for feature showcases
-- `ProcessSteps`: Step-by-step process visualization
+Components used on marketing and landing pages.
 
-### Layout Components (`src/components/layout/`)
+#### Hero
 
-Components for page structure and layout:
+- `Hero`: Hero section
+- `HeroTitle`: Hero title
+- `HeroSubtitle`: Hero subtitle
+- `HeroCTA`: Call-to-action
+
+#### Features
+
+- `FeatureGrid`: Feature grid layout
+- `FeatureCard`: Feature card
+- `FeatureIcon`: Feature icon
+- `FeatureList`: Feature list
+
+#### Pricing
+
+- `PricingTable`: Pricing table
+- `PricingCard`: Pricing plan card
+- `PricingFeature`: Pricing feature item
+- `PricingCTA`: Pricing call-to-action
+
+#### Testimonials
+
+- `TestimonialGrid`: Testimonial grid
+- `TestimonialCard`: Testimonial card
+- `TestimonialAvatar`: User avatar
+- `TestimonialQuote`: Quote block
+
+### 📊 Dashboard Components
+
+Components for the application dashboard.
+
+#### Navigation
+
+- `DashboardLayout`: Dashboard layout wrapper
+- `DashboardHeader`: Dashboard header
+- `DashboardSidebar`: Dashboard sidebar
+- `DashboardNav`: Dashboard navigation
+
+#### Story Components
+
+- `StoryEditor`: Story editing interface
+- `StoryPreview`: Story preview
+- `StoryList`: List of stories
+- `StoryCard`: Story card
 
 ```typescript
-// Example Header component
-export function Header() {
-  const { session } = useAuth()
-  const { theme } = useTheme()
-
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <MainNav />
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-2">
-            <ThemeToggle />
-            {session ? (
-              <UserNav />
-            ) : (
-              <Button variant="outline" asChild>
-                <Link href="/auth/signin">Sign In</Link>
-              </Button>
-            )}
-          </nav>
-        </div>
-      </div>
-    </header>
-  )
+interface StoryEditorProps {
+  initialContent?: string
+  onSave: (content: string) => void
+  onPublish: () => void
+  loading?: boolean
+  error?: string
 }
 ```
 
-### Feature Components
+#### Repository Components
 
-#### Story Components (`src/components/story/`)
+- `RepoList`: Repository list
+- `RepoCard`: Repository card
+- `RepoStats`: Repository statistics
+- `RepoSettings`: Repository settings
 
-Components for story generation and display:
+#### Analytics Components
+
+- `AnalyticsChart`: Analytics chart
+- `AnalyticsMetric`: Metric display
+- `AnalyticsTable`: Data table
+- `AnalyticsFilter`: Data filter
+
+### 🔧 Utility Components
+
+Helper components for common functionality.
+
+#### Authentication
+
+- `AuthForm`: Authentication form
+- `AuthProvider`: Auth context provider
+- `ProtectedRoute`: Route protection
+- `LoginButton`: Social login button
+
+#### Data Display
+
+- `Table`: Data table
+- `List`: List component
+- `Badge`: Status badge
+- `Avatar`: User avatar
+- `Icon`: Icon component
+
+#### Modals
+
+- `Modal`: Modal dialog
+- `Drawer`: Side drawer
+- `Popover`: Popover dialog
+- `Dialog`: Confirmation dialog
 
 ```typescript
-// Example StoryGenerator component
-'use client'
-
-interface StoryGeneratorProps {
-  repository: Repository
-  onGenerate: (story: Story) => void
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  size?: 'sm' | 'md' | 'lg'
+  children: React.ReactNode
 }
+```
 
-export function StoryGenerator({
-  repository,
-  onGenerate
-}: StoryGeneratorProps) {
-  const [settings, setSettings] = useState<StoryGenerationSettings>({
-    style: 'technical',
-    tone: 'professional',
-    format: 'article'
-  })
+## Component Usage
 
-  const { mutate: generateStory, isLoading } = useGenerateStory({
-    onSuccess: onGenerate
-  })
+### Installation
 
+```bash
+# Install dependencies
+npm install
+
+# Install additional UI packages
+npm install @radix-ui/react-icons lucide-react
+```
+
+### Basic Usage
+
+```tsx
+import { Button, Input, Alert } from '@/components/ui'
+
+function LoginForm() {
   return (
-    <div className="space-y-6">
-      <StorySettings
-        settings={settings}
-        onChange={setSettings}
+    <form>
+      <Input
+        type="email"
+        label="Email"
+        required
+        onChange={value => console.log(value)}
       />
-      <Button
-        onClick={() => generateStory({ repository, settings })}
-        loading={isLoading}
-      >
-        Generate Story
+      <Button variant="primary" size="lg">
+        Log In
       </Button>
-    </div>
+      <Alert type="error" title="Invalid credentials" />
+    </form>
   )
 }
 ```
 
-#### Repository Components (`src/components/repositories/`)
+### Theming
 
-Components for repository management:
+Components support light and dark themes through Tailwind CSS:
 
-```typescript
-// Example RepositoryList component
-interface RepositoryListProps {
-  repositories: Repository[]
-  onSelect: (repository: Repository) => void
-}
-
-export function RepositoryList({
-  repositories,
-  onSelect
-}: RepositoryListProps) {
-  return (
-    <div className="grid gap-4">
-      {repositories.map((repository) => (
-        <RepositoryCard
-          key={repository.id}
-          repository={repository}
-          onClick={() => onSelect(repository)}
-        />
-      ))}
-    </div>
-  )
-}
+```tsx
+<div className="dark:bg-gray-900">
+  <Button className="dark:text-white">Dark Mode Button</Button>
+</div>
 ```
-
-#### Settings Components (`src/components/settings/`)
-
-Components for user settings and preferences:
-
-```typescript
-// Example AppearanceTab component
-'use client'
-
-interface AppearanceTabProps {
-  settings: SettingsUpdate
-}
-
-export function AppearanceTab({
-  settings: initialSettings
-}: AppearanceTabProps) {
-  const { settings, updateSettings } = useSettings(initialSettings)
-  const [themeMode, setThemeMode] = useState<ThemeMode>(
-    settings?.theme ?? 'system'
-  )
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">Theme</h3>
-        <p className="text-sm text-muted-foreground">
-          Customize the appearance of the app
-        </p>
-      </div>
-      <ThemeSelector
-        value={themeMode}
-        onChange={async (theme) => {
-          setThemeMode(theme)
-          await updateSettings({ theme })
-        }}
-      />
-    </div>
-  )
-}
-```
-
-## Component Guidelines
-
-### 1. Server vs Client Components
-
-- Use Server Components by default
-- Add 'use client' only when needed:
-  - Interactivity (event handlers)
-  - Browser APIs
-  - Component state
-  - Effects
-
-### 2. Props and Types
-
-```typescript
-// Good
-interface ComponentProps {
-  /** Description of the prop */
-  data: Data
-  /** Optional configuration */
-  config?: Config
-  /** Callback when something happens */
-  onEvent: (data: EventData) => void
-}
-
-// Bad
-interface Props {
-  d: any
-  cfg?: object
-  callback: Function
-}
-```
-
-### 3. State Management
-
-```typescript
-// Good
-function Component() {
-  const [state, setState] = useState(initialState)
-  const { data, isLoading } = useQuery(queryKey, queryFn)
-  const { mutate, isError } = useMutation(mutationFn)
-
-  // Handle loading and error states
-  if (isLoading) return <Loading />
-  if (isError) return <Error />
-
-  return <div>{/* Component JSX */}</div>
-}
-```
-
-### 4. Error Handling
-
-```typescript
-// Good
-function Component() {
-  const [error, setError] = useState<Error | null>(null)
-
-  const handleAction = async () => {
-    try {
-      await performAction()
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'))
-      // Log error
-      console.error('Action failed:', err)
-    }
-  }
-
-  if (error) {
-    return <ErrorDisplay error={error} />
-  }
-
-  return <div>{/* Component JSX */}</div>
-}
-```
-
-### 5. Performance
-
-- Use React.memo for expensive renders
-- Implement useMemo for expensive computations
-- Use useCallback for function props
-- Lazy load large components
-
-```typescript
-// Good
-const MemoizedComponent = React.memo(Component)
-const expensiveValue = useMemo(() => compute(deps), [deps])
-const callback = useCallback(arg => handle(arg), [deps])
-const LazyComponent = lazy(() => import('./Component'))
-```
-
-### 6. Accessibility
-
-- Use semantic HTML
-- Add ARIA labels
-- Support keyboard navigation
-- Ensure color contrast
-- Test with screen readers
-
-```typescript
-// Good
-function Component() {
-  return (
-    <button
-      aria-label="Close dialog"
-      onClick={onClose}
-      className="text-foreground bg-background"
-    >
-      <span className="sr-only">Close</span>
-      <XIcon className="h-4 w-4" />
-    </button>
-  )
-}
-```
-
-## Testing
-
-### Unit Tests
-
-```typescript
-// Example test
-describe('Component', () => {
-  it('renders correctly', () => {
-    render(<Component />)
-    expect(screen.getByRole('button')).toBeInTheDocument()
-  })
-
-  it('handles user interaction', async () => {
-    const onAction = vi.fn()
-    render(<Component onAction={onAction} />)
-
-    await userEvent.click(screen.getByRole('button'))
-    expect(onAction).toHaveBeenCalled()
-  })
-})
-```
-
-### Integration Tests
-
-```typescript
-// Example test
-describe('FeatureFlow', () => {
-  it('completes the flow successfully', async () => {
-    render(<FeatureFlow />)
-
-    // Step 1
-    await userEvent.click(screen.getByText('Start'))
-    expect(screen.getByText('Step 1')).toBeInTheDocument()
-
-    // Step 2
-    await userEvent.click(screen.getByText('Next'))
-    expect(screen.getByText('Step 2')).toBeInTheDocument()
-
-    // Completion
-    await userEvent.click(screen.getByText('Finish'))
-    expect(screen.getByText('Success')).toBeInTheDocument()
-  })
-})
-```
-
-## Documentation
-
-Each component should have:
-
-1. **JSDoc Comments**
-
-   - Component description
-   - Prop descriptions
-   - Usage examples
-
-2. **Storybook Stories**
-
-   - Default state
-   - Various prop combinations
-   - Interactive examples
-   - Documentation
-
-3. **README**
-   - Component purpose
-   - Installation
-   - Props API
-   - Examples
 
 ## Best Practices
 
-1. **Code Organization**
+1. **Component Organization**
 
-   - One component per file
-   - Clear file naming
-   - Logical grouping
-   - Index exports
-
-2. **Styling**
-
-   - Use Tailwind CSS
-   - Follow design system
-   - Responsive design
-   - Dark mode support
-
-3. **Performance**
-
-   - Optimize renders
-   - Lazy loading
-   - Code splitting
-   - Bundle size
-
-4. **Maintenance**
-   - Regular updates
-   - Dependency management
-   - Version control
-   - Documentation
-
-### Component Design
-
-1. **Props Interface**
-
-   - Always define TypeScript interfaces for props
-   - Use descriptive names and JSDoc comments
-   - Make optional props explicit with `?`
-
-2. **Composition**
-
-   - Keep components focused and single-purpose
-   - Use composition over inheritance
-   - Extract reusable logic into hooks
-
-3. **Styling**
-   - Use Tailwind CSS for styling
-   - Follow the design system
-   - Use `cn()` utility for conditional classes
-
-### Marketing Components
-
-1. **Visual Hierarchy**
-
-   - Use consistent spacing (padding, margins)
-   - Follow gradient patterns
-   - Maintain responsive behavior
+   - Keep components small and focused
+   - Use TypeScript interfaces
+   - Document props and usage
+   - Include examples
 
 2. **Accessibility**
 
-   - Use semantic HTML elements
-   - Include proper ARIA attributes
-   - Ensure keyboard navigation
+   - Use semantic HTML
+   - Include ARIA labels
+   - Support keyboard navigation
+   - Test with screen readers
 
 3. **Performance**
-   - Optimize images and animations
-   - Use proper loading strategies
-   - Minimize layout shifts
+
+   - Lazy load when possible
+   - Memoize expensive operations
+   - Optimize re-renders
+   - Use proper keys in lists
+
+4. **Testing**
+   - Write unit tests
+   - Include integration tests
+   - Test edge cases
+   - Test accessibility
+
+## Contributing
+
+1. Follow the component structure
+2. Add proper documentation
+3. Include TypeScript types
+4. Add usage examples
+5. Write tests
+
+## Resources
+
+- [Design System](../design/README.md)
+- [Accessibility Guide](../guides/accessibility.md)
+- [Testing Guide](../guides/testing.md)
+- [Component Showcase](https://gitfables.com/components)

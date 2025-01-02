@@ -249,3 +249,27 @@ sequenceDiagram
 - Caching strategies
 - Bundle optimization
 - Real-time updates
+
+## Design System
+
+### Colors
+
+The application uses a theme-based color system with CSS variables:
+
+```css
+:root {
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4.8% 95.9%;
+  --accent: 240 4.8% 95.9%;
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+}
+```
+
+Common patterns:
+
+- Primary gradients for emphasis
+- Secondary colors for UI elements
+- Accent colors for interactive elements
+- Background patterns with opacity

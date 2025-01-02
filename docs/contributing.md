@@ -2,250 +2,247 @@
 
 Thank you for your interest in contributing to GitFables! This document provides guidelines and instructions for contributing to the project.
 
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct:
+
+1. Be respectful and inclusive
+2. Use welcoming and inclusive language
+3. Be collaborative
+4. Accept constructive criticism
+5. Focus on what is best for the community
+
 ## Getting Started
 
-1. **Fork the Repository**
+1. Fork the repository
+2. Clone your fork:
 
-   - Fork the repository on GitHub
-   - Clone your fork locally
-   - Add the upstream repository as a remote
+```bash
+git clone https://github.com/your-username/gitfables-app.git
+cd gitfables-app
+```
 
-2. **Set Up Development Environment**
+3. Add the upstream remote:
 
-   ```bash
-   # Install dependencies
-   npm install
+```bash
+git remote add upstream https://github.com/original-owner/gitfables-app.git
+```
 
-   # Set up environment variables
-   cp .env.example .env.local
+4. Create a new branch:
 
-   # Start development server
-   npm run dev
-   ```
+```bash
+git checkout -b feature/amazing-feature
+```
 
-3. **Create a Branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+## Development Process
 
-## Development Guidelines
+### 1. Setting Up
 
-### Code Style
+Follow the [Development Guide](./DEVELOPMENT.md) to set up your local environment.
 
-- Use TypeScript for all new code
-- Follow the existing code style
-- Use ESLint and Prettier for formatting
-- Run `npm run lint` before committing
+### 2. Making Changes
 
-### Component Guidelines
+1. Write clean, readable code
+2. Follow the established patterns
+3. Add/update tests as needed
+4. Update documentation
+5. Ensure all tests pass
 
-1. **Server vs Client Components**
+### 3. Commit Guidelines
 
-   - Use Server Components by default
-   - Only use Client Components when necessary (e.g., for interactivity)
-   - Add 'use client' directive at the top of client components
+Follow conventional commits:
 
-2. **Component Structure**
+```
+feat: add new feature
+fix: resolve bug
+docs: update documentation
+style: formatting changes
+refactor: code restructuring
+test: add/update tests
+chore: maintenance tasks
+```
 
-   ```typescript
-   // server component example
-   export default async function FeatureComponent() {
-     // Fetch data
-     const data = await getData()
+Example:
 
-     return <ClientComponent data={data} />
-   }
+```bash
+git commit -m "feat: add repository insights dashboard"
+```
 
-   // client component example
-   'use client'
+## Pull Requests
 
-   interface Props {
-     data: Data
-   }
+### Creating a Pull Request
 
-   export function ClientComponent({ data }: Props) {
-     const [state, setState] = useState(data)
+1. Update your branch:
 
-     return (
-       // JSX
-     )
-   }
-   ```
+```bash
+git fetch upstream
+git rebase upstream/main
+```
 
-3. **Props and Types**
-   - Define explicit interfaces for props
-   - Use TypeScript utility types where appropriate
-   - Export shared types from `types/` directory
+2. Push your changes:
 
-### State Management
+```bash
+git push origin feature/amazing-feature
+```
 
-1. **Server State**
+3. Create a pull request through GitHub
 
-   - Use Server Components for data fetching
-   - Implement Server Actions for mutations
-   - Handle loading and error states
+### PR Guidelines
 
-2. **Client State**
-   - Use React hooks for local state
-   - Minimize client-side state
-   - Handle form state with react-hook-form
+Your PR should include:
+
+1. Clear title and description
+2. Link to related issue(s)
+3. Screenshots (if UI changes)
+4. List of changes
+5. Testing instructions
+
+Example PR description:
+
+```markdown
+## Description
+
+Add repository insights dashboard with analytics charts
+
+## Changes
+
+- Add insights dashboard component
+- Implement analytics charts
+- Add data fetching hooks
+- Update documentation
+
+## Testing
+
+1. Start dev server
+2. Navigate to /dashboard/insights
+3. Verify charts display correctly
+4. Test responsive behavior
+
+Fixes #123
+```
+
+## Code Style
+
+### TypeScript
+
+```typescript
+// Use interfaces for object types
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// Use type for unions/intersections
+type Status = 'pending' | 'success' | 'error'
+
+// Use proper imports
+import type { ReactNode } from 'react'
+import { useState, useEffect } from 'react'
+```
+
+### React Components
+
+```typescript
+// Use functional components
+export function FeatureCard({ title, description }: FeatureCardProps) {
+  return (
+    <div className="p-6 rounded-lg">
+      <h3 className="text-xl font-bold">{title}</h3>
+      <p>{description}</p>
+    </div>
+  )
+}
+
+// Add prop types
+interface FeatureCardProps {
+  title: string
+  description: string
+  className?: string
+}
+```
 
 ### Testing
 
-1. **Unit Tests**
+```typescript
+import { render, screen } from '@testing-library/react'
+import { FeatureCard } from './feature-card'
 
-   ```bash
-   # Run tests
-   npm run test
+describe('FeatureCard', () => {
+  it('renders correctly', () => {
+    render(
+      <FeatureCard
+        title="Test Title"
+        description="Test Description"
+      />
+    )
 
-   # Run tests in watch mode
-   npm run test:watch
-   ```
+    expect(screen.getByText('Test Title')).toBeInTheDocument()
+  })
+})
+```
 
-2. **Integration Tests**
+## Documentation
 
-   ```bash
-   # Run Playwright tests
-   npm run test:e2e
-   ```
+### Component Documentation
 
-3. **Test Guidelines**
-   - Write tests for new features
-   - Update tests when modifying existing features
-   - Aim for good coverage but focus on critical paths
+```typescript
+/**
+ * Feature card component for displaying product features
+ * @param title - The feature title
+ * @param description - The feature description
+ * @param className - Optional CSS classes
+ */
+export function FeatureCard({
+  title,
+  description,
+  className,
+}: FeatureCardProps) {
+  // Implementation
+}
+```
 
-### Documentation
+### README Updates
 
-1. **Code Documentation**
+- Keep documentation up to date
+- Add new features to the list
+- Update setup instructions
+- Include screenshots when helpful
 
-   - Add JSDoc comments for functions and components
-   - Document complex logic and algorithms
-   - Keep comments up to date
+## Review Process
 
-2. **Feature Documentation**
-   - Add new features to `docs/features/`
-   - Update existing documentation when needed
-   - Include code examples and usage patterns
+1. Automated checks must pass:
 
-## Pull Request Process
+   - TypeScript compilation
+   - ESLint rules
+   - Unit tests
+   - Build process
 
-1. **Before Submitting**
+2. Code review requirements:
 
-   - Ensure all tests pass
-   - Update documentation if needed
-   - Add tests for new features
-   - Run linting and type checking
+   - One approval required
+   - All comments addressed
+   - CI checks passing
 
-2. **PR Guidelines**
+3. Review criteria:
+   - Code quality
+   - Test coverage
+   - Documentation
+   - Performance
+   - Security
 
-   - Create a descriptive PR title
-   - Fill out the PR template
-   - Link related issues
-   - Add screenshots for UI changes
+## Getting Help
 
-3. **Review Process**
-   - Address review comments
-   - Keep commits clean and organized
-   - Squash commits before merging
+- Join our [Discord community](https://discord.gg/gitfables)
+- Open a [GitHub Discussion](https://github.com/yourusername/gitfables-app/discussions)
+- Email us at support@gitfables.com
 
-## Working with VCS Providers
+## Recognition
 
-### Adding a New Provider
+Contributors will be:
 
-1. **Implementation**
+- Listed in [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- Mentioned in release notes
+- Thanked in our Discord community
 
-   ```typescript
-   // lib/vcs/providers/new-provider.ts
-   import { VCSProvider } from '../types'
-
-   export class NewProvider implements VCSProvider {
-     async connect(): Promise<void> {
-       // Implementation
-     }
-
-     async getRepositories(): Promise<Repository[]> {
-       // Implementation
-     }
-
-     // ... other methods
-   }
-   ```
-
-2. **Provider Registration**
-
-   ```typescript
-   // lib/vcs/provider-registry.ts
-   import { NewProvider } from './providers/new-provider'
-
-   export const providers = {
-     github: new GitHubProvider(),
-     gitlab: new GitLabProvider(),
-     'new-provider': new NewProvider(),
-   }
-   ```
-
-3. **Configuration**
-   - Add provider configuration to `.env.example`
-   - Update provider selection UI
-   - Add provider documentation
-
-### OAuth Integration
-
-1. **Configuration**
-
-   ```typescript
-   // lib/vcs/oauth-config.ts
-   export const oauthConfig = {
-     'new-provider': {
-       clientId: process.env.NEW_PROVIDER_CLIENT_ID,
-       clientSecret: process.env.NEW_PROVIDER_CLIENT_SECRET,
-       scopes: ['read:user', 'read:repo'],
-     },
-   }
-   ```
-
-2. **Authentication Flow**
-   - Implement OAuth callback handler
-   - Add token refresh logic
-   - Handle error cases
-
-## Deployment
-
-1. **Environment Setup**
-
-   - Configure production environment variables
-   - Set up monitoring and logging
-   - Configure error tracking
-
-2. **Deployment Process**
-
-   ```bash
-   # Build application
-   npm run build
-
-   # Run type checking
-   npm run type-check
-
-   # Run tests
-   npm run test
-   ```
-
-3. **Post-Deployment**
-   - Monitor error rates
-   - Check performance metrics
-   - Verify feature flags
-
-## Need Help?
-
-- Check existing issues and discussions
-- Join our Discord community
-- Read the [FAQ](./FAQ.md)
-- Contact the maintainers
-
-## Code of Conduct
-
-Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md). We expect all contributors to adhere to it.
-
-## License
-
-By contributing to GitFables, you agree that your contributions will be licensed under the project's MIT license.
+Thank you for contributing to GitFables! 🎉

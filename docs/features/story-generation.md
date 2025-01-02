@@ -1,488 +1,329 @@
-# Story Generation
+# AI-Powered Story Generation
 
-## Overview
+GitFables uses advanced AI to transform your Git history into engaging narratives automatically. Our AI understands your development patterns and creates meaningful stories that help teams document and share their work effectively.
 
-GitFables uses advanced natural language processing to transform repository commit history into engaging narratives. This document outlines the story generation process, available options, and best practices.
+## Key Benefits
 
-## Generation Process
+- **Save Documentation Time**: Automate the process of creating development documentation
+- **Consistent Quality**: Maintain high-quality narratives across all your stories
+- **Context Understanding**: AI automatically understands and preserves development context
+- **Format Flexibility**: Generate stories in multiple formats for different audiences
 
-1. **Repository Analysis**
+## Features
 
-   - Fetch commit history
-   - Extract metadata (authors, timestamps, messages)
-   - Analyze code changes
-   - Group related commits
+### 1. Intelligent Commit Analysis
 
-2. **Story Structure**
+- **Pattern Recognition**: Identify related commits and development patterns
+- **Context Preservation**: Maintain the relationship between code changes
+- **Smart Grouping**: Automatically group related commits into coherent stories
+- **Impact Analysis**: Understand and highlight significant changes
 
-   - Introduction
-   - Key developments
-   - Technical milestones
-   - Contributor highlights
-   - Conclusion
+### 2. Natural Language Processing
 
-3. **Content Generation**
-   - Apply selected style and tone
-   - Generate narrative sections
-   - Include technical details
-   - Add contributor insights
+- **Message Understanding**: Parse and understand commit messages
+- **Context Enhancement**: Add relevant context to technical changes
+- **Tone Adjustment**: Adapt writing style for different audiences
+- **Multi-language Support**: Generate stories in multiple languages
 
-## Generation Options
+### 3. Template System
 
-### Story Style
+- **Predefined Templates**: Ready-to-use templates for common scenarios
+- **Custom Templates**: Create and save your own templates
+- **Variable Support**: Dynamic content insertion
+- **Style Customization**: Adapt to your brand guidelines
+
+### 4. Story Formats
+
+- **Technical Documentation**: Detailed technical explanations
+- **Release Notes**: User-friendly feature announcements
+- **Sprint Reviews**: Team progress summaries
+- **Client Reports**: Business-focused updates
+- **Custom Formats**: Create your own story formats
+
+## Usage
+
+### Basic Story Generation
 
 ```typescript
-interface StoryGenerationSettings {
-  style: 'technical' | 'narrative' | 'casual'
-  tone: 'professional' | 'fun' | 'dramatic'
-  format: 'article' | 'story' | 'report'
-  length: 'short' | 'medium' | 'long'
-  include: {
-    technical_details: boolean
-    contributor_insights: boolean
-    code_snippets: boolean
-    statistics: boolean
-  }
-  focus: {
-    features: boolean
-    bug_fixes: boolean
-    refactoring: boolean
-    documentation: boolean
-  }
-  date_range?: {
-    start: string
-    end: string
-  }
-  branch?: string
-  contributors?: string[]
-}
+// Generate a story from recent commits
+const story = await generateStory({
+  repository: 'user/repo',
+  branch: 'main',
+  format: 'technical',
+  timeframe: '1w', // last week
+})
+
+// Generate a story from specific commits
+const story = await generateStory({
+  repository: 'user/repo',
+  commits: ['abc123', 'def456'],
+  format: 'release-notes',
+})
 ```
 
-### Style Examples
-
-1. **Technical**
-
-   ```typescript
-   const settings: StoryGenerationSettings = {
-     style: 'technical',
-     tone: 'professional',
-     format: 'report',
-     include: {
-       technical_details: true,
-       code_snippets: true,
-       statistics: true,
-       contributor_insights: false,
-     },
-     focus: {
-       features: true,
-       refactoring: true,
-       bug_fixes: true,
-       documentation: false,
-     },
-   }
-   ```
-
-2. **Narrative**
-   ```typescript
-   const settings: StoryGenerationSettings = {
-     style: 'narrative',
-     tone: 'fun',
-     format: 'story',
-     include: {
-       technical_details: false,
-       code_snippets: false,
-       statistics: false,
-       contributor_insights: true,
-     },
-     focus: {
-       features: true,
-       refactoring: false,
-       bug_fixes: false,
-       documentation: false,
-     },
-   }
-   ```
-
-## Story Structure
-
-### Metadata
+### Custom Templates
 
 ```typescript
-interface StoryMetadata {
-  repository: {
-    id: string
-    name: string
-    provider: string
-    url: string
-  }
-  generation: {
-    started_at: string
-    completed_at: string
-    version: string
-    settings: StoryGenerationSettings
-  }
-  statistics: {
-    commit_count: number
-    contributors: number
-    files_changed: number
-    additions: number
-    deletions: number
-  }
-  contributors: Array<{
-    name: string
-    email: string
-    commits: number
-    additions: number
-    deletions: number
-  }>
-}
-```
-
-### Content Structure
-
-```typescript
-interface StoryContent {
-  title: string
-  summary: string
-  sections: Array<{
-    title: string
-    content: string
-    type: 'introduction' | 'development' | 'technical' | 'conclusion'
-    metadata?: {
-      commits?: string[]
-      contributors?: string[]
-      code_snippets?: Array<{
-        file: string
-        language: string
-        code: string
-      }>
-    }
-  }>
-  highlights: Array<{
-    title: string
-    description: string
-    type: 'feature' | 'bugfix' | 'refactor' | 'docs'
-    commits: string[]
-  }>
-}
-```
-
-## Generation API
-
-### Server Component
-
-```typescript
-// app/api/stories/generate/route.ts
-import { generateStory } from '@/lib/story'
-
-export async function POST(request: Request) {
-  const { repository_id, settings } = await request.json()
-
-  // Validate repository access
-  const repository = await getRepository(repository_id)
-  if (!repository) {
-    return new Response(JSON.stringify({ error: 'Repository not found' }), {
-      status: 404,
-    })
-  }
-
-  // Start generation
-  const story = await generateStory(repository, settings)
-
-  return new Response(JSON.stringify(story))
-}
-```
-
-### Client Usage
-
-```typescript
-'use client'
-
-export function StoryGenerator({ repository }: Props) {
-  const [settings, setSettings] = useState<StoryGenerationSettings>({
-    style: 'technical',
-    tone: 'professional',
-    format: 'article',
-    include: {
-      technical_details: true,
-      code_snippets: true,
-      statistics: true,
-      contributor_insights: true
+// Create a custom template
+const template = {
+  name: 'Sprint Review',
+  sections: [
+    {
+      title: 'Summary',
+      content: '{{summary}}',
     },
-    focus: {
-      features: true,
-      bug_fixes: true,
-      refactoring: true,
-      documentation: true
-    }
-  })
-
-  const generateStory = async () => {
-    const response = await fetch('/api/stories/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        repository_id: repository.id,
-        settings
-      })
-    })
-
-    const story = await response.json()
-    // Handle story
-  }
-
-  return (
-    <div>
-      <StorySettings
-        settings={settings}
-        onChange={setSettings}
-      />
-      <Button onClick={generateStory}>
-        Generate Story
-      </Button>
-    </div>
-  )
+    {
+      title: 'Key Changes',
+      content: '{{changes}}',
+    },
+    {
+      title: 'Impact',
+      content: '{{impact}}',
+    },
+  ],
+  variables: {
+    summary: {
+      type: 'text',
+      description: 'Overview of changes',
+    },
+    changes: {
+      type: 'list',
+      description: 'List of key changes',
+    },
+    impact: {
+      type: 'text',
+      description: 'Impact analysis',
+    },
+  },
 }
+
+// Use custom template
+const story = await generateStory({
+  repository: 'user/repo',
+  template: template.name,
+  variables: {
+    summary: 'Custom summary',
+    changes: ['Change 1', 'Change 2'],
+    impact: 'Impact analysis',
+  },
+})
 ```
 
-## Story Components
-
-### Story Viewer
+### Story Enhancement
 
 ```typescript
-interface StoryViewerProps {
-  story: Story
-  onShare?: (story: Story) => void
-  onExport?: (story: Story, format: 'pdf' | 'md' | 'html') => void
-}
+// Add custom content
+story.addSection({
+  title: 'Additional Notes',
+  content: 'Custom content',
+})
 
-export function StoryViewer({
-  story,
-  onShare,
-  onExport
-}: StoryViewerProps) {
-  return (
-    <article className="prose dark:prose-invert max-w-none">
-      <header>
-        <h1>{story.title}</h1>
-        <p className="lead">{story.summary}</p>
-      </header>
+// Update metadata
+story.updateMetadata({
+  authors: ['John Doe'],
+  reviewers: ['Jane Smith'],
+  tags: ['feature', 'backend'],
+})
 
-      {story.sections.map((section) => (
-        <section key={section.title}>
-          <h2>{section.title}</h2>
-          <div className="content">
-            {section.content}
-          </div>
-          {section.metadata?.code_snippets?.map((snippet) => (
-            <CodeBlock
-              key={snippet.file}
-              language={snippet.language}
-              code={snippet.code}
-            />
-          ))}
-        </section>
-      ))}
-
-      <footer>
-        <StoryMetadata story={story} />
-        <StoryActions
-          story={story}
-          onShare={onShare}
-          onExport={onExport}
-        />
-      </footer>
-    </article>
-  )
-}
+// Add rich media
+story.addMedia({
+  type: 'image',
+  url: 'path/to/image.png',
+  caption: 'Feature diagram',
+})
 ```
+
+## Configuration
 
 ### Story Settings
 
 ```typescript
-interface StorySettingsProps {
-  settings: StoryGenerationSettings
-  onChange: (settings: StoryGenerationSettings) => void
+interface StorySettings {
+  // Basic settings
+  format: 'technical' | 'release-notes' | 'sprint-review' | 'custom'
+  style: 'detailed' | 'concise' | 'casual'
+  language: string
+
+  // Content settings
+  includeMetadata: boolean
+  includeDiagrams: boolean
+  includeCodeSnippets: boolean
+
+  // Template settings
+  template?: string
+  variables?: Record<string, any>
+
+  // Enhancement settings
+  aiEnhancement: {
+    contextDepth: 'minimal' | 'moderate' | 'deep'
+    toneAdjustment: boolean
+    technicalLevel: 'basic' | 'intermediate' | 'advanced'
+  }
 }
+```
 
-export function StorySettings({
-  settings,
-  onChange
-}: StorySettingsProps) {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <Select
-          label="Style"
-          value={settings.style}
-          onChange={(style) => onChange({ ...settings, style })}
-          options={[
-            { value: 'technical', label: 'Technical' },
-            { value: 'narrative', label: 'Narrative' },
-            { value: 'casual', label: 'Casual' }
-          ]}
-        />
-        <Select
-          label="Tone"
-          value={settings.tone}
-          onChange={(tone) => onChange({ ...settings, tone })}
-          options={[
-            { value: 'professional', label: 'Professional' },
-            { value: 'fun', label: 'Fun' },
-            { value: 'dramatic', label: 'Dramatic' }
-          ]}
-        />
-      </div>
+### Generation Options
 
-      <div className="space-y-4">
-        <h3>Include</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <Switch
-            label="Technical Details"
-            checked={settings.include.technical_details}
-            onChange={(checked) =>
-              onChange({
-                ...settings,
-                include: {
-                  ...settings.include,
-                  technical_details: checked
-                }
-              })
-            }
-          />
-          <Switch
-            label="Code Snippets"
-            checked={settings.include.code_snippets}
-            onChange={(checked) =>
-              onChange({
-                ...settings,
-                include: {
-                  ...settings.include,
-                  code_snippets: checked
-                }
-              })
-            }
-          />
-        </div>
-      </div>
+```typescript
+interface GenerationOptions {
+  // Source options
+  repository: string
+  branch?: string
+  commits?: string[]
+  timeframe?: string
 
-      <div className="space-y-4">
-        <h3>Focus Areas</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <Switch
-            label="Features"
-            checked={settings.focus.features}
-            onChange={(checked) =>
-              onChange({
-                ...settings,
-                focus: {
-                  ...settings.focus,
-                  features: checked
-                }
-              })
-            }
-          />
-          <Switch
-            label="Bug Fixes"
-            checked={settings.focus.bug_fixes}
-            onChange={(checked) =>
-              onChange({
-                ...settings,
-                focus: {
-                  ...settings.focus,
-                  bug_fixes: checked
-                }
-              })
-            }
-          />
-        </div>
-      </div>
-    </div>
-  )
+  // Filter options
+  authors?: string[]
+  paths?: string[]
+  excludePaths?: string[]
+
+  // Output options
+  format: StoryFormat
+  settings: StorySettings
+
+  // Processing options
+  grouping: {
+    enabled: boolean
+    strategy: 'time' | 'feature' | 'author'
+  }
+
+  // Enhancement options
+  enhancement: {
+    enabled: boolean
+    features: string[]
+  }
 }
 ```
 
 ## Best Practices
 
-1. **Repository Preparation**
+### 1. Commit Messages
 
-   - Use clear commit messages
-   - Group related changes
-   - Tag significant releases
-   - Document major changes
+- Write clear, descriptive commit messages
+- Use conventional commit format when possible
+- Include context in commit messages
+- Link to issues/tickets when relevant
 
-2. **Generation Settings**
+### 2. Story Organization
 
-   - Match style to audience
-   - Focus on relevant aspects
-   - Include appropriate details
-   - Set reasonable date ranges
+- Group related changes together
+- Use appropriate templates for your audience
+- Include relevant metadata
+- Add custom content when needed
 
-3. **Content Review**
+### 3. Review Process
 
-   - Verify technical accuracy
-   - Check contributor attribution
-   - Review code snippets
-   - Validate statistics
+- Review generated stories for accuracy
+- Enhance with manual edits when needed
+- Get feedback from team members
+- Maintain consistent style
 
-4. **Performance**
-   - Cache repository data
-   - Use incremental updates
-   - Optimize for large repos
-   - Handle timeouts gracefully
+## Integration Examples
 
-## Error Handling
+### 1. GitHub Actions
+
+```yaml
+name: Generate Story
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate Story
+        uses: gitfables/story-action@v1
+        with:
+          format: release-notes
+          template: changelog
+```
+
+### 2. GitLab CI
+
+```yaml
+generate_story:
+  stage: documentation
+  script:
+    - npx @gitfables/cli generate
+      --repo $CI_PROJECT_PATH
+      --format technical
+      --template documentation
+  artifacts:
+    paths:
+      - stories/
+```
+
+### 3. API Integration
 
 ```typescript
-interface StoryGenerationError {
-  code: string
-  message: string
-  details?: {
-    repository?: string
-    commits?: string[]
-    error?: string
-  }
-}
+import { GitFables } from '@gitfables/sdk'
 
-async function handleGenerationError(error: StoryGenerationError) {
-  switch (error.code) {
-    case 'repository_not_found':
-      // Handle missing repository
-      break
-    case 'insufficient_commits':
-      // Handle insufficient data
-      break
-    case 'generation_timeout':
-      // Handle timeout
-      break
-    case 'invalid_settings':
-      // Handle invalid settings
-      break
-    default:
-      // Handle unknown error
-      break
-  }
+const gitfables = new GitFables({
+  apiKey: process.env.GITFABLES_API_KEY,
+})
+
+// Generate story on PR merge
+async function onPRMerge(pr) {
+  const story = await gitfables.generateStory({
+    repository: pr.repository,
+    commits: pr.commits,
+    format: 'release-notes',
+  })
+
+  await story.publish()
 }
 ```
 
-## Future Enhancements
+## Advanced Features
 
-1. **Advanced Features**
+### 1. AI Enhancement
 
-   - Custom templates
-   - Multiple languages
-   - Interactive elements
-   - Rich media support
+- Context understanding
+- Technical detail expansion
+- Language improvement
+- Tone adjustment
 
-2. **Integration**
+### 2. Rich Media
 
-   - CI/CD pipelines
-   - Documentation systems
-   - Project management
-   - Team collaboration
+- Automatic diagrams
+- Code snippets
+- Performance graphs
+- Timeline visualization
 
-3. **Analytics**
-   - Usage tracking
-   - Quality metrics
-   - User feedback
-   - Performance monitoring
+### 3. Collaboration
+
+- Team review process
+- Comment system
+- Version control
+- Change tracking
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Incomplete Stories**
+
+   - Check commit message quality
+   - Verify repository access
+   - Review grouping settings
+
+2. **Quality Issues**
+
+   - Adjust AI enhancement settings
+   - Use appropriate templates
+   - Review and edit manually
+
+3. **Generation Errors**
+   - Check API access
+   - Verify repository permissions
+   - Review error logs
+
+## Support
+
+- [API Documentation](../api-reference.md)
+- [User Guide](../guides/user-guide.md)
+- [FAQ](../guides/faq.md)
+- [Discord Community](https://discord.gg/gitfables)

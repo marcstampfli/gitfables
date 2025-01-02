@@ -1,84 +1,92 @@
 # GitFables Documentation
 
-Welcome to the GitFables documentation! This documentation will help you understand the project structure, features, and development guidelines.
+Welcome to the GitFables documentation! This guide will help you understand how to use, develop, and contribute to GitFables.
 
-## Table of Contents
+## Documentation Structure
 
-1. [Architecture](./architecture/README.md)
+### 📚 Guides
 
-   - Project structure
-   - Design patterns
-   - Technical decisions
-   - Performance considerations
+- [Getting Started](../README.md#getting-started)
+- [Installation Guide](../README.md#installation)
+- [Environment Setup](../README.md#environment-variables)
+- [Contributing Guide](../CONTRIBUTING.md)
 
-2. [Components](./components/README.md)
+### 🏗 Architecture
 
-   - UI components
-   - Layout components
-   - Marketing components
-   - Feature components
-   - Best practices
+- [System Overview](architecture/README.md)
+- [Data Flow](architecture/data-flow.md)
+- [Authentication](architecture/authentication.md)
+- [Database Schema](architecture/database.md)
+- [API Design](architecture/api.md)
 
-3. [Features](./features/README.md)
+### 🧩 Components
 
-   - Core features
-   - Story generation
-   - VCS integration
-   - Settings management
-   - Marketing pages
+- [Component Library](components/README.md)
+- [UI Components](components/ui.md)
+- [Marketing Components](components/marketing.md)
+- [Dashboard Components](components/dashboard.md)
+- [Form Components](components/forms.md)
 
-4. [Guides](./guides/)
-   - [Getting Started](./guides/getting-started.md)
-   - [Contributing](./guides/contributing.md)
-   - [Development](./guides/development.md)
-   - [Deployment](./guides/deployment.md)
+### ⚡ Features
 
-## About GitFables
+- [Feature Overview](features/README.md)
+- [Story Generation](features/story-generation.md)
+- [Repository Integration](features/repository-integration.md)
+- [Team Collaboration](features/collaboration.md)
+- [Analytics](features/analytics.md)
 
-GitFables is a modern web application that transforms Git repository histories into engaging stories. It uses AI to analyze commit patterns, code changes, and development timelines to create narratives that showcase your development journey.
+### 🔌 API Reference
 
-### Key Features
+- [API Overview](api-reference.md)
+- [Authentication](api-reference.md#authentication)
+- [Endpoints](api-reference.md#endpoints)
+- [Error Handling](api-reference.md#error-handling)
+- [Webhooks](api-reference.md#webhooks)
 
-- 🔄 Git integration with multiple providers
-- 📝 AI-powered story generation
-- 📊 Development analytics
-- 🎨 Beautiful UI with consistent design language
-- 🌓 Dark/light mode support
-- 🚀 Edge-optimized performance
-- 📱 Fully responsive design
-- 🔒 Secure authentication
-- 🎯 Customizable story focus
+### 🛠 Development
 
-### Tech Stack
+- [Development Setup](../README.md#development)
+- [Code Style Guide](development/code-style.md)
+- [Testing Guide](development/testing.md)
+- [Performance Guide](development/performance.md)
+- [Security Guide](development/security.md)
 
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- Supabase
-- Shadcn UI
-- Lucide Icons
+## Contributing to the Docs
 
-### Marketing Features
+We welcome contributions to our documentation! Here's how you can help:
 
-- 🎨 Modern, gradient-rich design
-- 📱 Responsive marketing pages
-- 🧩 Reusable components
-  - Page headers
-  - Feature grids
-  - Process steps
-  - Call-to-action sections
-- 🎯 Conversion-focused layouts
+1. **Report Issues**: Found a mistake or unclear section? Open an issue!
+2. **Suggest Improvements**: Have ideas for better documentation? Let us know!
+3. **Submit Changes**: Feel free to submit pull requests with improvements.
 
-## Quick Links
+### Documentation Standards
 
-- [API Reference](./api-reference.md)
-- [Authentication](./authentication.md)
-- [Contributing](./contributing.md)
-- [Development](./DEVELOPMENT.md)
-- [Story Generation](./story-generation.md)
+- Use clear, concise language
+- Include code examples where relevant
+- Keep formatting consistent
+- Update table of contents when adding new sections
+- Test all links and code examples
 
-## Getting Help
+### Building the Docs
 
-- [GitHub Issues](https://github.com/gitfables/gitfables/issues)
-- [Discord Community](https://discord.gg/gitfables)
-- Email: support@gitfables.com
+Our documentation is written in Markdown and can be previewed locally:
+
+```bash
+# Install documentation dependencies
+npm install
+
+# Start documentation server
+npm run docs:dev
+```
+
+Visit `http://localhost:3000/docs` to preview the documentation.
+
+## Need Help?
+
+- Join our [Discord community](https://discord.gg/gitfables)
+- Email us at docs@gitfables.com
+- Open an issue on GitHub
+
+## License
+
+This documentation is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.

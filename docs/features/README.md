@@ -1,223 +1,285 @@
-# Features
+# GitFables Features
 
-This section details the features implemented in GitFables, their current status, and planned enhancements.
+## Core Features Overview
 
-## Core Features
+### 1. AI-Powered Story Generation
 
-### 1. VCS Integration
+Transform your Git history into engaging narratives automatically. Our AI understands your development patterns and creates meaningful stories.
 
-- [x] GitHub OAuth authentication
-- [x] Repository listing and selection
-- [x] Commit history fetching
-- [x] Repository settings management
-- [x] Auto-sync configuration
-- [ ] GitLab integration (coming soon)
-- [ ] Bitbucket integration (coming soon)
-- [ ] Webhook support
+#### Key Benefits
 
-### 2. Story Generation
+- Save hours of documentation time
+- Maintain consistent narrative quality
+- Automatic context understanding
+- Multiple story formats
 
-- [x] Commit history analysis
-- [x] Multiple narrative styles
-- [x] Technical details inclusion
-- [x] Code snippets
-- [x] Contributor insights
-- [x] Custom date ranges
-- [x] Focus area selection
-- [ ] Custom templates
-- [ ] AI-powered insights
+#### Key Capabilities
 
-### 3. User Settings
+- Intelligent commit analysis and grouping
+- Natural language processing for commit messages
+- Multiple narrative styles (technical, casual, detailed)
+- Custom templating support
+- Multi-language support
 
-- [x] Theme customization
-- [x] Notification preferences
-- [x] Privacy settings
-- [x] Accessibility options
-- [x] API key management
-- [x] Repository defaults
-- [ ] Team preferences
-- [ ] Custom workflows
+#### Use Cases
 
-### 4. API Access
+- Sprint retrospectives
+- Release notes
+- Project documentation
+- Team updates
+- Client reports
 
-- [x] API key generation
-- [x] Usage tracking
-- [x] Rate limiting
-- [x] Webhook delivery
-- [x] SDK support
-- [ ] Advanced analytics
-- [ ] Custom integrations
-- [ ] Batch operations
+### 2. Smart Repository Analysis
 
-## Feature Details
+Deep insights into your development process. Understand patterns, contributions, and project evolution over time.
+
+#### Key Benefits
+
+- Track project velocity
+- Identify bottlenecks
+- Measure team productivity
+- Visualize code evolution
+
+#### Analysis Features
+
+- Commit pattern analysis
+- Team contribution metrics
+- Code velocity tracking
+- Repository health monitoring
+- Custom metric creation
+
+#### Visualization Options
+
+- Interactive dashboards
+- Timeline views
+- Heat maps
+- Custom reports
+
+### 3. Team Collaboration
+
+Work together seamlessly. Share templates, collaborate on stories, and maintain a shared knowledge base.
+
+#### Key Benefits
+
+- Real-time collaboration
+- Shared templates library
+- Team permissions
+- Activity tracking
+
+#### Collaboration Features
+
+- Shared workspaces
+- Team member roles and permissions
+- Comment and feedback system
+- Story sharing and embedding
+- Export capabilities (PDF, Markdown, HTML)
+
+#### Team Management
+
+- User invitations
+- Role-based access control
+- Activity tracking
+- Notification system
+
+## Development Tools
+
+### 1. Custom Templates
+
+Create and customize story templates that match your team's needs.
+
+#### Template Features
+
+- Predefined templates for common use cases
+- Custom template creation
+- Variable support
+- Markdown formatting
+- Style customization
+
+#### Template Types
+
+- Technical documentation
+- Project updates
+- Sprint reviews
+- Changelog generation
+- Custom formats
+
+### 2. API Integration
+
+Integrate GitFables into your existing workflow with our robust API.
+
+#### API Features
+
+- RESTful API
+- GraphQL API
+- Authentication
+- Rate limiting
+- Webhook support
+- SDK support
+
+#### Integration Options
+
+- CI/CD pipelines
+- Documentation systems
+- Project management tools
+- Custom applications
+
+### 3. Pull Request Integration
+
+Automatically generate stories from pull requests and code reviews.
+
+#### Features
+
+- Automatic PR summaries
+- Review context inclusion
+- Discussion integration
+- Change impact analysis
+- Custom PR templates
+
+### 4. Workflow Automation
+
+Automate story generation based on your development workflow.
+
+#### Automation Features
+
+- Event-based triggers
+- Custom workflows
+- Integration with CI/CD
+- Scheduled generation
+- Conditional logic
+
+## Content & Analytics
+
+### 1. Advanced Analytics
+
+Track story performance and engagement with detailed analytics.
+
+#### Analytics Features
+
+- Story engagement metrics
+- Team contribution analysis
+- Content performance tracking
+- Custom dashboards
+- Export capabilities
+
+### 2. Multiple Story Formats
+
+Generate stories in various formats including blog posts, reports, and presentations.
+
+#### Supported Formats
+
+- Blog posts
+- Technical documentation
+- Release notes
+- Team updates
+- Custom formats
+
+### 3. Rich Text Editor
+
+Edit and enhance generated stories with our powerful editor.
+
+#### Editor Features
+
+- WYSIWYG editing
+- Markdown support
+- Code highlighting
+- Image handling
+- Version history
+
+### 4. Engagement Tracking
+
+Monitor how your stories are being read and shared.
+
+#### Tracking Features
+
+- View analytics
+- Share tracking
+- User engagement
+- Time on page
+- Custom events
+
+## Integrations
+
+### Version Control
+
+- GitHub
+- GitLab
+- Bitbucket
+
+### Project Management
+
+- Jira
+- Trello
+- Azure DevOps
+
+### Communication
+
+- Slack
+- Microsoft Teams
+- Discord
+
+## Security & Compliance
+
+### Security Features
+
+- SOC 2 Type II Certified
+- GDPR Compliant
+- End-to-end encryption
+
+### Data Protection
+
+- Industry-standard encryption
+- Data backup and recovery
+- Access logging
+
+### Access Control
+
+- Fine-grained permissions
+- Role-based access
+- SSO integration
+
+## Best Practices
 
 ### Story Generation
 
-The story generation process involves:
+1. Use clear commit messages
+2. Group related commits appropriately
+3. Include relevant metadata
+4. Review generated content
+5. Maintain consistent style
 
-1. **Repository Analysis**
+### Team Collaboration
 
-   - Commit history fetching
-   - Metadata extraction
-   - Code change analysis
-   - Contributor tracking
+1. Define clear roles and permissions
+2. Establish review processes
+3. Use templates for consistency
+4. Provide constructive feedback
+5. Keep documentation updated
 
-2. **Content Generation**
+### Integration
 
-   - Style application
-   - Technical detail inclusion
-   - Contributor insights
-   - Code snippet selection
+1. Use webhooks for automation
+2. Implement proper error handling
+3. Monitor API usage
+4. Follow rate limiting guidelines
+5. Keep authentication secure
 
-3. **Output Formatting**
-   - Multiple formats (article, story, report)
-   - Code block highlighting
-   - Statistics visualization
-   - Export options
+## Future Roadmap
 
-### Generation Options
+### Planned Features
 
-Available customization options:
+1. **Enhanced AI Capabilities**
 
-1. **Style**
+   - Advanced language models
+   - Better context understanding
+   - Custom training options
 
-   - Technical (detailed, code-focused)
-   - Narrative (story-driven, engaging)
-   - Casual (informal, accessible)
+2. **Advanced Integrations**
 
-2. **Content Focus**
+   - More third-party tools
+   - Enhanced automation
+   - Custom integration builder
 
-   - Features and enhancements
-   - Bug fixes and improvements
-   - Code refactoring
-   - Documentation updates
-
-3. **Included Elements**
-   - Technical details
-   - Code snippets
-   - Contributor insights
-   - Project statistics
-
-## Settings Management
-
-### Theme Options
-
-- Light mode
-- Dark mode
-- System preference
-- High contrast
-- Custom colors
-
-### Notification Settings
-
-- Email notifications
-- Web notifications
-- Weekly digest
-- Custom frequency
-
-### Privacy Controls
-
-- Activity visibility
-- Story sharing defaults
-- Data collection
-- Analytics sharing
-
-### Accessibility Features
-
-- Font size adjustment
-- Motion reduction
-- Keyboard navigation
-- Screen reader support
-
-## API Integration
-
-### Authentication
-
-- API key generation
-- Token management
-- OAuth integration
-- Scope control
-
-### Rate Limiting
-
-- Per-key limits
-- Burst allowance
-- Usage tracking
-- Overage handling
-
-### SDK Support
-
-- JavaScript/TypeScript
-- Python
-- Ruby
-- Go
-
-## Planned Features
-
-### Short Term (1-2 months)
-
-1. **VCS Providers**
-
-   - GitLab integration
-   - Bitbucket integration
-   - Provider selection UI
-   - Migration tools
-
-2. **Analytics**
-
-   - Usage dashboards
-   - Performance metrics
-   - Error tracking
-   - User insights
-
-3. **Collaboration**
-   - Team workspaces
-   - Shared stories
-   - Comments system
-   - Review workflow
-
-### Long Term (3-6 months)
-
-1. **Enterprise Features**
-
-   - Team management
-   - Access control
-   - Audit logging
-   - Custom branding
-
-2. **AI Enhancements**
-
-   - Code quality analysis
-   - Pattern recognition
-   - Predictive insights
-   - Smart suggestions
-
-3. **Integration Platform**
-   - Webhook management
-   - Custom integrations
-   - Workflow automation
-   - Third-party apps
-
-## Feature Requests
-
-We welcome feature requests and feedback! Please submit them through:
-
-1. [GitHub Issues](https://github.com/gitfables/gitfables/issues)
-2. [Discord Community](https://discord.gg/gitfables)
-3. [Email Support](mailto:support@gitfables.com)
-
-## Documentation
-
-Detailed documentation for each feature is available in the following sections:
-
-- [Story Generation](./story-generation.md)
-- [Repositories](./repositories.md)
-- [Stories](./stories.md)
-- [Users](./users.md)
-
-For development guidelines and API documentation, see:
-
-- [API Reference](../api-reference.md)
-- [Architecture](../architecture.md)
-- [Contributing](../contributing.md)
-- [Development Guide](../DEVELOPMENT.md)
+3. **Extended Analytics**
+   - Advanced metrics
+   - Custom reporting
+   - ML-powered insights

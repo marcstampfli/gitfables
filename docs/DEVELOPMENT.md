@@ -1,318 +1,249 @@
 # Development Guide
 
-## Getting Started
+This guide will help you set up your local development environment and understand our development workflow.
 
-### Prerequisites
+## Prerequisites
 
-- Node.js 18.x or later
-- npm 9.x or later
+- Node.js 18.17 or later
 - Git
+- npm or pnpm
+- A code editor (we recommend VS Code)
+- A GitHub account
 - A Supabase account
-- A GitHub OAuth application
 
-### Initial Setup
+## Local Setup
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/yourusername/gitfables.git
-   cd gitfables
-   ```
+```bash
+git clone https://github.com/yourusername/gitfables-app.git
+cd gitfables-app
+```
 
 2. Install dependencies:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
 3. Set up environment variables:
 
-   ```bash
-   cp .env.example .env.local
-   ```
+```bash
+cp .env.example .env.local
+```
 
-   Required environment variables:
+Required environment variables:
 
-   ```env
-   # Supabase configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   SUPABASE_DB_PASSWORD=your_supabase_db_password
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 
-   # GitHub OAuth configuration
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
-   ```
+# NextAuth.js
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+
+# GitHub OAuth
+GITHUB_ID=your_github_client_id
+GITHUB_SECRET=your_github_client_secret
+```
 
 4. Start the development server:
-   ```bash
-   npm run dev
-   ```
 
-## Project Structure
-
-### Key Directories
-
-- `src/app`: Next.js app router pages and API routes
-- `src/components`: React components organized by feature
-- `src/hooks`: Custom React hooks for state management and data fetching
-- `src/lib`: Core utilities and services
-- `src/types`: TypeScript type definitions
-
-### Component Organization
-
-Components are organized by feature and follow a consistent pattern:
-
-```typescript
-// Example component structure
-import * as React from 'react'
-import { useSettings } from '@/hooks/use-settings'
-import type { ComponentProps } from './types'
-
-export function ExampleComponent({ initialData }: ComponentProps) {
-  // State management
-  const [state, setState] = React.useState(initialData)
-
-  // Effects and callbacks
-  React.useEffect(() => {
-    // Component logic
-  }, [dependencies])
-
-  // Event handlers
-  const handleEvent = async () => {
-    try {
-      // Event handling logic
-    } catch (error) {
-      // Error handling
-    }
-  }
-
-  // Render
-  return (
-    <div>
-      {/* Component JSX */}
-    </div>
-  )
-}
+```bash
+npm run dev
 ```
 
-### Hooks Pattern
-
-Custom hooks follow a consistent pattern:
-
-```typescript
-// Example hook structure
-import { useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-
-export function useExample() {
-  // State
-  const [data, setData] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-
-  // Data fetching
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      // Fetch data
-      setData(result)
-    } catch (err) {
-      setError(err as Error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  return {
-    data,
-    isLoading,
-    error,
-    fetchData,
-  }
-}
-```
+Visit `http://localhost:3000` to see the application.
 
 ## Development Workflow
 
-### 1. Feature Development
+### Branch Strategy
 
-1. Create a new branch:
+- `main` - Production branch
+- `develop` - Development branch
+- `feature/*` - Feature branches
+- `fix/*` - Bug fix branches
+- `docs/*` - Documentation updates
 
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+### Commands
 
-2. Implement the feature following these guidelines:
+- `npm run dev` - Start development server
+- `npm run build` - Build production bundle
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run test` - Run tests
+- `npm run typecheck` - Check TypeScript types
 
-   - Use TypeScript for type safety
-   - Write clean, maintainable code
-   - Follow the established patterns
-   - Add necessary tests
+## Code Style
 
-3. Test your changes:
-   ```bash
-   npm run test        # Run tests
-   npm run lint        # Run linter
-   npm run type-check  # Run type checker
-   ```
-
-### 2. Code Style
+### TypeScript
 
 - Use TypeScript for all new code
-- Follow the established naming conventions
-- Use consistent formatting (enforced by Prettier)
-- Write meaningful comments and documentation
+- Define interfaces for props and data structures
+- Use proper type imports
+- Avoid `any` types
 
-### 3. Component Guidelines
+Example:
 
-1. **Server Components**
+```typescript
+interface User {
+  id: string
+  name: string
+  email: string
+}
 
-   - Use by default for better performance
-   - Keep client-side code minimal
-   - Handle data fetching at the server level
+function UserProfile({ user }: { user: User }) {
+  return <div>{user.name}</div>
+}
+```
 
-2. **Client Components**
+### React Components
 
-   - Add 'use client' directive
-   - Keep state management simple
-   - Use hooks for complex logic
-   - Handle client-side interactions
+- Use functional components
+- Prefer Server Components
+- Use client components only when needed
+- Follow naming conventions
 
-3. **Accessibility**
-   - Use semantic HTML
-   - Add ARIA labels where needed
-   - Support keyboard navigation
-   - Test with screen readers
+Example:
 
-### 4. State Management
+```typescript
+// Server Component (default)
+export function FeatureCard({ title, description }: FeatureCardProps) {
+  return (
+    <div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  )
+}
 
-1. **Server State**
+// Client Component (when needed)
+'use client'
 
-   - Use React Server Components
-   - Implement server actions
-   - Cache responses appropriately
+export function InteractiveButton({ onClick }: { onClick: () => void }) {
+  return <button onClick={onClick}>Click me</button>
+}
+```
 
-2. **Client State**
+### Styling
 
-   - Use React hooks
-   - Keep state close to components
-   - Avoid unnecessary global state
+- Use Tailwind CSS for styling
+- Follow mobile-first approach
+- Use CSS variables for theming
+- Maintain consistent spacing
 
-3. **Form State**
-   - Use controlled components
-   - Implement proper validation
-   - Handle errors gracefully
+Example:
+
+```typescript
+<div className="p-4 md:p-6 rounded-lg bg-background">
+  <h3 className="text-xl md:text-2xl font-bold">{title}</h3>
+</div>
+```
 
 ## Testing
 
-### 1. Unit Tests
+### Unit Tests
+
+Use Jest and React Testing Library:
 
 ```typescript
 import { render, screen } from '@testing-library/react'
-import { ExampleComponent } from './example-component'
+import { Button } from './button'
 
-describe('ExampleComponent', () => {
-  it('renders correctly', () => {
-    render(<ExampleComponent />)
-    expect(screen.getByRole('button')).toBeInTheDocument()
+describe('Button', () => {
+  it('renders children correctly', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByText('Click me')).toBeInTheDocument()
   })
 })
 ```
 
-### 2. Integration Tests
+### E2E Tests
+
+Use Playwright for end-to-end testing:
 
 ```typescript
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { ExampleFeature } from './example-feature'
-
-describe('ExampleFeature', () => {
-  it('handles user interactions', async () => {
-    render(<ExampleFeature />)
-    await userEvent.click(screen.getByRole('button'))
-    await waitFor(() => {
-      expect(screen.getByText('Success')).toBeInTheDocument()
-    })
-  })
+test('user can log in', async ({ page }) => {
+  await page.goto('/')
+  await page.click('text=Login')
+  // ... test steps
 })
 ```
+
+## Performance
+
+### Guidelines
+
+1. Use React Server Components
+2. Optimize images with Next.js Image
+3. Minimize client-side JavaScript
+4. Use proper caching strategies
+5. Implement loading states
+6. Add error boundaries
+
+### Monitoring
+
+- Vercel Analytics
+- Error tracking
+- Performance metrics
+- User behavior
 
 ## Deployment
 
-### 1. Production Build
+### Preview Deployments
 
-```bash
-npm run build   # Create production build
-npm run start   # Start production server
-```
+Every PR gets a preview deployment on Vercel:
 
-### 2. Environment Variables
+1. Push changes to your branch
+2. Create a pull request
+3. Wait for checks to pass
+4. Review preview deployment
+5. Get PR approved
+6. Merge to develop
 
-Ensure all required environment variables are set in your deployment environment:
+### Production Deployment
 
-```env
-# Required variables
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-NEXT_PUBLIC_APP_URL=
-SUPABASE_DB_PASSWORD=
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
+Deployment to production:
 
-# Optional variables
-NODE_ENV=production
-NEXT_PUBLIC_VERCEL_URL=
-```
-
-### 3. Database Migrations
-
-```bash
-npm run db:migrate   # Run database migrations
-npm run db:seed     # Seed database with initial data
-```
+1. Merge develop to main
+2. Automatic deployment to Vercel
+3. Run database migrations
+4. Monitor for issues
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Build Errors**
-
-   - Check TypeScript errors
-   - Verify dependencies
-   - Clear build cache
-
-2. **Runtime Errors**
-
-   - Check environment variables
-   - Verify API endpoints
-   - Check database connections
-
-3. **Performance Issues**
-   - Use React DevTools
-   - Check network requests
-   - Monitor memory usage
+1. Environment variables not set
+2. Wrong Node.js version
+3. Supabase connection issues
+4. TypeScript errors
+5. Build failures
 
 ### Debug Tools
 
-1. **Browser DevTools**
+- React Developer Tools
+- Network tab
+- Console logs
+- Error boundaries
+- TypeScript errors
 
-   - React Developer Tools
-   - Network tab
-   - Console logs
+## Best Practices
 
-2. **Server Logs**
-   - Application logs
-   - Database logs
-   - Error tracking
+1. Write clean, readable code
+2. Add proper documentation
+3. Include tests for new features
+4. Follow accessibility guidelines
+5. Optimize performance
+6. Handle errors gracefully
+7. Use proper TypeScript types
 
-## Contributing
+## Resources
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-Follow the [Contributing Guide](./contributing.md) for detailed instructions.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs)
+- [React Documentation](https://react.dev)

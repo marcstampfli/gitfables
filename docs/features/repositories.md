@@ -1,228 +1,257 @@
-# Repository Management
+# Smart Repository Analysis
 
-## Overview
+GitFables provides deep insights into your development process through smart repository analysis. Understand patterns, contributions, and project evolution over time.
 
-GitFables is designed to support multiple Version Control Systems (VCS), allowing users to connect and manage repositories from various providers. Currently, GitHub integration is available, with GitLab and Bitbucket support planned for future releases.
+## Key Benefits
 
-## Supported Providers
+- **Track Project Velocity**: Monitor development speed and progress
+- **Identify Bottlenecks**: Find and address development slowdowns
+- **Measure Team Productivity**: Track and optimize team performance
+- **Visualize Code Evolution**: See how your codebase grows and changes
 
-### Active Providers
+## Features
 
-- **GitHub**: Full integration with repository connection, sync, and story generation
-  - OAuth authentication
-  - Repository listing and selection
-  - Commit history synchronization
-  - User profile integration
+### 1. Commit Pattern Analysis
 
-### Future Providers (Currently Disabled)
+- **Pattern Recognition**: Identify development trends and patterns
+- **Contribution Analysis**: Track team member contributions
+- **Code Impact**: Measure the scope and impact of changes
+- **Time-based Analysis**: Understand development cycles
 
-- **GitLab**: Coming soon
-- **Bitbucket**: Coming soon
+### 2. Team Contribution Metrics
 
-## Connection Flow
+- **Individual Metrics**: Track individual developer contributions
+- **Team Performance**: Measure team velocity and productivity
+- **Code Review Stats**: Monitor review process effectiveness
+- **Collaboration Patterns**: Understand team dynamics
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant App
-    participant VCS
-    participant Supabase
+### 3. Repository Health Monitoring
 
-    User->>App: Select VCS Provider
-    User->>App: Click "Connect Repository"
-    App->>VCS: OAuth Authentication
-    VCS->>App: Return Access Token
-    App->>Supabase: Store Connection
-    App->>VCS: Request Repository List
-    VCS->>App: Return Available Repos
-    User->>App: Select Repository
-    App->>Supabase: Store Repository Info
-    App->>VCS: Initial Sync
-    VCS->>App: Commit History
-    App->>Supabase: Save Commit Data
-    App->>User: Show Success
-```
+- **Code Quality Metrics**: Track code health over time
+- **Documentation Coverage**: Monitor documentation completeness
+- **Test Coverage**: Track testing effectiveness
+- **Performance Metrics**: Monitor system performance
 
-## Implementation Details
+### 4. Custom Metric Creation
 
-### VCS Provider Interface
+- **Custom KPIs**: Define your own success metrics
+- **Team Goals**: Track progress towards objectives
+- **Project Milestones**: Monitor milestone completion
+- **Quality Gates**: Define and track quality standards
+
+## Integration
+
+### 1. Version Control Systems
 
 ```typescript
-interface VCSConnection {
-  id: string
-  user_id: string
+// Connect repository
+const repo = await gitfables.connectRepository({
+  provider: 'github',
+  owner: 'user',
+  name: 'repo',
+  settings: {
+    autoSync: true,
+    syncInterval: 3600, // 1 hour
+    webhookEnabled: true,
+  },
+})
+
+// Get repository analytics
+const analytics = await repo.getAnalytics({
+  timeframe: '1m', // last month
+  metrics: ['velocity', 'contributions', 'quality'],
+})
+```
+
+### 2. CI/CD Integration
+
+```yaml
+# GitHub Actions
+name: Repository Analysis
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gitfables/analyze-action@v1
+        with:
+          metrics: ['velocity', 'quality', 'coverage']
+          report: true
+```
+
+### 3. Custom Integration
+
+```typescript
+import { GitFables } from '@gitfables/sdk'
+
+const gitfables = new GitFables({
+  apiKey: process.env.GITFABLES_API_KEY,
+})
+
+// Custom analysis workflow
+async function analyzeRepository(repo) {
+  const analysis = await gitfables.analyze({
+    repository: repo,
+    metrics: {
+      velocity: true,
+      quality: true,
+      custom: {
+        name: 'feature-completion',
+        query: 'type:pr label:feature merged:>{{date}}',
+      },
+    },
+  })
+
+  return analysis
+}
+```
+
+## Configuration
+
+### Repository Settings
+
+```typescript
+interface RepositorySettings {
+  // Connection settings
   provider: 'github' | 'gitlab' | 'bitbucket'
-  provider_user_id: string
-  provider_username: string
-  provider_email: string
-  provider_avatar_url: string | null
-  access_token: string
-  refresh_token: string | null
-  expires_at: string | null
-  created_at: string
-  updated_at: string
-}
+  authentication: {
+    type: 'oauth' | 'token'
+    credentials: string
+  }
 
-interface VCSProviderItem {
-  id: string
-  name: string
-  icon: React.ComponentType<{ className?: string }>
-  isActive: boolean
-  comingSoon?: boolean
-}
-```
+  // Sync settings
+  sync: {
+    auto: boolean
+    interval: number
+    webhook: boolean
+  }
 
-### Provider Configuration
+  // Analysis settings
+  analysis: {
+    metrics: string[]
+    schedule: string
+    notifications: boolean
+  }
 
-```typescript
-const providers: VCSProviderItem[] = [
-  {
-    id: 'github',
-    name: 'GitHub',
-    icon: GithubIcon,
-    isActive: true,
-  },
-  {
-    id: 'gitlab',
-    name: 'GitLab',
-    icon: GitlabIcon,
-    isActive: false,
-    comingSoon: true,
-  },
-  // Additional providers to be added
-]
-```
-
-### OAuth Authentication
-
-```typescript
-const handleConnect = async (provider: VCSProviderItem) => {
-  if (!provider.isActive) return
-
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: provider.id as 'github',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: 'repo read:user user:email',
-      },
-    })
-
-    if (error) throw error
-  } catch (err) {
-    logError('Failed to connect to VCS provider', {
-      metadata: {
-        error: err,
-        providerId: provider.id,
-        providerName: provider.name,
-      },
-    })
+  // Access settings
+  access: {
+    public: boolean
+    teams: string[]
+    users: string[]
   }
 }
 ```
 
-### Connection Management
-
-The `useVCSConnections` hook provides functionality for managing VCS connections:
+### Analysis Options
 
 ```typescript
-const { connections, isLoading } = useVCSConnections()
+interface AnalysisOptions {
+  // Time settings
+  timeframe: string
+  comparison?: string
+
+  // Metric settings
+  metrics: {
+    builtin: string[]
+    custom: Array<{
+      name: string
+      query: string
+      threshold?: number
+    }>
+  }
+
+  // Filter settings
+  filters: {
+    branches?: string[]
+    authors?: string[]
+    paths?: string[]
+  }
+
+  // Output settings
+  output: {
+    format: 'json' | 'html' | 'pdf'
+    charts: boolean
+    details: boolean
+  }
+}
 ```
 
-Features:
+## Best Practices
 
-- List active connections
-- Connection status tracking
-- Error handling
-- Loading states
+### 1. Repository Setup
 
-### UI Components
+- Configure appropriate access permissions
+- Enable webhook integration when possible
+- Set up regular sync intervals
+- Configure relevant metrics
 
-#### Provider List
+### 2. Analysis Configuration
 
-```typescript
-<div className="grid gap-4">
-  {providers.map((provider) => {
-    const connection = connections.find(c => c.provider === provider.id)
-    const isConnected = !!connection
+- Choose relevant metrics for your team
+- Set appropriate timeframes
+- Configure meaningful comparisons
+- Use custom metrics when needed
 
-    return (
-      <Button
-        key={provider.id}
-        variant={provider.isActive ? 'outline' : 'secondary'}
-        className={cn(
-          "justify-start",
-          isConnected && "border-green-500"
-        )}
-        onClick={() => handleConnect(provider)}
-        disabled={!provider.isActive || isLoading}
-      >
-        <provider.icon className="mr-2 h-5 w-5" />
-        <span className="flex-1 text-left">
-          {provider.name}
-          {connection?.provider_username && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              Connected as {connection.provider_username}
-            </span>
-          )}
-          {provider.comingSoon && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              Coming soon
-            </span>
-          )}
-        </span>
-        {isConnected && (
-          <CheckCircle2Icon className="ml-2 h-4 w-4 text-green-500" />
-        )}
-      </Button>
-    )
-  })}
-</div>
-```
+### 3. Monitoring
 
-## Database Schema
+- Regular health checks
+- Trend analysis
+- Alert configuration
+- Performance monitoring
 
-### VCS Connections Table
+## Advanced Features
 
-```sql
-create table vcs_connections (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade,
-  provider text not null check (provider in ('github', 'gitlab', 'bitbucket')),
-  provider_user_id text not null,
-  provider_username text not null,
-  provider_email text not null,
-  provider_avatar_url text,
-  access_token text not null,
-  refresh_token text,
-  expires_at timestamp with time zone,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now(),
-  unique (user_id, provider)
-);
-```
+### 1. Custom Metrics
 
-## Future Enhancements
+- Define custom success metrics
+- Create team-specific KPIs
+- Set up quality gates
+- Track business objectives
 
-1. **GitLab Integration**
+### 2. Automated Analysis
 
-   - OAuth implementation
-   - Repository sync
-   - User profile integration
+- Scheduled analysis
+- Event-triggered analysis
+- Continuous monitoring
+- Trend detection
 
-2. **Bitbucket Integration**
+### 3. Integration Options
 
-   - OAuth implementation
-   - Repository sync
-   - User profile integration
+- CI/CD pipeline integration
+- Project management tools
+- Communication platforms
+- Custom applications
 
-3. **Enhanced Sync Features**
+## Troubleshooting
 
-   - Selective branch sync
-   - Commit filtering
-   - Incremental updates
+### Common Issues
 
-4. **Advanced Repository Management**
-   - Batch operations
-   - Advanced filtering
-   - Custom sync schedules
+1. **Connection Problems**
+
+   - Check authentication
+   - Verify permissions
+   - Review network settings
+   - Check provider status
+
+2. **Sync Issues**
+
+   - Verify webhook configuration
+   - Check sync settings
+   - Review error logs
+   - Check rate limits
+
+3. **Analysis Errors**
+   - Verify metric configuration
+   - Check data availability
+   - Review query syntax
+   - Check resource limits
+
+## Support
+
+- [API Documentation](../api-reference.md)
+- [User Guide](../guides/user-guide.md)
+- [FAQ](../guides/faq.md)
+- [Discord Community](https://discord.gg/gitfables)

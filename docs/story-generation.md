@@ -1,228 +1,238 @@
 # Story Generation
 
-GitFables uses advanced natural language processing to transform Git commit history into engaging narratives.
+## Overview
 
-## Story Types
-
-### Available Styles
-
-- **Technical**: Detailed, technical narrative focusing on implementation details
-- **Casual**: Friendly, conversational style for general audiences
-- **Formal**: Professional style suitable for documentation
-
-### Tone Options
-
-- **Professional**: Straightforward business tone
-- **Fun**: Light-hearted and entertaining
-- **Dramatic**: Emphasizes challenges and achievements
-
-### Length Settings
-
-- **Short**: ~500 words
-- **Medium**: ~1000 words
-- **Long**: ~2000 words
+GitFables uses AI-powered analysis to transform your Git history into engaging narratives. This document details the story generation process, available options, and customization features.
 
 ## Generation Process
 
-1. **Data Collection**:
+### 1. Repository Analysis
 
-   ```typescript
-   interface CommitData {
-     sha: string
-     message: string
-     author: string
-     date: string
-     changes: {
-       files: string[]
-       additions: number
-       deletions: number
-     }
-   }
-   ```
+- Commit history fetching
+- Metadata extraction
+- Code change analysis
+- Contributor tracking
+- Branch analysis
 
-2. **Analysis**:
+### 2. Content Generation
 
-   - Commit message categorization
-   - Code change impact assessment
-   - Timeline construction
-   - Developer contribution analysis
+- Style application
+- Technical detail inclusion
+- Contributor insights
+- Code snippet selection
+- Timeline organization
 
-3. **Narrative Construction**:
-   ```typescript
-   interface StorySegment {
-     type: 'introduction' | 'development' | 'challenge' | 'resolution'
-     content: string
-     commits: string[] // Related commit SHAs
-     metadata: {
-       timeframe: string
-       contributors: string[]
-       impact: 'minor' | 'moderate' | 'major'
-     }
-   }
-   ```
+### 3. Output Formatting
 
-## Usage Examples
+- Multiple formats (article, story, report)
+- Code block highlighting
+- Statistics visualization
+- Export options (PDF, Markdown)
 
-### Basic Story Generation
+## Generation Options
+
+### 1. Style Selection
 
 ```typescript
-const story = await generateStory({
-  repository: 'owner/repo',
-  style: 'technical',
-  tone: 'professional',
-  length: 'medium',
-})
-```
-
-### Custom Configuration
-
-```typescript
-const story = await generateStory({
-  repository: 'owner/repo',
-  style: 'casual',
-  tone: 'fun',
-  length: 'short',
-  options: {
-    focusAreas: ['features', 'bugfixes'],
-    timeframe: {
-      start: '2024-01-01',
-      end: '2024-12-31',
-    },
-    includedAuthors: ['alice', 'bob'],
-    excludedPaths: ['*.test.ts', 'docs/*'],
-  },
-})
-```
-
-## Story Structure
-
-### Components
-
-1. **Introduction**:
-
-   - Project overview
-   - Key contributors
-   - Timeline scope
-
-2. **Main Content**:
-
-   - Feature developments
-   - Challenge resolutions
-   - Technical achievements
-
-3. **Conclusion**:
-   - Impact summary
-   - Future directions
-   - Key metrics
-
-### Metadata
-
-```typescript
-interface StoryMetadata {
-  repository: string
-  branch: string
-  timeframe: {
-    start: string
-    end: string
-  }
-  statistics: {
-    commits: number
-    contributors: number
-    filesChanged: number
-    additions: number
-    deletions: number
-  }
-  topics: string[]
+interface StoryStyle {
+  type: 'technical' | 'narrative' | 'casual'
+  tone: 'formal' | 'conversational' | 'fun'
+  detail: 'minimal' | 'balanced' | 'detailed'
 }
 ```
 
-## Customization
+Available styles:
 
-### Story Settings
+- Technical (detailed, code-focused)
+- Narrative (story-driven, engaging)
+- Casual (informal, accessible)
+
+### 2. Content Focus
 
 ```typescript
-interface StorySettings {
-  style: 'technical' | 'casual' | 'formal'
-  tone: 'professional' | 'fun' | 'dramatic'
-  length: 'short' | 'medium' | 'long'
-  focus?: {
-    features?: boolean
-    bugfixes?: boolean
-    refactoring?: boolean
-    documentation?: boolean
-  }
-  highlight?: {
-    authors?: string[]
-    components?: string[]
-    timeframes?: Array<{
-      start: string
-      end: string
-      description: string
-    }>
-  }
+interface ContentFocus {
+  features: boolean
+  bugFixes: boolean
+  refactoring: boolean
+  documentation: boolean
+  performance: boolean
 }
 ```
 
-### Developer Personas
+Focus areas:
+
+- Features and enhancements
+- Bug fixes and improvements
+- Code refactoring
+- Documentation updates
+- Performance optimizations
+
+### 3. Included Elements
 
 ```typescript
-interface DeveloperPersona {
-  role: 'architect' | 'developer' | 'reviewer'
-  style: 'detailed' | 'concise'
-  focus: 'technical' | 'business' | 'mixed'
+interface StoryElements {
+  technicalDetails: boolean
+  codeSnippets: boolean
+  contributorInsights: boolean
+  statistics: boolean
+  timeline: boolean
 }
 ```
+
+Customizable elements:
+
+- Technical details
+- Code snippets
+- Contributor insights
+- Project statistics
+- Timeline visualization
+
+## Story Components
+
+### 1. Story Generator
+
+```typescript
+interface StoryGeneratorProps {
+  repository: Repository
+  templates: StoryTemplate[]
+  onGenerate: (options: GenerationOptions) => Promise<Story>
+}
+```
+
+Features:
+
+- Template selection
+- Customization options
+- Preview capability
+- Progress tracking
+
+### 2. Story Display
+
+```typescript
+interface StoryViewerProps {
+  story: Story
+  onShare: (platform: string) => void
+  onEdit: () => void
+}
+```
+
+Elements:
+
+- Rich text content
+- Code snippets
+- Visualizations
+- Share buttons
+
+### 3. Story Management
+
+```typescript
+interface StoryListProps {
+  stories: Story[]
+  onView: (id: string) => void
+  onDelete: (id: string) => void
+  onShare: (id: string) => void
+}
+```
+
+Features:
+
+- List/grid view
+- Search & filter
+- Bulk actions
+- Analytics
+
+## AI Integration
+
+### 1. OpenAI Configuration
+
+```typescript
+interface AIConfig {
+  model: string
+  temperature: number
+  max_tokens: number
+  presence_penalty: number
+  frequency_penalty: number
+}
+```
+
+### 2. Processing Pipeline
+
+1. **Input Processing**
+
+   - Commit message analysis
+   - Code diff parsing
+   - Metadata extraction
+   - Context building
+
+2. **Content Generation**
+
+   - Style application
+   - Narrative construction
+   - Technical detail integration
+   - Code snippet selection
+
+3. **Output Formatting**
+   - Markdown generation
+   - Code highlighting
+   - Structure organization
+   - Export preparation
+
+### 3. Quality Metrics
+
+- Readability scores
+- User ratings
+- Completion rates
+- Engagement time
+
+## Future Improvements
+
+### 1. Advanced Features
+
+- Multi-repository stories
+- Interactive elements
+- Custom templates
+- Real-time updates
+
+### 2. AI Enhancements
+
+- Improved analysis
+- Better personalization
+- Multiple AI models
+- Context awareness
+
+### 3. User Experience
+
+- Rich media support
+- Collaborative editing
+- Version control
+- Export options
 
 ## Best Practices
 
-1. **Repository Preparation**:
+### 1. Story Structure
 
-   - Clean commit history
-   - Meaningful commit messages
-   - Proper branch organization
+- Clear introduction
+- Logical flow
+- Technical accuracy
+- Engaging narrative
 
-2. **Generation Settings**:
+### 2. Code Snippets
 
-   - Match audience expertise
-   - Consider story purpose
-   - Balance detail level
+- Relevant selections
+- Proper context
+- Clear annotations
+- Syntax highlighting
 
-3. **Content Review**:
-   - Verify technical accuracy
-   - Check narrative flow
-   - Validate statistics
+### 3. Customization
 
-## Error Handling
+- Target audience consideration
+- Appropriate detail level
+- Consistent style
+- Balanced content
 
-```typescript
-try {
-  const story = await generateStory(settings)
-} catch (error) {
-  if (error instanceof ValidationError) {
-    // Handle invalid settings
-  } else if (error instanceof GenerationError) {
-    // Handle generation failure
-  } else {
-    // Handle unexpected errors
-  }
-}
-```
+### 4. Export Formats
 
-## Performance Considerations
-
-1. **Optimization**:
-
-   - Commit batch processing
-   - Content caching
-   - Parallel analysis
-
-2. **Limitations**:
-
-   - Max repository size
-   - Rate limits
-   - Generation timeout
-
-3. **Caching**:
-   - Story results
-   - Repository data
-   - Analysis results
+- Clean markdown
+- Formatted PDF
+- Rich text
+- Web embedding

@@ -34,39 +34,49 @@ export function CTASection({
   className
 }: CTASectionProps) {
   return (
-    <section className={cn("py-24 relative overflow-hidden", className)}>
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="container relative">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary to-purple-600">
+    <section className={cn('py-24', className)}>
+      <div className="container px-4">
+        <div className="relative rounded-3xl bg-gradient-to-br from-primary to-primary overflow-hidden">
+          {/* Background decorations */}
+          <div className="absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(0,0,0,0.2),_transparent_50%)]" />
-            
-            <div className="relative px-8 py-20 sm:px-20 flex flex-col md:flex-row items-center justify-between gap-12">
-              <div className="flex-1 text-left">
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white mb-6">
-                  {title}
-                  {titleHighlight && (
-                    <>
-                      <br />
-                      <span className="text-white/90">{titleHighlight}</span>
-                    </>
-                  )}
-                </h2>
-                <p className="text-xl text-white/80 max-w-[500px] mb-8">
-                  {description}
-                </p>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(255,255,255,0.1),_transparent_50%)]" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:24px_24px]" />
+          </div>
+
+          <div className="relative p-8 md:p-12 lg:p-16">
+            <div className="grid lg:grid-cols-[1fr,auto] gap-12 lg:gap-16 items-center max-w-7xl mx-auto">
+              {/* Content */}
+              <div className="space-y-8">
+                <div className="space-y-6">
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-primary-foreground">
+                    {titleHighlight ? (
+                      <>
+                        {title.replace(titleHighlight, '')}{' '}
+                        <span className="relative">
+                          <span className="relative inline-block">{titleHighlight}</span>
+                          <span className="absolute -bottom-2 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-foreground/0 via-primary-foreground/50 to-primary-foreground/0" />
+                        </span>
+                      </>
+                    ) : (
+                      title
+                    )}
+                  </h2>
+                  <p className="text-lg text-primary-foreground/80 max-w-2xl">
+                    {description}
+                  </p>
+                </div>
+
                 <div className="flex flex-wrap gap-4 items-center">
                   <Button 
                     size="lg" 
                     variant="secondary" 
                     asChild 
-                    className="shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-white/90 text-primary"
-                    icon={<ArrowRight className="h-4 w-4" />} 
-                    iconPosition="right"
+                    className="shadow-lg hover:shadow-xl transition-all duration-200 bg-background hover:bg-background/90 text-primary font-semibold"
                   >
                     <Link href={primaryCta.href}>
                       {primaryCta.text}
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                   {secondaryCta && (
@@ -74,42 +84,40 @@ export function CTASection({
                       size="lg" 
                       variant="ghost" 
                       asChild 
-                      className="border-2 border-white/20 text-white hover:bg-white/10 hover:text-white"
-                      icon={<Star className="h-4 w-4" />}
-                      iconPosition="left"
+                      className="border-2 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground font-medium"
                     >
                       <Link href={secondaryCta.href}>
+                        <Star className="mr-2 h-4 w-4" />
                         {secondaryCta.text}
                       </Link>
                     </Button>
                   )}
                 </div>
               </div>
-              
+
+              {/* Visual */}
               {showJourneyVisual && (
-                <div className="flex-1 flex justify-center">
-                  <div className="relative w-full max-w-[400px] aspect-square">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl backdrop-blur-sm border border-white/10" />
-                    <div className="absolute inset-4 bg-gradient-to-br from-white/10 to-transparent rounded-xl" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-white space-y-6 p-8">
-                        <div className="flex items-center gap-3">
-                          <GitCommit className="h-5 w-5 text-white/70" />
-                          <span className="text-sm text-white/70">Commits</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Sparkles className="h-5 w-5 text-white/70" />
-                          <span className="text-sm text-white/70">AI Magic</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <BookOpen className="h-5 w-5 text-white/70" />
-                          <span className="text-sm text-white/70">Stories</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-white/20 via-white/10 to-transparent my-4" />
-                        <div className="flex items-center gap-3">
-                          <ArrowRight className="h-5 w-5 text-white" />
-                          <span className="text-sm font-medium text-white">Your Journey</span>
-                        </div>
+                <div className="relative lg:w-[360px]">
+                  <div className="relative aspect-square rounded-2xl bg-gradient-to-br from-primary-foreground/10 to-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 p-8">
+                    <div className="absolute inset-2 bg-gradient-to-br from-primary-foreground/10 to-transparent rounded-xl" />
+                    
+                    {/* Journey Steps */}
+                    <div className="relative grid grid-cols-2 gap-8 h-full">
+                      <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl hover:bg-primary-foreground/5 transition-colors">
+                        <GitCommit className="h-8 w-8 text-primary-foreground/90" />
+                        <span className="text-sm font-medium text-primary-foreground/90">Commits</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl hover:bg-primary-foreground/5 transition-colors">
+                        <Sparkles className="h-8 w-8 text-primary-foreground/90" />
+                        <span className="text-sm font-medium text-primary-foreground/90">Magic</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl hover:bg-primary-foreground/5 transition-colors">
+                        <BookOpen className="h-8 w-8 text-primary-foreground/90" />
+                        <span className="text-sm font-medium text-primary-foreground/90">Stories</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl hover:bg-primary-foreground/5 transition-colors">
+                        <Star className="h-8 w-8 text-primary-foreground/90" />
+                        <span className="text-sm font-medium text-primary-foreground/90">Share</span>
                       </div>
                     </div>
                   </div>

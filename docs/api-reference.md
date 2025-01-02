@@ -2,32 +2,22 @@
 
 ## Overview
 
-GitFables provides a RESTful API for interacting with the platform programmatically. This document outlines the available endpoints, authentication methods, and usage examples.
+GitFables provides a RESTful API for integrating with your applications. All requests should be made to the base URL: `https://api.gitfables.com/v1`.
 
 ## Authentication
 
-### API Keys
-
-All API requests must include an API key in the `Authorization` header:
+All API requests require authentication using an API key:
 
 ```bash
-Authorization: Bearer your-api-key
+curl -H "Authorization: Bearer your_api_key" \
+  https://api.gitfables.com/v1/stories
 ```
 
-To obtain an API key:
-
-1. Log in to your GitFables account
-2. Navigate to Settings > API Keys
-3. Generate a new API key
-4. Copy and securely store your API key
-
-### Rate Limiting
+## Rate Limiting
 
 - 100 requests per minute per API key
-- Rate limit headers included in responses:
-  - `X-RateLimit-Limit`
-  - `X-RateLimit-Remaining`
-  - `X-RateLimit-Reset`
+- Rate limit headers included in responses
+- Burst allowance for short periods
 
 ## Endpoints
 
@@ -36,39 +26,44 @@ To obtain an API key:
 #### List Stories
 
 ```http
-GET /api/stories
+GET /stories
 ```
 
-Query Parameters:
+Query parameters:
 
-- `page` (optional): Page number (default: 1)
-- `limit` (optional): Items per page (default: 10)
-- `repository` (optional): Filter by repository ID
-- `status` (optional): Filter by status (draft, published)
+```typescript
+interface ListStoriesParams {
+  repository?: string // Filter by repository
+  page?: number // Page number (default: 1)
+  limit?: number // Items per page (default: 10)
+  sort?: 'created' | 'updated' | 'title'
+  order?: 'asc' | 'desc'
+}
+```
 
 Response:
 
-```json
-{
-  "data": [
-    {
-      "id": "story_123",
-      "title": "Story Title",
-      "summary": "Story summary",
-      "repository": {
-        "id": "repo_456",
-        "name": "user/repo",
-        "provider": "github"
-      },
-      "status": "published",
-      "created_at": "2024-01-01T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z"
-    }
-  ],
-  "meta": {
-    "current_page": 1,
-    "total_pages": 5,
-    "total_items": 50
+```typescript
+interface StoriesResponse {
+  data: Story[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+  }
+}
+
+interface Story {
+  id: string
+  title: string
+  content: string
+  repository: string
+  created_at: string
+  updated_at: string
+  author: {
+    id: string
+    name: string
+    avatar_url: string
   }
 }
 ```
@@ -76,100 +71,59 @@ Response:
 #### Get Story
 
 ```http
-GET /api/stories/:id
+GET /stories/:id
 ```
 
 Response:
 
-```json
-{
-  "id": "story_123",
-  "title": "Story Title",
-  "content": "Story content...",
-  "summary": "Story summary",
-  "repository": {
-    "id": "repo_456",
-    "name": "user/repo",
-    "provider": "github"
-  },
-  "metadata": {
-    "commit_count": 50,
-    "date_range": {
-      "start": "2024-01-01T00:00:00Z",
-      "end": "2024-01-31T23:59:59Z"
-    },
-    "contributors": [
-      {
-        "name": "John Doe",
-        "email": "john@example.com",
-        "commit_count": 25
-      }
-    ]
-  },
-  "status": "published",
-  "created_at": "2024-01-01T00:00:00Z",
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-```
-
-#### Generate Story
-
-```http
-POST /api/stories/generate
-```
-
-Request Body:
-
-```json
-{
-  "repository_id": "repo_456",
-  "settings": {
-    "style": "technical",
-    "date_range": {
-      "start": "2024-01-01T00:00:00Z",
-      "end": "2024-01-31T23:59:59Z"
-    },
-    "include_contributors": true,
-    "include_statistics": true
+```typescript
+interface Story {
+  id: string
+  title: string
+  content: string
+  repository: string
+  created_at: string
+  updated_at: string
+  author: {
+    id: string
+    name: string
+    avatar_url: string
+  }
+  metadata: {
+    commit_count: number
+    date_range: {
+      start: string
+      end: string
+    }
+    contributors: {
+      id: string
+      name: string
+      commits: number
+    }[]
   }
 }
 ```
 
-Response:
-
-```json
-{
-  "id": "story_123",
-  "status": "processing",
-  "estimated_completion": "2024-01-01T00:01:00Z"
-}
-```
-
-#### Update Story
+#### Create Story
 
 ```http
-PATCH /api/stories/:id
+POST /stories
 ```
 
-Request Body:
+Request body:
 
-```json
-{
-  "title": "Updated Title",
-  "content": "Updated content...",
-  "status": "published"
-}
-```
-
-Response:
-
-```json
-{
-  "id": "story_123",
-  "title": "Updated Title",
-  "content": "Updated content...",
-  "status": "published",
-  "updated_at": "2024-01-01T00:00:00Z"
+```typescript
+interface CreateStoryRequest {
+  repository: string
+  title: string
+  options: {
+    style: 'technical' | 'narrative' | 'summary'
+    depth: 'basic' | 'detailed' | 'comprehensive'
+    date_range?: {
+      start: string
+      end: string
+    }
+  }
 }
 ```
 
@@ -178,40 +132,33 @@ Response:
 #### List Repositories
 
 ```http
-GET /api/repositories
+GET /repositories
 ```
-
-Query Parameters:
-
-- `page` (optional): Page number (default: 1)
-- `limit` (optional): Items per page (default: 10)
-- `provider` (optional): Filter by provider (github, gitlab, bitbucket)
 
 Response:
 
-```json
-{
-  "data": [
-    {
-      "id": "repo_456",
-      "name": "user/repo",
-      "provider": "github",
-      "description": "Repository description",
-      "default_branch": "main",
-      "visibility": "public",
-      "stats": {
-        "stars": 100,
-        "forks": 10,
-        "open_issues": 5
-      },
-      "connected_at": "2024-01-01T00:00:00Z",
-      "last_synced_at": "2024-01-01T00:00:00Z"
-    }
-  ],
-  "meta": {
-    "current_page": 1,
-    "total_pages": 5,
-    "total_items": 50
+```typescript
+interface RepositoriesResponse {
+  data: Repository[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+  }
+}
+
+interface Repository {
+  id: string
+  name: string
+  full_name: string
+  description: string
+  provider: 'github' | 'gitlab' | 'bitbucket'
+  private: boolean
+  updated_at: string
+  stats: {
+    stars: number
+    forks: number
+    open_issues: number
   }
 }
 ```
@@ -219,303 +166,232 @@ Response:
 #### Get Repository
 
 ```http
-GET /api/repositories/:id
+GET /repositories/:id
 ```
 
 Response:
 
-```json
-{
-  "id": "repo_456",
-  "name": "user/repo",
-  "provider": "github",
-  "description": "Repository description",
-  "default_branch": "main",
-  "visibility": "public",
-  "stats": {
-    "stars": 100,
-    "forks": 10,
-    "open_issues": 5
-  },
-  "settings": {
-    "auto_sync": true,
-    "sync_frequency": "daily",
-    "default_story_visibility": "public"
-  },
-  "connected_at": "2024-01-01T00:00:00Z",
-  "last_synced_at": "2024-01-01T00:00:00Z"
-}
-```
-
-#### Update Repository Settings
-
-```http
-PATCH /api/repositories/:id/settings
-```
-
-Request Body:
-
-```json
-{
-  "auto_sync": true,
-  "sync_frequency": "daily",
-  "default_story_visibility": "public"
-}
-```
-
-Response:
-
-```json
-{
-  "id": "repo_456",
-  "settings": {
-    "auto_sync": true,
-    "sync_frequency": "daily",
-    "default_story_visibility": "public"
-  },
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-```
-
-### User Settings
-
-#### Get Settings
-
-```http
-GET /api/settings
-```
-
-Response:
-
-```json
-{
-  "theme": {
-    "mode": "system",
-    "accent_color": "default",
-    "language": "en"
-  },
-  "notifications": {
-    "email": true,
-    "web": true,
-    "digest": "weekly"
-  },
-  "privacy": {
-    "show_activity": true,
-    "default_story_visibility": "private"
-  },
-  "repository": {
-    "auto_sync": true,
-    "default_branch": "main",
-    "sync_frequency": "daily"
-  },
-  "accessibility": {
-    "font_size": "medium",
-    "high_contrast": false,
-    "reduce_animations": false,
-    "keyboard_shortcuts": true
+```typescript
+interface Repository {
+  id: string
+  name: string
+  full_name: string
+  description: string
+  provider: 'github' | 'gitlab' | 'bitbucket'
+  private: boolean
+  updated_at: string
+  stats: {
+    stars: number
+    forks: number
+    open_issues: number
   }
+  contributors: {
+    id: string
+    name: string
+    commits: number
+    avatar_url: string
+  }[]
+  branches: {
+    name: string
+    commit: string
+    protected: boolean
+  }[]
 }
 ```
 
-#### Update Settings
+### Analytics
+
+#### Get Repository Analytics
 
 ```http
-PATCH /api/settings
+GET /analytics/repositories/:id
 ```
 
-Request Body:
+Query parameters:
 
-```json
-{
-  "theme": {
-    "mode": "dark"
-  },
-  "notifications": {
-    "email": false
+```typescript
+interface AnalyticsParams {
+  start_date: string
+  end_date: string
+  metrics: string[]
+  interval: 'day' | 'week' | 'month'
+}
+```
+
+Response:
+
+```typescript
+interface AnalyticsResponse {
+  repository_id: string
+  timeframe: {
+    start: string
+    end: string
   }
-}
-```
-
-Response:
-
-```json
-{
-  "theme": {
-    "mode": "dark",
-    "accent_color": "default",
-    "language": "en"
-  },
-  "notifications": {
-    "email": false,
-    "web": true,
-    "digest": "weekly"
-  },
-  "updated_at": "2024-01-01T00:00:00Z"
-}
-```
-
-### API Keys
-
-#### List API Keys
-
-```http
-GET /api/keys
-```
-
-Response:
-
-```json
-{
-  "data": [
-    {
-      "id": "key_789",
-      "name": "Development Key",
-      "last_used": "2024-01-01T00:00:00Z",
-      "created_at": "2024-01-01T00:00:00Z",
-      "expires_at": "2025-01-01T00:00:00Z"
+  metrics: {
+    commits: {
+      total: number
+      series: {
+        date: string
+        value: number
+      }[]
     }
-  ]
+    contributors: {
+      total: number
+      series: {
+        date: string
+        value: number
+      }[]
+    }
+    // ... other metrics
+  }
 }
 ```
 
-#### Create API Key
+### Users
+
+#### Get Current User
 
 ```http
-POST /api/keys
-```
-
-Request Body:
-
-```json
-{
-  "name": "New API Key",
-  "expires_in": "1y"
-}
+GET /users/me
 ```
 
 Response:
 
-```json
-{
-  "id": "key_789",
-  "name": "New API Key",
-  "key": "gf_key_123...", // Only shown once
-  "created_at": "2024-01-01T00:00:00Z",
-  "expires_at": "2025-01-01T00:00:00Z"
-}
-```
-
-#### Revoke API Key
-
-```http
-DELETE /api/keys/:id
-```
-
-Response:
-
-```json
-{
-  "id": "key_789",
-  "status": "revoked"
+```typescript
+interface User {
+  id: string
+  name: string
+  email: string
+  avatar_url: string
+  created_at: string
+  settings: {
+    theme: 'light' | 'dark' | 'system'
+    notifications: boolean
+    email_preferences: {
+      stories: boolean
+      analytics: boolean
+      updates: boolean
+    }
+  }
 }
 ```
 
 ## Error Handling
 
-### Error Response Format
+All errors follow this format:
 
-```json
-{
-  "error": {
-    "code": "invalid_request",
-    "message": "Detailed error message",
-    "details": {
-      "field": "specific_field",
-      "reason": "validation_failed"
-    }
+```typescript
+interface APIError {
+  error: {
+    code: string
+    message: string
+    details?: any
   }
 }
 ```
 
-### Common Error Codes
+Common error codes:
 
 - `unauthorized`: Invalid or missing API key
 - `forbidden`: Insufficient permissions
 - `not_found`: Resource not found
-- `invalid_request`: Invalid request parameters
-- `rate_limited`: Rate limit exceeded
+- `validation_error`: Invalid request data
+- `rate_limit_exceeded`: Too many requests
 - `internal_error`: Server error
-
-### HTTP Status Codes
-
-- `200`: Success
-- `201`: Created
-- `204`: No Content
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `429`: Too Many Requests
-- `500`: Internal Server Error
 
 ## Webhooks
 
-### Available Events
+### Setting Up Webhooks
 
-- `story.generated`
-- `story.published`
-- `repository.connected`
-- `repository.synced`
+```http
+POST /webhooks
+```
 
-### Webhook Format
+Request body:
 
-```json
-{
-  "id": "evt_123",
-  "type": "story.generated",
-  "created_at": "2024-01-01T00:00:00Z",
-  "data": {
-    "story_id": "story_123",
-    "repository_id": "repo_456",
-    "status": "completed"
-  }
+```typescript
+interface CreateWebhookRequest {
+  url: string
+  events: string[]
+  secret: string
+  active: boolean
 }
 ```
 
-### Webhook Security
+### Webhook Events
 
-- HMAC signatures included in `X-GitFables-Signature` header
-- Verify webhooks using your webhook secret
-- Retry logic for failed deliveries
+Available events:
+
+- `story.created`
+- `story.updated`
+- `story.deleted`
+- `repository.connected`
+- `repository.disconnected`
+
+### Webhook Payload
+
+```typescript
+interface WebhookPayload {
+  event: string
+  timestamp: string
+  data: any
+  signature: string
+}
+```
 
 ## SDKs
 
-Official SDKs are available for:
+Official SDKs:
 
-- JavaScript/TypeScript
-- Python
-- Ruby
-- Go
+- [JavaScript/TypeScript](https://github.com/gitfables/js-sdk)
+- [Python](https://github.com/gitfables/python-sdk)
+- [Ruby](https://github.com/gitfables/ruby-sdk)
 
-Example (TypeScript):
+## Examples
+
+### Creating a Story
 
 ```typescript
-import { GitFables } from '@gitfables/sdk'
-
-const client = new GitFables('your-api-key')
-
-// Generate a story
-const story = await client.stories.generate({
-  repository_id: 'repo_456',
-  settings: {
-    style: 'technical',
+const response = await fetch('https://api.gitfables.com/v1/stories', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
   },
+  body: JSON.stringify({
+    repository: 'owner/repo',
+    title: 'Sprint Review Story',
+    options: {
+      style: 'technical',
+      depth: 'detailed',
+      date_range: {
+        start: '2024-01-01',
+        end: '2024-01-31',
+      },
+    },
+  }),
 })
+
+const story = await response.json()
 ```
 
-## Support
+### Fetching Analytics
 
-- [API Status Page](https://status.gitfables.com)
-- [Developer Documentation](https://docs.gitfables.com)
-- [API Support Email](mailto:api@gitfables.com)
-- [Discord Community](https://discord.gg/gitfables)
+```typescript
+const response = await fetch(
+  'https://api.gitfables.com/v1/analytics/repositories/123?' +
+    new URLSearchParams({
+      start_date: '2024-01-01',
+      end_date: '2024-01-31',
+      metrics: ['commits', 'contributors'].join(','),
+      interval: 'week',
+    }),
+  {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  }
+)
+
+const analytics = await response.json()
+```

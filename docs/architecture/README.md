@@ -1,202 +1,389 @@
-# Architecture
+# GitFables Architecture
 
-This section provides a comprehensive overview of GitFables' architecture, design decisions, and implementation details.
+## System Overview
 
-## Overview
+GitFables is built as a modern web application using Next.js 14, leveraging the App Router for server-side rendering and React Server Components.
 
-GitFables follows a modern, full-stack architecture built with:
+### Architecture Diagram
 
-- Next.js 14 (App Router)
+```mermaid
+graph TD
+    Client[Client Browser] --> NextJS[Next.js App Router]
+    NextJS --> API[API Layer]
+    API --> Auth[Auth Service]
+    API --> DB[Supabase Database]
+    API --> AI[OpenAI Service]
+    API --> Git[Git Provider APIs]
+```
+
+## Core Components
+
+### 1. Frontend Layer
+
+#### Next.js App Router
+
+- Server-side rendering
+- React Server Components
+- Client-side interactivity
+- Static site generation
+- API routes
+
+#### UI Components
+
+- React components
+- Tailwind CSS styling
+- shadcn/ui components
+- Responsive design
+- Accessibility support
+
+### 2. API Layer
+
+#### REST API
+
+- RESTful endpoints
+- OpenAPI specification
+- Rate limiting
+- Error handling
+- Validation
+
+#### GraphQL API
+
+- Type-safe queries
+- Real-time subscriptions
+- Optimized data fetching
+- Schema documentation
+
+### 3. Authentication
+
+#### Auth Flow
+
+- OAuth 2.0 integration
+- JWT tokens
+- Session management
+- Role-based access
+- Security measures
+
+### 4. Database
+
+#### Supabase Integration
+
+- PostgreSQL database
+- Real-time capabilities
+- Row-level security
+- Full-text search
+- Backup strategy
+
+## Data Flow
+
+### 1. Story Generation
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant Git
+    participant AI
+    participant DB
+
+    User->>App: Request story generation
+    App->>Git: Fetch commit history
+    Git-->>App: Return commits
+    App->>AI: Process commits
+    AI-->>App: Generate story
+    App->>DB: Save story
+    App-->>User: Return story
+```
+
+### 2. Repository Integration
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant OAuth
+    participant Git
+    participant DB
+
+    User->>App: Connect repository
+    App->>OAuth: Request access
+    OAuth-->>App: Grant token
+    App->>Git: Fetch repo data
+    Git-->>App: Return data
+    App->>DB: Store connection
+    App-->>User: Confirm connection
+```
+
+## Technical Stack
+
+### Frontend
+
+- Next.js 14
+- React 18
 - TypeScript
+- Tailwind CSS
+- shadcn/ui
+
+### Backend
+
+- Node.js
+- tRPC
+- OpenAI API
+- Git Provider APIs
+- WebSocket
+
+### Database
+
+- PostgreSQL
 - Supabase
-- TailwindCSS
-- Shadcn UI
+- Redis Cache
 
-## Core Principles
+### Infrastructure
 
-1. **Server-First Approach**
+- Vercel deployment
+- Edge functions
+- CDN caching
+- Asset optimization
 
-   - React Server Components
-   - Server Actions
-   - Edge Runtime
-   - Streaming
+## Security Measures
 
-2. **Type Safety**
+### Authentication
 
-   - TypeScript
-   - Zod validation
-   - Generated types
-   - API contracts
+- OAuth 2.0
+- JWT tokens
+- HTTPS only
+- CSRF protection
+- Rate limiting
 
-3. **Performance**
+### Data Protection
 
-   - Static optimization
-   - Dynamic imports
-   - Edge caching
-   - Bundle optimization
+- Encryption at rest
+- Secure sessions
+- Input validation
+- Output sanitization
+- XSS prevention
 
-4. **Security**
-   - OAuth integration
-   - Row Level Security
-   - API key management
-   - Rate limiting
+### API Security
 
-## Project Structure
+- API key management
+- Rate limiting
+- Request validation
+- Error handling
+- Audit logging
 
+## Performance Optimization
+
+### Frontend
+
+- Server components
+- Static generation
+- Image optimization
+- Code splitting
+- Bundle optimization
+
+### Backend
+
+- Caching strategy
+- Query optimization
+- Connection pooling
+- Background jobs
+- Rate limiting
+
+### Database
+
+- Indexing strategy
+- Query optimization
+- Connection pooling
+- Backup strategy
+- Monitoring
+
+## Scalability
+
+### Horizontal Scaling
+
+- Stateless design
+- Load balancing
+- Service isolation
+- Cache distribution
+- Database sharding
+
+### Vertical Scaling
+
+- Resource optimization
+- Memory management
+- CPU utilization
+- Storage efficiency
+- Query optimization
+
+## Monitoring and Logging
+
+### Application Monitoring
+
+- Error tracking
+- Performance metrics
+- User analytics
+- System health
+- API usage
+
+### Logging Strategy
+
+- Structured logging
+- Log aggregation
+- Error reporting
+- Audit trails
+- Analytics
+
+## Development Workflow
+
+### Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run tests
+npm run test
+
+# Build production
+npm run build
 ```
-gitfables/
-├── src/
-│   ├── app/              # Next.js app router
-│   │   ├── (auth)/      # Authentication routes
-│   │   ├── (dashboard)/ # Protected routes
-│   │   ├── (marketing)/ # Public pages
-│   │   └── api/         # API routes
-│   ├── components/       # React components
-│   │   ├── analytics/   # Analytics components
-│   │   ├── auth/        # Auth components
-│   │   ├── dashboard/   # Dashboard components
-│   │   ├── layout/      # Layout components
-│   │   ├── repositories/# Repository components
-│   │   ├── settings/    # Settings components
-│   │   ├── story/       # Story components
-│   │   └── ui/          # Shadcn UI components
-│   ├── hooks/           # Custom React hooks
-│   │   ├── api/        # API hooks
-│   │   ├── settings/   # Settings hooks
-│   │   └── vcs/        # VCS provider hooks
-│   ├── lib/            # Core libraries
-│   │   ├── actions/    # Server actions
-│   │   ├── supabase/   # Database client
-│   │   ├── utils/      # Utility functions
-│   │   └── vcs/        # VCS providers
-│   └── types/          # TypeScript types
-├── public/             # Static assets
-└── docs/              # Documentation
+
+### Deployment Process
+
+1. Code review
+2. Automated testing
+3. Staging deployment
+4. Production release
+5. Monitoring
+
+## Configuration Management
+
+### Environment Variables
+
+```env
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret
+
+# Database
+DATABASE_URL=your-database-url
+
+# APIs
+OPENAI_API_KEY=your-api-key
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-secret
 ```
 
-## Key Features
+### Feature Flags
 
-1. **VCS Integration**
+```typescript
+interface FeatureFlags {
+  enableAI: boolean
+  enableAnalytics: boolean
+  enableWebhooks: boolean
+  enableRealtime: boolean
+}
+```
 
-   - GitHub OAuth
-   - Repository sync
-   - Commit analysis
-   - Provider abstraction
+## Error Handling
 
-2. **Story Generation**
+### Error Types
 
-   - Content processing
-   - Style customization
-   - Code analysis
-   - Export options
+```typescript
+interface AppError extends Error {
+  code: string
+  status: number
+  details?: any
+}
 
-3. **User Management**
+class APIError extends AppError {
+  constructor(message: string, code: string, status: number) {
+    super(message)
+    this.code = code
+    this.status = status
+  }
+}
+```
 
-   - Authentication
-   - Settings
-   - API access
-   - Analytics
+### Error Responses
 
-4. **API Platform**
-   - REST endpoints
-   - SDK support
-   - Webhooks
-   - Rate limiting
+```typescript
+interface ErrorResponse {
+  error: {
+    message: string
+    code: string
+    details?: any
+  }
+}
+```
 
-## Documentation Structure
+## Testing Strategy
 
-1. [Overview](./overview.md)
+### Unit Testing
 
-   - Architecture overview
-   - Design decisions
-   - Core principles
-   - System flow
+- Component tests
+- Service tests
+- Utility tests
+- Mock integration
 
-2. [API](./api.md)
+### Integration Testing
 
-   - REST endpoints
-   - Authentication
-   - Rate limiting
-   - Error handling
+- API endpoints
+- Database queries
+- External services
+- Authentication
 
-3. [Authentication](./authentication.md)
+### E2E Testing
 
-   - OAuth flow
-   - Session management
-   - API keys
-   - Security
+- User flows
+- Critical paths
+- Performance
+- Security
 
-4. [Database](./database.md)
-   - Schema design
-   - Migrations
-   - Row Level Security
-   - Performance
+## Documentation
 
-## Implementation Details
+### API Documentation
 
-See individual documentation files for detailed information about specific aspects of the architecture:
+- OpenAPI spec
+- Endpoint details
+- Authentication
+- Error codes
+- Examples
 
-- [Overview](./overview.md)
-- [API](./api.md)
-- [Authentication](./authentication.md)
-- [Database](./database.md)
+### Code Documentation
 
-## Best Practices
-
-1. **Code Organization**
-
-   - Feature-based structure
-   - Clear boundaries
-   - Consistent patterns
-   - Documentation
-
-2. **Performance**
-
-   - Server Components
-   - Edge functions
-   - Caching strategy
-   - Bundle size
-
-3. **Security**
-
-   - Input validation
-   - Output sanitization
-   - Access control
-   - Audit logging
-
-4. **Maintenance**
-   - Type safety
-   - Error handling
-   - Testing
-   - Monitoring
+- JSDoc comments
+- Type definitions
+- Usage examples
+- Architecture docs
+- Deployment guides
 
 ## Future Considerations
 
-1. **Scalability**
+### Planned Improvements
 
-   - Horizontal scaling
-   - Edge deployment
-   - Cache optimization
-   - Load balancing
+1. GraphQL API expansion
+2. Real-time collaboration
+3. Advanced analytics
+4. Custom AI models
+5. Mobile applications
 
-2. **Integration**
+### Scalability Plans
 
-   - Additional VCS providers
-   - Third-party services
-   - Webhooks
-   - API platform
+1. Microservices architecture
+2. Container orchestration
+3. Global deployment
+4. Edge computing
+5. Data partitioning
 
-3. **Features**
-   - Advanced analytics
-   - Team collaboration
-   - Custom workflows
-   - Enterprise features
+## Resources
 
-## Contributing
-
-For information about contributing to GitFables' architecture:
-
-1. Read the [Contributing Guide](../contributing.md)
-2. Review [Development Guide](../DEVELOPMENT.md)
-3. Check [Feature Documentation](../features/)
-4. Join [Discord Community](https://discord.gg/gitfables)
+- [API Documentation](../api-reference.md)
+- [Development Guide](../README.md)
+- [Contributing Guide](../../CONTRIBUTING.md)
+- [Security Policy](../../SECURITY.md)
