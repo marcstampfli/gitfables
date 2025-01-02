@@ -4,9 +4,10 @@
  */
 
 import { redirect } from 'next/navigation'
-import { getSession } from '@/lib/actions/auth'
-import { DashboardHeader } from '@/components/layout/dashboard/header'
+import { getUser } from '@/lib/actions/auth'
+import { DashboardShell } from '@/components/layout/dashboard/shell'
 import { logError } from '@/lib/utils/logger'
+import { DashboardLayoutClient } from './layout.client'
 import type { ReactNode } from 'react'
 
 interface DashboardLayoutProps {
@@ -15,22 +16,21 @@ interface DashboardLayoutProps {
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   try {
-    const session = await getSession()
+    const user = await getUser()
 
-    if (!session) {
+    if (!user) {
       redirect('/login')
     }
 
     return (
-      <div className="min-h-screen">
-        <DashboardHeader />
-        <main className="container py-6">
+      <DashboardLayoutClient>
+        <DashboardShell>
           {children}
-        </main>
-      </div>
+        </DashboardShell>
+      </DashboardLayoutClient>
     )
   } catch (error) {
     logError('Error in dashboard layout', { error })
-    redirect('/login?error=Failed%20to%20verify%20session')
+    redirect('/login')
   }
 } 
