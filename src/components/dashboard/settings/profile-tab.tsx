@@ -1,128 +1,168 @@
 /**
  * @module components/dashboard/settings/profile-tab
- * @description Profile settings tab with enhanced UX
+ * @description Profile settings tab
  */
 
 'use client'
 
 import * as React from 'react'
-import { Card } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
+import { useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
+
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
-import { User, Globe } from 'lucide-react'
-import { toast } from 'sonner'
-import type { SettingsTabProps } from './types'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { toast } from '@/components/ui/use-toast'
+import { useProfile } from '@/hooks/use-profile'
+import { Card } from '@/components/ui/card'
+import { Loader2, AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
-export function ProfileTab({ settings: _settings }: SettingsTabProps) {
-  const [name, setName] = React.useState('')
-  const [email, setEmail] = React.useState('')
-  const [bio, setBio] = React.useState('')
-  const [website, setWebsite] = React.useState('')
+const profileFormSchema = z.object({
+  name: z.string().min(2, {
+    message: 'Name must be at least 2 characters.'
+  }),
+  email: z.string().email({
+    message: 'Please enter a valid email address.'
+  })
+})
 
-  const handleSave = () => {
-    // Validate inputs
-    if (!name || !email) {
-      toast.error('Name and email are required')
-      return
+type ProfileFormValues = z.infer<typeof profileFormSchema>
+
+export function ProfileTab() {
+  const router = useRouter()
+  const { profile, isLoading, error, updateProfile } = useProfile()
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      name: '',
+      email: ''
     }
+  })
 
-    if (website && !isValidUrl(website)) {
-      toast.error('Please enter a valid website URL')
-      return
+  // Update form values when profile data is loaded
+  React.useEffect(() => {
+    if (profile) {
+      form.reset({
+        name: profile.name || '',
+        email: profile.email || ''
+      })
     }
+  }, [profile, form])
 
-    // Save profile changes
-    toast.success('Profile updated successfully')
+  async function onSubmit(data: ProfileFormValues) {
+    try {
+      setIsSubmitting(true)
+      const result = await updateProfile(data)
+
+      if (result.error) {
+        toast({
+          title: 'Error',
+          description: result.error.message || 'Failed to update profile. Please try again.',
+          variant: 'destructive'
+        })
+        return
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Your profile has been updated.'
+      })
+    } catch (err) {
+      console.error('Error submitting form:', err)
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
-    }
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center space-x-4">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p>Loading profile...</p>
+        </div>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6">
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error.message || 'Failed to load profile'}
+          </AlertDescription>
+        </Alert>
+        <div className="flex justify-end space-x-4">
+          <Button onClick={() => router.refresh()}>
+            Retry
+          </Button>
+        </div>
+      </Card>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-semibold tracking-tight">Profile</h3>
-        <p className="text-sm text-muted-foreground">
-          Manage your public profile information
-        </p>
-      </div>
-
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
-            <User className="h-5 w-5 text-primary" />
-            <h4 className="font-medium">Personal Information</h4>
-          </div>
-          <Separator />
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
-            <Globe className="h-5 w-5 text-primary" />
-            <h4 className="font-medium">About</h4>
-          </div>
-          <Separator />
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about yourself"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                type="url"
-                placeholder="Enter your website URL"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave}>
-          Save Changes
-        </Button>
-      </div>
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Card className="p-6 space-y-6">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your name" {...field} />
+                </FormControl>
+                <FormDescription>
+                  This is your public display name.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your email" {...field} />
+                </FormControl>
+                <FormDescription>
+                  This is the email associated with your account.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Update profile
+          </Button>
+        </Card>
+      </form>
+    </Form>
   )
 } 

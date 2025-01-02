@@ -1,18 +1,21 @@
+'use client'
+
 /**
- * @module components/dashboard/stories/export-analytics-server
- * @description Server component for displaying story export history
+ * @module components/dashboard/stories/export-analytics-client
+ * @description Client component for displaying story export history
  */
 
-import { getExportHistory } from '@/lib/actions/exports'
-import type { ExportRecord } from '@/lib/actions/exports'
 import { formatDistanceToNow } from 'date-fns'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { FileText, Download } from 'lucide-react'
+import type { ExportRecord } from '@/lib/actions/exports'
 
-export async function ExportAnalyticsServer() {
-  const exports = await getExportHistory()
+interface ExportAnalyticsClientProps {
+  exports: ExportRecord[]
+}
 
+export function ExportAnalyticsClient({ exports }: ExportAnalyticsClientProps) {
   return (
     <ScrollArea className="h-[400px]">
       <Table>
@@ -25,7 +28,7 @@ export async function ExportAnalyticsServer() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {exports.map((exp: ExportRecord) => (
+          {exports.map((exp) => (
             <TableRow key={exp.id}>
               <TableCell className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />

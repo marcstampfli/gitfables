@@ -186,8 +186,12 @@ export function BatchExportDialog({ stories }: BatchExportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Archive className="mr-2 h-4 w-4" />
+        <Button 
+          variant="outline" 
+          size="sm" 
+          icon={<Archive className="h-4 w-4" />}
+          iconPosition="left"
+        >
           Batch Export
         </Button>
       </DialogTrigger>
@@ -195,34 +199,29 @@ export function BatchExportDialog({ stories }: BatchExportDialogProps) {
         <DialogHeader>
           <DialogTitle>Batch Export Stories</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Export Format</Label>
-            <Select
-              value={format}
-              onValueChange={(value: ExportFormat) => setFormat(value)}
-            >
+            <Select value={format} onValueChange={(value) => setFormat(value as ExportFormat)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="markdown" className="flex items-center">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Markdown (.md)
+                <SelectItem value="markdown" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Markdown
                 </SelectItem>
-                <SelectItem value="json" className="flex items-center">
-                  <FileJson className="mr-2 h-4 w-4" />
-                  JSON (.json)
+                <SelectItem value="json" className="flex items-center gap-2">
+                  <FileJson className="h-4 w-4" />
+                  JSON
                 </SelectItem>
-                <SelectItem value="pdf" className="flex items-center">
-                  <FileType className="mr-2 h-4 w-4" />
-                  PDF Document
+                <SelectItem value="pdf" className="flex items-center gap-2">
+                  <FileType className="h-4 w-4" />
+                  PDF
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Select Stories</Label>
@@ -261,12 +260,14 @@ export function BatchExportDialog({ stories }: BatchExportDialogProps) {
             </div>
           )}
 
-          <Button
-            className="w-full"
-            onClick={handleExport}
+          <Button 
+            onClick={handleExport} 
             disabled={loading || selectedStories.size === 0}
+            loading={loading}
+            icon={<Archive className="h-4 w-4" />}
+            iconPosition="left"
           >
-            {loading ? 'Exporting...' : 'Export Selected Stories'}
+            Export Selected Stories
           </Button>
         </div>
       </DialogContent>

@@ -1,6 +1,6 @@
 /**
  * @module components/dashboard/settings/appearance-tab
- * @description Appearance settings tab with theme and accessibility options
+ * @description Appearance settings tab
  */
 
 'use client'
@@ -11,56 +11,41 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Moon, Sun, Monitor } from 'lucide-react'
+import { Moon, Monitor, Sun } from 'lucide-react'
 import { useSettings } from '@/hooks/use-settings'
 import type { SettingsTabProps } from './types'
+import type { Theme, FontSize } from '@/types/settings'
 
-type ThemeMode = 'light' | 'dark' | 'system'
-type FontSize = 'normal' | 'large' | 'larger'
-
-const THEME_MODES: Array<{ value: ThemeMode; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor }
+const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
+  { value: 'light', label: 'Light', icon: <Sun className="h-4 w-4" /> },
+  { value: 'dark', label: 'Dark', icon: <Moon className="h-4 w-4" /> },
+  { value: 'system', label: 'System', icon: <Monitor className="h-4 w-4" /> }
 ]
 
-const FONT_SIZES: Array<{ value: FontSize; label: string }> = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'large', label: 'Large' },
-  { value: 'larger', label: 'Larger' }
+const FONT_SIZES: { value: FontSize; label: string }[] = [
+  { value: 'small', label: 'Small' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'large', label: 'Large' }
 ]
 
 export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
   const { settings, updateSettings, isLoading } = useSettings(initialSettings)
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
-  const [fontSize, setFontSize] = React.useState<FontSize>('normal')
-  const [reduceMotion, setReduceMotion] = React.useState(false)
-  const [highContrast, setHighContrast] = React.useState(false)
+  const [theme, setTheme] = React.useState<Theme>(settings?.theme ?? 'system')
+  const [fontSize, setFontSize] = React.useState<FontSize>(settings?.accessibility?.font_size ?? 'medium')
+  const [reduceMotion, setReduceMotion] = React.useState(settings?.accessibility?.reduce_animations ?? false)
+  const [highContrast, setHighContrast] = React.useState(settings?.accessibility?.high_contrast ?? false)
 
-  // Initialize state from settings
-  React.useEffect(() => {
-    if (settings) {
-      setThemeMode((settings.theme as ThemeMode) ?? 'system')
-      setFontSize(settings.accessibility?.largeText ? 'large' : 'normal')
-      setReduceMotion(settings.accessibility?.reduceMotion ?? false)
-      setHighContrast(settings.accessibility?.highContrast ?? false)
-    }
-  }, [settings])
-
-  const handleThemeChange = async (mode: ThemeMode) => {
-    setThemeMode(mode)
-    await updateSettings({
-      theme: mode
-    })
+  const handleThemeChange = async (value: Theme) => {
+    setTheme(value)
+    await updateSettings({ theme: value })
   }
 
-  const handleFontSizeChange = async (size: FontSize) => {
-    setFontSize(size)
+  const handleFontSizeChange = async (value: FontSize) => {
+    setFontSize(value)
     await updateSettings({
       accessibility: {
-        largeText: size !== 'normal',
-        reduceMotion,
-        highContrast
+        ...settings?.accessibility,
+        font_size: value
       }
     })
   }
@@ -69,9 +54,8 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
     setReduceMotion(enabled)
     await updateSettings({
       accessibility: {
-        largeText: fontSize !== 'normal',
-        reduceMotion: enabled,
-        highContrast
+        ...settings?.accessibility,
+        reduce_animations: enabled
       }
     })
   }
@@ -80,9 +64,8 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
     setHighContrast(enabled)
     await updateSettings({
       accessibility: {
-        largeText: fontSize !== 'normal',
-        reduceMotion,
-        highContrast: enabled
+        ...settings?.accessibility,
+        high_contrast: enabled
       }
     })
   }
@@ -92,7 +75,7 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
       <div>
         <h3 className="text-2xl font-semibold tracking-tight">Appearance</h3>
         <p className="text-sm text-muted-foreground">
-          Customize the appearance of the application
+          Customize how GitFables looks and feels
         </p>
       </div>
 
@@ -100,21 +83,21 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
         <div className="space-y-6">
           <div className="flex items-center space-x-2">
             <Monitor className="h-5 w-5 text-primary" />
-            <h4 className="font-medium">Theme</h4>
+            <h4 className="font-medium">Theme & Display</h4>
           </div>
           <Separator />
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Mode</Label>
-              <Select value={themeMode} onValueChange={handleThemeChange} disabled={isLoading}>
+              <Label>Theme</Label>
+              <Select value={theme} onValueChange={handleThemeChange} disabled={isLoading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select theme mode" />
+                  <SelectValue placeholder="Select theme" />
                 </SelectTrigger>
                 <SelectContent>
-                  {THEME_MODES.map(({ value, label, icon: Icon }) => (
+                  {THEMES.map(({ value, label, icon }) => (
                     <SelectItem key={value} value={value}>
-                      <div className="flex items-center">
-                        <Icon className="mr-2 h-4 w-4" />
+                      <div className="flex items-center gap-2">
+                        {icon}
                         {label}
                       </div>
                     </SelectItem>
@@ -122,18 +105,7 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        </div>
-      </Card>
 
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
-            <Monitor className="h-5 w-5 text-primary" />
-            <h4 className="font-medium">Accessibility</h4>
-          </div>
-          <Separator />
-          <div className="space-y-4">
             <div className="space-y-2">
               <Label>Font Size</Label>
               <Select value={fontSize} onValueChange={handleFontSizeChange} disabled={isLoading}>
@@ -152,20 +124,6 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Reduce Motion</Label>
-                <p className="text-sm text-muted-foreground">
-                  Reduce motion in animations
-                </p>
-              </div>
-              <Switch
-                checked={reduceMotion}
-                onCheckedChange={handleReduceMotionToggle}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
                 <Label>High Contrast</Label>
                 <p className="text-sm text-muted-foreground">
                   Increase contrast for better visibility
@@ -174,6 +132,20 @@ export function AppearanceTab({ settings: initialSettings }: SettingsTabProps) {
               <Switch
                 checked={highContrast}
                 onCheckedChange={handleHighContrastToggle}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Reduce Motion</Label>
+                <p className="text-sm text-muted-foreground">
+                  Minimize animations and transitions
+                </p>
+              </div>
+              <Switch
+                checked={reduceMotion}
+                onCheckedChange={handleReduceMotionToggle}
                 disabled={isLoading}
               />
             </div>

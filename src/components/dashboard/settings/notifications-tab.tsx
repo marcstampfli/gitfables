@@ -1,6 +1,6 @@
 /**
  * @module components/dashboard/settings/notifications-tab
- * @description Notifications settings tab with email and activity preferences
+ * @description Notifications settings tab
  */
 
 'use client'
@@ -11,60 +11,105 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Bell } from 'lucide-react'
+import { Bell, Mail } from 'lucide-react'
 import { useSettings } from '@/hooks/use-settings'
-import type { SettingsTabProps, EmailFrequency } from './types'
+import { toast } from '@/components/ui/use-toast'
+import type { NotificationDigest } from '@/hooks/use-settings'
 
-export function NotificationsTab({ settings: initialSettings }: SettingsTabProps) {
-  const { settings, updateSettings, isLoading } = useSettings(initialSettings)
-  const [emailEnabled, setEmailEnabled] = React.useState(settings?.notifications?.email ?? false)
-  const [pushEnabled, setPushEnabled] = React.useState(settings?.notifications?.push ?? false)
-  const [inAppEnabled, setInAppEnabled] = React.useState(settings?.notifications?.inApp ?? false)
+const DIGEST_FREQUENCIES: { value: NotificationDigest; label: string }[] = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'never', label: 'Never' }
+]
 
-  const handleEmailToggle = async (enabled: boolean) => {
-    setEmailEnabled(enabled)
-    await updateSettings({
-      notifications: {
-        ...settings?.notifications,
-        email: enabled
-      }
-    })
+export function NotificationsTab() {
+  const { settings, updateSettings, isLoading } = useSettings()
+  const [emailEnabled, setEmailEnabled] = React.useState(settings.notifications.email)
+  const [webEnabled, setWebEnabled] = React.useState(settings.notifications.web)
+  const [digestFrequency, setDigestFrequency] = React.useState<NotificationDigest>(settings.notifications.digest)
+
+  // Update local state when settings change
+  React.useEffect(() => {
+    setEmailEnabled(settings.notifications.email)
+    setWebEnabled(settings.notifications.web)
+    setDigestFrequency(settings.notifications.digest)
+  }, [settings])
+
+  const handleEmailChange = async (enabled: boolean) => {
+    try {
+      setEmailEnabled(enabled)
+      const { error } = await updateSettings({
+        notifications: {
+          ...settings.notifications,
+          email: enabled
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update email notifications. Please try again.',
+        variant: 'destructive'
+      })
+      setEmailEnabled(settings.notifications.email) // Reset on error
+    }
   }
 
-  const handlePushToggle = async (enabled: boolean) => {
-    setPushEnabled(enabled)
-    await updateSettings({
-      notifications: {
-        ...settings?.notifications,
-        push: enabled
-      }
-    })
+  const handleWebChange = async (enabled: boolean) => {
+    try {
+      setWebEnabled(enabled)
+      const { error } = await updateSettings({
+        notifications: {
+          ...settings.notifications,
+          web: enabled
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update web notifications. Please try again.',
+        variant: 'destructive'
+      })
+      setWebEnabled(settings.notifications.web) // Reset on error
+    }
   }
 
-  const handleInAppToggle = async (enabled: boolean) => {
-    setInAppEnabled(enabled)
-    await updateSettings({
-      notifications: {
-        ...settings?.notifications,
-        inApp: enabled
-      }
-    })
+  const handleDigestFrequencyChange = async (frequency: NotificationDigest) => {
+    try {
+      setDigestFrequency(frequency)
+      const { error } = await updateSettings({
+        notifications: {
+          ...settings.notifications,
+          digest: frequency
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update digest frequency. Please try again.',
+        variant: 'destructive'
+      })
+      setDigestFrequency(settings.notifications.digest) // Reset on error
+    }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-semibold tracking-tight">Notifications</h3>
+        <h3 className="text-2xl font-semibold tracking-tight">Notification Settings</h3>
         <p className="text-sm text-muted-foreground">
-          Configure how you want to be notified about updates and activity
+          Configure how you receive notifications and updates
         </p>
       </div>
 
+      {/* Email Notifications */}
       <Card className="p-6">
         <div className="space-y-6">
           <div className="flex items-center space-x-2">
-            <Bell className="h-5 w-5 text-primary" />
-            <h4 className="font-medium">Notification Preferences</h4>
+            <Mail className="h-5 w-5 text-primary" />
+            <h4 className="font-medium">Email Notifications</h4>
           </div>
           <Separator />
           <div className="space-y-4">
@@ -77,33 +122,56 @@ export function NotificationsTab({ settings: initialSettings }: SettingsTabProps
               </div>
               <Switch
                 checked={emailEnabled}
-                onCheckedChange={handleEmailToggle}
+                onCheckedChange={handleEmailChange}
                 disabled={isLoading}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Push Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive push notifications on your devices
-                </p>
-              </div>
-              <Switch
-                checked={pushEnabled}
-                onCheckedChange={handlePushToggle}
-                disabled={isLoading}
-              />
+
+            <div className="space-y-2">
+              <Label>Digest Frequency</Label>
+              <Select
+                value={digestFrequency}
+                onValueChange={handleDigestFrequencyChange}
+                disabled={isLoading || !emailEnabled}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIGEST_FREQUENCIES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                How often to receive email digests
+              </p>
             </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Web Notifications */}
+      <Card className="p-6">
+        <div className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <h4 className="font-medium">Web Notifications</h4>
+          </div>
+          <Separator />
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>In-App Notifications</Label>
+                <Label>Browser Notifications</Label>
                 <p className="text-sm text-muted-foreground">
-                  Show notifications within the application
+                  Receive notifications in your browser
                 </p>
               </div>
               <Switch
-                checked={inAppEnabled}
-                onCheckedChange={handleInAppToggle}
+                checked={webEnabled}
+                onCheckedChange={handleWebChange}
                 disabled={isLoading}
               />
             </div>

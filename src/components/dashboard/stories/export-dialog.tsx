@@ -151,8 +151,7 @@ export function ExportDialog({ story }: ExportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
+        <Button variant="outline" size="sm" icon={<Download className="h-4 w-4" />} iconPosition="left">
           Export
         </Button>
       </DialogTrigger>
@@ -164,36 +163,35 @@ export function ExportDialog({ story }: ExportDialogProps) {
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Export Format</Label>
-            <Select
-              value={format}
-              onValueChange={(value: ExportFormat) => setFormat(value)}
-            >
+            <Select value={format} onValueChange={(value) => setFormat(value as ExportFormat)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="markdown" className="flex items-center">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Markdown (.md)
+                <SelectItem value="markdown" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Markdown
                 </SelectItem>
-                <SelectItem value="json" className="flex items-center">
-                  <FileJson className="mr-2 h-4 w-4" />
-                  JSON (.json)
+                <SelectItem value="json" className="flex items-center gap-2">
+                  <FileJson className="h-4 w-4" />
+                  JSON
                 </SelectItem>
-                <SelectItem value="pdf" className="flex items-center">
-                  <FileType className="mr-2 h-4 w-4" />
-                  PDF Document
+                <SelectItem value="pdf" className="flex items-center gap-2">
+                  <FileType className="h-4 w-4" />
+                  PDF
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <Button
-            className="w-full"
-            onClick={handleExport}
+          <Button 
+            onClick={handleExport} 
             disabled={loading}
+            loading={loading}
+            icon={<Download className="h-4 w-4" />}
+            iconPosition="left"
           >
-            {loading ? 'Exporting...' : 'Export Story'}
+            Export Story
           </Button>
         </div>
       </DialogContent>

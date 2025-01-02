@@ -34,19 +34,32 @@ export function StoryEditor({ story }: StoryEditorProps) {
         {/* Header */}
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between">
-            <Button variant="ghost" size="sm" asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              asChild
+              icon={<ArrowLeft className="h-4 w-4" />}
+              iconPosition="left"
+            >
               <Link href="/dashboard/stories">
-                <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Stories
               </Link>
             </Button>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Share2 className="mr-2 h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                icon={<Share2 className="h-4 w-4" />}
+                iconPosition="left"
+              >
                 Share
               </Button>
-              <Button variant="ghost" size="sm">
-                <Download className="mr-2 h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                icon={<Download className="h-4 w-4" />}
+                iconPosition="left"
+              >
                 Export
               </Button>
             </div>

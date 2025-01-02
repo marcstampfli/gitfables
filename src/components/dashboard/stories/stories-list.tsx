@@ -55,9 +55,14 @@ export function StoriesList() {
             <div className="flex items-center space-x-2">
               <ShareDialog _story={story} />
               <ExportDialog story={story} />
-              <Button variant="outline" size="sm" asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                icon={<Pencil className="h-4 w-4" />}
+                iconPosition="left"
+              >
                 <a href={`/dashboard/stories/${story.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" />
                   Edit
                 </a>
               </Button>
@@ -65,8 +70,9 @@ export function StoriesList() {
                 variant="outline"
                 size="sm"
                 onClick={() => deleteStory(story.id)}
+                icon={<Trash2 className="h-4 w-4" />}
+                iconPosition="left"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </Button>
             </div>
