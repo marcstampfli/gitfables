@@ -1,100 +1,97 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { type User } from '@supabase/supabase-js'
-import { signOut } from '@/lib/actions/auth'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { UserAvatar } from '@/components/ui/user-avatar'
+import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { UserDropdown } from '@/components/ui/user-dropdown'
+import { CommandPalette } from '@/components/ui/command-palette'
+import { ArrowRight, Search } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+
+const navigation = [
+  { name: 'Features', href: '/features' },
+  { name: 'Pricing', href: '/pricing' },
+  { name: 'Documentation', href: '/docs' },
+]
 
 interface HeaderProps {
   user?: User | null
+  onCommandPalette?: () => void
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, onCommandPalette }: HeaderProps) {
+  const pathname = usePathname()
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <div className="flex items-center gap-6 md:gap-8">
-          <Link href="/" className="flex items-center space-x-2">
-            <Logo size="sm" />
-          </Link>
-          <nav className="hidden md:flex gap-6">
-            <Link 
-              href="/features" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Features
-            </Link>
-            <Link 
-              href="/pricing" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link 
-              href="/docs" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Documentation
-            </Link>
-          </nav>
-        </div>
+      <div className="container flex h-14 items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center space-x-2">
+          <Logo size="md" />
+        </Link>
 
-        <div className="flex flex-1 items-center justify-end gap-4">
-          <nav className="flex items-center gap-2">
-            <ThemeToggle />
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <UserAvatar user={user} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      {user.email && (
-                        <p className="font-medium">{user.email}</p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/stories">My Stories</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings">Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onSelect={async (event) => {
-                      event.preventDefault()
-                      await signOut()
-                    }}
-                  >
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button asChild variant="default">
-                <Link href="/login">Get Started</Link>
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          {navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-foreground",
+                pathname === item.href
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Actions */}
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={onCommandPalette}
+                >
+                  <Search className="h-4 w-4" />
+                  <span className="sr-only">Open command palette</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex items-center space-x-1">
+                  <span>Command Palette</span>
+                  <kbd className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded">⌘K</kbd>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          {user ? (
+            <UserDropdown user={user} />
+          ) : (
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">Sign in</Link>
               </Button>
-            )}
-          </nav>
+              <Button size="sm" asChild>
+                <Link href="/register">
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
