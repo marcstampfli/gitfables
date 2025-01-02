@@ -5,12 +5,12 @@
 
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/logger'
 import type { SettingsUpdate } from '@/types'
 
 export async function getSettings() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   try {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -39,7 +39,7 @@ export async function getSettings() {
 }
 
 export async function updateSettings(settings: SettingsUpdate) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   try {
     const { data: { user }, error: userError } = await supabase.auth.getUser()

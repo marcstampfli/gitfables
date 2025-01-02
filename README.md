@@ -1,114 +1,52 @@
 # GitFables
 
-<div align="center">
-  <h3>Transform Your Git History into Engaging Stories</h3>
-  <p>GitFables uses AI to analyze your repository's commit history and generate narrative content that makes your development journey more accessible and engaging.</p>
+Transform your Git commits into meaningful stories with AI-powered narrative generation.
 
-  <p>
-    <a href="https://gitfables.com">Website</a> ·
-    <a href="./docs/getting-started.md">Documentation</a> ·
-    <a href="https://github.com/marcstampfli/gitfables/issues">Issues</a> ·
-    <a href="https://github.com/marcstampfli/gitfables/discussions">Discussions</a>
-  </p>
-</div>
+![GitFables Banner](public/images/banner.png)
 
-## ✨ Features
+## Overview
 
-- 🔄 **VCS Integration**
-  - GitHub OAuth integration with granular permissions
-  - Repository connection and automatic sync
-  - GitLab & Bitbucket support coming soon
-- 📝 **Story Generation**
-  - AI-powered narrative generation from commit history
-  - Multiple story formats and styles
-  - Technical and non-technical versions
-  - Rich markdown formatting
-- 📊 **Analytics & Insights**
-  - Repository activity tracking
-  - Story engagement metrics
-  - API key usage monitoring
-  - Export data in multiple formats
-- 🎨 **Modern UI/UX**
-  - Beautiful, responsive design
-  - Light/dark mode with system preference
-  - High contrast and reduced motion options
-  - Mobile-first approach
-- 🔒 **Security & Privacy**
-  - Secure authentication with Supabase
-  - Granular repository access control
-  - Data encryption at rest
-  - Regular security audits
-- 🌐 **API Access**
-  - RESTful API for integration
-  - Comprehensive API documentation
-  - Rate limiting and usage quotas
-  - API key management
+GitFables is an innovative platform that transforms Git commit histories into engaging narratives. By leveraging AI technology, it analyzes your repository's commit history and generates comprehensive, human-readable stories that capture the evolution of your codebase.
 
-## 🛠️ Tech Stack
+## Features
 
-- **Framework**: [Next.js 14](https://nextjs.org/) with App Router and Server Components
-- **Language**: [TypeScript](https://www.typescriptlang.org/) for type safety
-- **Auth & Database**: [Supabase](https://supabase.com/) for authentication and PostgreSQL
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [Shadcn UI](https://ui.shadcn.com/)
-- **State Management**: React Server Components + Client Hooks
-- **Type Safety**: End-to-end type safety with generated types
-- **Deployment**: [Vercel](https://vercel.com/) for seamless deployment
+### 🎯 Core Features
 
-## 📁 Project Structure
+- **AI Story Generation**: Transform commit histories into coherent narratives
+- **Repository Insights**: Visualize and understand your development timeline
+- **Team Collaboration**: Share and collaborate on development stories
+- **Custom Templates**: Tailor story generation to your needs
+- **API Integration**: Seamless integration with your existing tools
+- **Advanced Analytics**: Track and analyze development patterns
 
-```
-src/
-├── app/                # Next.js app router pages
-│   ├── (auth)/        # Authentication routes
-│   ├── (dashboard)/   # Protected dashboard routes
-│   ├── (marketing)/   # Public marketing pages
-│   └── api/           # API routes
-├── components/         # React components
-│   ├── analytics/     # Analytics components
-│   ├── auth/          # Authentication components
-│   ├── dashboard/     # Dashboard components
-│   ├── layout/        # Layout components
-│   ├── repositories/  # Repository components
-│   ├── settings/      # Settings components
-│   ├── story/         # Story components
-│   └── ui/            # Shadcn UI components
-├── hooks/             # Custom React hooks
-│   ├── api/          # API-related hooks
-│   ├── settings/     # Settings hooks
-│   └── vcs/          # VCS provider hooks
-├── lib/              # Core libraries
-│   ├── actions/      # Server actions
-│   ├── supabase/     # Database client
-│   ├── utils/        # Utility functions
-│   └── vcs/          # VCS provider implementations
-└── types/           # TypeScript types
-```
+### 🚀 Key Benefits
 
-## 🚀 Getting Started
+- **Better Documentation**: Automatically document your development process
+- **Team Communication**: Improve understanding between technical and non-technical team members
+- **Time Savings**: Automate the creation of sprint reviews and changelogs
+- **Project Insights**: Gain deeper understanding of your development patterns
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18.17 or later
-- npm or pnpm
+- Node.js 18.x or later
+- npm 9.x or later
 - Git
-- A Supabase account
-- A GitHub account (for OAuth setup)
 
 ### Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/marcstampfli/gitfables.git
-   cd gitfables
+   git clone https://github.com/yourusername/gitfables-app.git
+   cd gitfables-app
    ```
 
 2. Install dependencies:
 
    ```bash
    npm install
-   # or
-   pnpm install
    ```
 
 3. Set up environment variables:
@@ -117,107 +55,107 @@ src/
    cp .env.example .env.local
    ```
 
-   Fill in your environment variables:
+   Edit `.env.local` with your configuration.
 
-   ```env
-   # Supabase configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   SUPABASE_DB_PASSWORD=your_supabase_db_password
-
-   # GitHub OAuth configuration
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
-   ```
-
-4. Set up the database:
-
-   ```bash
-   npm run db:setup
-   # or
-   pnpm db:setup
-   ```
-
-5. Run the development server:
-
+4. Start the development server:
    ```bash
    npm run dev
-   # or
-   pnpm dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Visit `http://localhost:3000` to see the application.
 
-## 📚 Documentation
+## Tech Stack
 
-For detailed documentation, see the [docs](./docs) directory:
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase
+- **Authentication**: NextAuth.js
+- **State Management**: React Context + Hooks
+- **Testing**: Jest + React Testing Library
+- **API**: REST + tRPC
+- **Documentation**: TypeDoc
 
-- [Getting Started Guide](./docs/guides/getting-started.md)
-- [Architecture Overview](./docs/architecture/README.md)
-- [Development Guide](./docs/DEVELOPMENT.md)
-- [API Reference](./docs/api-reference.md)
-- [Authentication](./docs/authentication.md)
-- [Story Generation](./docs/features/story-generation.md)
-- [Repository Management](./docs/features/repositories.md)
+## Project Structure
 
-## 🔑 Key Features
+```
+gitfables-app/
+├── app/                    # Next.js app directory
+│   ├── (auth)/            # Authentication routes
+│   ├── (dashboard)/       # Dashboard routes
+│   └── (marketing)/       # Marketing pages
+├── components/            # React components
+├── lib/                   # Utility functions
+├── styles/               # Global styles
+├── types/                # TypeScript types
+└── public/               # Static assets
+```
 
-### VCS Integration
+## Development
 
-- OAuth-based secure authentication
-- Granular repository access control
-- Automatic repository sync
-- Support for private repositories
+### Commands
 
-### Story Generation
+- `npm run dev` - Start development server
+- `npm run build` - Build production bundle
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
+- `npm run type-check` - Run TypeScript checks
 
-- AI-powered analysis of commits
-- Multiple narrative styles
-- Technical and non-technical versions
-- Rich markdown formatting
-- Export to multiple formats
+### Environment Variables
 
-### Settings & Customization
+Required environment variables:
 
-- Theme customization
-  - Light/dark/system modes
-  - Custom accent colors
-  - Font preferences
-- Accessibility features
-  - High contrast mode
-  - Reduced motion
-  - Font size options
-- Notification preferences
-- Privacy controls
+```bash
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-### API Access
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-here
 
-- RESTful API endpoints
-- API key management
-- Usage tracking and analytics
-- Rate limiting and quotas
-- Export usage statistics
+# Database
+DATABASE_URL=your-database-url
 
-## 🤝 Contributing
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 
-We welcome contributions! Please see our [Contributing Guide](./docs/contributing.md) for details on:
+# API Keys
+OPENAI_API_KEY=your-openai-api-key
+```
 
-- Code of Conduct
-- Development process
-- Pull request guidelines
-- Issue reporting
-- Feature requests
+## Contributing
 
-## 📄 License
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## Documentation
+
+- [API Reference](docs/api-reference.md)
+- [Architecture Guide](docs/architecture/README.md)
+- [Component Library](docs/components/README.md)
+- [Feature Documentation](docs/features/README.md)
+
+## Support
+
+- [GitHub Issues](https://github.com/yourusername/gitfables-app/issues)
+- [Discord Community](https://discord.gg/gitfables)
+- [Email Support](mailto:support@gitfables.com)
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- [Next.js](https://nextjs.org/) for the amazing framework
-- [Supabase](https://supabase.com/) for auth and database
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Shadcn UI](https://ui.shadcn.com/) for UI components
-- [Vercel](https://vercel.com/) for hosting
-- All our [contributors](https://github.com/marcstampfli/gitfables/graphs/contributors)
+- Thanks to all our contributors
+- Built with [Next.js](https://nextjs.org/)
+- Powered by [OpenAI](https://openai.com/)
