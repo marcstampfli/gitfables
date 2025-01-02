@@ -3,79 +3,48 @@
  * @description Hero section with main call-to-action
  */
 
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Animated } from '@/components/ui/animated'
 import { cn } from '@/lib/utils'
-import { headingVariants } from '@/components/ui/heading'
+import Link from 'next/link'
 
-interface HeroProps {
-  isConnected: boolean
-  isLoading: boolean
-}
-
-export function Hero({ isConnected, isLoading }: HeroProps) {
+/**
+ * Hero section component for the landing page
+ * Features a main heading, description, CTA buttons, and feature highlights
+ */
+export function Hero({ className }: { className?: string }) {
   return (
-    <section className="relative overflow-hidden py-20">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.05]">
-        <div className="h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+    <section className={cn('relative min-h-screen flex items-center justify-center', className)}>
+      {/* Background decorations */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/5 blur-3xl rounded-full -translate-y-24" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-primary/5 blur-3xl rounded-full translate-y-24" />
       </div>
-      
-      <div className="container relative">
-        <div className="mx-auto max-w-[800px] text-center space-y-8">
-          <Animated animation="slideDown" delay={200}>
-            <h1 className={cn(headingVariants({ size: 'h1' }), 'text-center')}>
-              Turn Your Git History into{' '}
-              <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                Stories
-              </span>
-            </h1>
-          </Animated>
-          
-          <Animated animation="slideUp" delay={400}>
-            <p className="text-center text-muted-foreground text-lg max-w-[42rem] mx-auto">
-              GitFables analyzes your repositories and generates engaging
-              stories about your development journey.
-            </p>
-          </Animated>
 
-          <Animated animation="slideUp" delay={600}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                size="lg"
-                className="h-12 px-6"
-                asChild
-                disabled={isLoading || isConnected}
-              >
-                <Link href="/login">
-                  {isConnected ? 'Connected' : 'Get Started'}
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 px-6"
-                asChild
-              >
-                <a href="#how-it-works">Learn More</a>
-              </Button>
-            </div>
-          </Animated>
+      <div className="container px-4 py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8 inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-full">
+            <span className="inline-flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-sm font-medium">Now in public beta</span>
+          </div>
 
-          <Animated animation="fadeIn" delay={800}>
-            <div className="pt-8">
-              <p className="text-sm text-muted-foreground">
-                Join developers from companies like
-              </p>
-              <div className="mt-4 flex justify-center gap-8">
-                {/* Replace with actual company logos */}
-                <div className="h-8 w-24 rounded-lg bg-muted" />
-                <div className="h-8 w-24 rounded-lg bg-muted" />
-                <div className="h-8 w-24 rounded-lg bg-muted" />
-              </div>
-            </div>
-          </Animated>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-8">
+            Transform Your Git History Into{' '}
+            <span className="text-primary">Engaging Stories</span>
+          </h1>
+
+          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+            GitFables turns your commit messages into captivating stories, making code reviews more enjoyable and helping teams better understand project history.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button asChild size="lg" className="h-12 px-8">
+              <Link href="/auth">Get Started Free</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-12 px-8">
+              <Link href="#how-it-works">See How It Works</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

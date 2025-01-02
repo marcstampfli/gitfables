@@ -46,10 +46,10 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
     try {
       setIsSyncing(true)
       const supabase = await createClient()
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-      if (!session?.provider_token) {
-        throw new Error('GitHub token not found')
+      if (userError || !user) {
+        throw new Error('User not authenticated')
       }
 
       // Create sync record
@@ -63,6 +63,12 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
         .single()
 
       if (syncError) throw syncError
+
+      // Get provider token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError || !session?.provider_token) {
+        throw new Error('GitHub token not found')
+      }
 
       // Fetch latest commits
       const githubClient = createGitHubClient(session.provider_token)
@@ -80,7 +86,7 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
             author_email: commit.author.email,
             author_date: commit.author.date,
             url: commit.url,
-            user_id: session.user.id
+            user_id: user.id
           }))
         )
 
@@ -99,29 +105,21 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
       await supabase
         .from('repositories')
         .update({
-          last_synced_at: new Date().toISOString(),
-          commit_count: commits.length
+          last_synced_at: new Date().toISOString()
         })
         .eq('id', repository.id)
 
       toast({
         title: 'Repository synced',
-        description: `Successfully synced ${commits.length} commits from ${repository.name}`
+        description: 'Successfully synced latest commits'
       })
 
       router.refresh()
     } catch (error) {
-      logError('Failed to sync repository', {
-        metadata: {
-          error,
-          repositoryId: repository.id,
-          repositoryName: repository.name
-        }
-      })
-
+      logError('Failed to sync repository', { metadata: { error, repository } })
       toast({
         title: 'Sync failed',
-        description: error instanceof Error ? error.message : 'Failed to sync repository',
+        description: 'Failed to sync repository. Please try again.',
         variant: 'destructive'
       })
     } finally {
@@ -133,32 +131,33 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
     try {
       setIsDeleting(true)
       const supabase = await createClient()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-      const { error } = await supabase
+      if (userError || !user) {
+        throw new Error('User not authenticated')
+      }
+
+      // Delete repository
+      const { error: deleteError } = await supabase
         .from('repositories')
         .delete()
         .eq('id', repository.id)
+        .eq('user_id', user.id)
 
-      if (error) throw error
+      if (deleteError) throw deleteError
 
       toast({
-        title: 'Repository removed',
-        description: `Successfully removed ${repository.name}`
+        title: 'Repository deleted',
+        description: 'Successfully deleted repository'
       })
 
       router.refresh()
+      router.push('/dashboard/repositories')
     } catch (error) {
-      logError('Failed to delete repository', {
-        metadata: {
-          error,
-          repositoryId: repository.id,
-          repositoryName: repository.name
-        }
-      })
-
+      logError('Failed to delete repository', { metadata: { error, repository } })
       toast({
         title: 'Delete failed',
-        description: error instanceof Error ? error.message : 'Failed to delete repository',
+        description: 'Failed to delete repository. Please try again.',
         variant: 'destructive'
       })
     } finally {
@@ -168,50 +167,39 @@ export function RepositoryActions({ repository }: RepositoryActionsProps) {
   }
 
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSync}
-          disabled={isSyncing}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          <span className="sr-only">Sync repository</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDeleteDialog(true)}
-          disabled={isDeleting}
-          className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Trash2 className="h-4 w-4" />
-          <span className="sr-only">Remove repository</span>
-        </Button>
-      </div>
-
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleSync}
+        disabled={isSyncing}
+      >
+        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setShowDeleteDialog(true)}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Repository</AlertDialogTitle>
+            <AlertDialogTitle>Delete Repository</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {repository.name}? This will delete all associated stories and data.
-              This action cannot be undone.
+              Are you sure you want to delete this repository? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Remove Repository
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 } 

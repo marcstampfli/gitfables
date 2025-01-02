@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { CommitPattern } from '@/types/stories'
 
 interface CommitTimelineProps {
@@ -16,7 +16,7 @@ function getPatternColor(type: string): { bg: string; text: string } {
   const colors = {
     feature: { bg: 'bg-blue-500/90', text: 'text-blue-500' },
     bugfix: { bg: 'bg-red-500/90', text: 'text-red-500' },
-    refactor: { bg: 'bg-purple-500/90', text: 'text-purple-500' },
+    refactor: { bg: 'bg-primary/90', text: 'text-primary' },
     docs: { bg: 'bg-green-500/90', text: 'text-green-500' },
     test: { bg: 'bg-yellow-500/90', text: 'text-yellow-500' },
     chore: { bg: 'bg-gray-500/90', text: 'text-gray-500' },
@@ -99,9 +99,21 @@ export function CommitTimeline({ patterns, width = 800, height = 60 }: CommitTim
         {/* Pattern segments */}
         <svg width={width} height={height}>
           {timelineData.segments.map((segment, i) => (
-            <Tooltip
-              key={i}
-              content={
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <g className="group cursor-pointer">
+                  <rect
+                    x={segment.x}
+                    y={height / 4}
+                    width={segment.width}
+                    height={height / 2}
+                    className={`${getPatternColor(segment.type).bg} transition-all duration-200 group-hover:opacity-100`}
+                    style={{ opacity: 0.3 + segment.significance * 0.7 }}
+                    rx={2}
+                  />
+                </g>
+              </TooltipTrigger>
+              <TooltipContent>
                 <div className="space-y-1 text-xs">
                   <div className="font-medium">{segment.type}</div>
                   <div>{segment.commits} commits</div>
@@ -109,19 +121,7 @@ export function CommitTimeline({ patterns, width = 800, height = 60 }: CommitTim
                     {formatDate(segment.startDate)} → {formatDate(segment.endDate)}
                   </div>
                 </div>
-              }
-            >
-              <g className="group cursor-pointer">
-                <rect
-                  x={segment.x}
-                  y={height / 4}
-                  width={segment.width}
-                  height={height / 2}
-                  className={`${getPatternColor(segment.type).bg} transition-all duration-200 group-hover:opacity-100`}
-                  style={{ opacity: 0.3 + segment.significance * 0.7 }}
-                  rx={2}
-                />
-              </g>
+              </TooltipContent>
             </Tooltip>
           ))}
         </svg>
