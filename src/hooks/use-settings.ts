@@ -1,139 +1,221 @@
 /**
  * @module hooks/use-settings
- * @description Hook for managing user settings
+ * @description Client-side hook for settings management
  */
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { toast } from '@/hooks/use-toast'
-import { logError } from '@/lib/utils/logger'
-import type { SettingsUpdate } from '@/types/settings'
+import { Database } from '@/lib/database.types'
 
-interface UseSettingsReturn {
-  settings: SettingsUpdate
-  updateSettings: (update: Partial<SettingsUpdate>) => Promise<void>
-  resetSettings: () => Promise<void>
-  isLoading: boolean
+// Get the singleton instance
+const supabase = createClient()
+
+export type NotificationDigest = 'daily' | 'weekly' | 'never'
+export type ThemeMode = 'light' | 'dark' | 'system'
+export type FontSize = 'small' | 'medium' | 'large'
+export type SyncFrequency = 'hourly' | 'daily' | 'weekly'
+export type Visibility = 'public' | 'private'
+
+export interface Settings {
+  theme: {
+    mode: ThemeMode
+    accent_color: string
+    language: string
+  }
+  notifications: {
+    email: boolean
+    web: boolean
+    digest: NotificationDigest
+  }
+  privacy: {
+    show_activity: boolean
+    default_story_visibility: Visibility
+  }
+  repository: {
+    auto_sync: boolean
+    sync_frequency: SyncFrequency
+    default_branch: string
+  }
+  accessibility: {
+    font_size: FontSize
+    reduce_animations: boolean
+    high_contrast: boolean
+    keyboard_shortcuts: boolean
+  }
+  debugMode: boolean
+  apiAccess: boolean
+  betaFeatures: boolean
 }
 
-const defaultSettings: SettingsUpdate = {
-  theme: 'system',
+const defaultSettings: Settings = {
+  theme: {
+    mode: 'system',
+    accent_color: 'default',
+    language: 'en'
+  },
   notifications: {
     email: true,
-    push: true,
-    inApp: true
+    web: true,
+    digest: 'weekly'
   },
   privacy: {
-    shareAnalytics: true,
-    shareUsage: true
+    show_activity: true,
+    default_story_visibility: 'private'
   },
-  display: {
-    compactMode: false,
-    showAvatars: true,
-    showTimestamps: true
+  repository: {
+    auto_sync: true,
+    sync_frequency: 'daily',
+    default_branch: 'main'
   },
   accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largeText: false
+    font_size: 'medium',
+    reduce_animations: false,
+    high_contrast: false,
+    keyboard_shortcuts: true
   },
-  advanced: {
-    experimentalFeatures: false,
-    debugMode: false
-  }
+  debugMode: false,
+  apiAccess: false,
+  betaFeatures: false
 }
 
-export function useSettings(initialSettings?: SettingsUpdate): UseSettingsReturn {
-  const [settings, setSettings] = useState<SettingsUpdate>(initialSettings || defaultSettings)
-  const [isLoading, setIsLoading] = useState(false)
+export function useSettings() {
+  const [settings, setSettings] = useState<Settings>(defaultSettings)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
-  const updateSettings = async (update: Partial<SettingsUpdate>) => {
+  useEffect(() => {
+    let mounted = true
+
+    async function loadSettings() {
+      if (!mounted) return
+
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // Get user
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError) {
+          console.error('Error getting user:', userError)
+          setIsLoading(false)
+          return
+        }
+
+        if (!user) {
+          setIsLoading(false)
+          return
+        }
+
+        // Get settings
+        const { data, error } = await supabase
+          .from('user_settings')
+          .select('settings')
+          .eq('user_id', user.id)
+          .single()
+
+        if (error) {
+          // If no settings exist yet, create default settings
+          if (error.code === 'PGRST116') {
+            const { data: newSettings, error: insertError } = await supabase
+              .from('user_settings')
+              .insert({
+                user_id: user.id,
+                settings: defaultSettings as unknown as Database['public']['Tables']['user_settings']['Insert']['settings']
+              })
+              .select('settings')
+              .single()
+
+            if (insertError) {
+              console.error('Failed to create settings:', insertError)
+              setError(new Error('Failed to create settings'))
+              return
+            }
+
+            if (mounted) {
+              setSettings(newSettings.settings as unknown as Settings)
+            }
+          } else {
+            console.error('Failed to fetch settings:', error)
+            setError(error)
+          }
+        } else if (mounted) {
+          setSettings(data.settings as unknown as Settings)
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err)
+        if (mounted) {
+          setError(err instanceof Error ? err : new Error('Failed to load settings'))
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadSettings()
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (mounted) {
+          if (event === 'SIGNED_OUT') {
+            setSettings(defaultSettings)
+          } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            loadSettings()
+          }
+        }
+      }
+    )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const updateSettings = async (newSettings: Partial<Settings>) => {
     try {
-      setIsLoading(true)
-      const supabase = await createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user')
-
-      const newSettings = {
-        ...settings,
-        ...update
+      // Get user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        return { error: new Error('No authenticated user') }
       }
 
-      const { error } = await supabase
+      const mergedSettings = {
+        ...settings,
+        ...newSettings
+      }
+
+      // Update settings
+      const { data, error } = await supabase
         .from('user_settings')
-        .update({ settings: newSettings })
+        .update({
+          settings: mergedSettings as unknown as Database['public']['Tables']['user_settings']['Update']['settings']
+        })
         .eq('user_id', user.id)
+        .select('settings')
+        .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Failed to update settings:', error)
+        return { error }
+      }
 
-      setSettings(newSettings)
-      toast({
-        title: 'Settings Updated',
-        description: 'Your settings have been saved successfully.'
-      })
+      setSettings(data.settings as unknown as Settings)
+      return { data: data.settings as unknown as Settings }
     } catch (error) {
-      logError('Failed to update settings', error, {
-        context: 'settings',
-        metadata: {
-          action: 'update',
-          updateData: update,
-          timestamp: new Date().toISOString()
-        }
-      })
-      toast({
-        title: 'Error',
-        description: 'Failed to update settings. Please try again.',
-        variant: 'destructive'
-      })
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const resetSettings = async () => {
-    try {
-      setIsLoading(true)
-      const supabase = await createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user')
-
-      const { error } = await supabase
-        .from('user_settings')
-        .update({ settings: defaultSettings })
-        .eq('user_id', user.id)
-
-      if (error) throw error
-
-      setSettings(defaultSettings)
-      toast({
-        title: 'Settings Reset',
-        description: 'Your settings have been reset to default values.'
-      })
-    } catch (error) {
-      logError('Failed to reset settings', error, {
-        context: 'settings',
-        metadata: {
-          action: 'reset',
-          timestamp: new Date().toISOString()
-        }
-      })
-      toast({
-        title: 'Error',
-        description: 'Failed to reset settings. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false)
+      console.error('Failed to update settings:', error)
+      return { error: error instanceof Error ? error : new Error('Failed to update settings') }
     }
   }
 
   return {
     settings,
-    updateSettings,
-    resetSettings,
-    isLoading
+    isLoading,
+    error,
+    updateSettings
   }
 } 

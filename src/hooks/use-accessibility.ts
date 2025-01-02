@@ -21,13 +21,13 @@ export function useAccessibility(): UseAccessibilityReturn {
 
   useEffect(() => {
     const root = document.documentElement
-    root.classList.toggle('large-text', settings?.accessibility?.largeText || false)
-    root.classList.toggle('high-contrast', settings?.accessibility?.highContrast || false)
-    root.classList.toggle('reduce-motion', settings?.accessibility?.reduceMotion || false)
+    root.classList.toggle('large-text', settings?.accessibility?.font_size === 'large')
+    root.classList.toggle('high-contrast', settings?.accessibility?.high_contrast || false)
+    root.classList.toggle('reduce-motion', settings?.accessibility?.reduce_animations || false)
   }, [
-    settings?.accessibility?.largeText,
-    settings?.accessibility?.highContrast,
-    settings?.accessibility?.reduceMotion
+    settings?.accessibility?.font_size,
+    settings?.accessibility?.high_contrast,
+    settings?.accessibility?.reduce_animations
   ])
 
   const setAccessibility = async (accessibilitySettings: Partial<SettingsUpdate['accessibility']>) => {
@@ -40,9 +40,9 @@ export function useAccessibility(): UseAccessibilityReturn {
   }
 
   return {
-    fontSize: settings?.accessibility?.largeText || false,
-    highContrast: settings?.accessibility?.highContrast || false,
-    reduceMotion: settings?.accessibility?.reduceMotion || false,
+    fontSize: settings?.accessibility?.font_size === 'large',
+    highContrast: settings?.accessibility?.high_contrast || false,
+    reduceMotion: settings?.accessibility?.reduce_animations || false,
     setAccessibility
   }
 } 

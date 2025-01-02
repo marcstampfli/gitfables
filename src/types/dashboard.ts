@@ -34,10 +34,21 @@ export interface Repository {
  * Dashboard statistics
  */
 export interface DashboardStats {
+  /** Total number of stories */
   totalStories: number
+  /** Total number of repositories */
   totalRepositories: number
+  /** Total number of views */
   totalViews: number
+  /** Total number of shares */
   totalShares: number
+  /** Previous period statistics for trend calculation */
+  previousPeriod?: {
+    totalStories: number
+    totalRepositories: number
+    totalViews: number
+    totalShares: number
+  }
 }
 
 /**
