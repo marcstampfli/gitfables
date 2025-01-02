@@ -4,11 +4,11 @@
  */
 
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GitBranch, GitCommit, Star, GitFork, Eye, Loader2 } from 'lucide-react'
+import { GitBranch, GitCommit, Star, GitFork, Eye, Loader2, ExternalLink } from 'lucide-react'
 import { formatNumber, formatDate } from '@/lib/utils/formatting'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -56,6 +56,8 @@ function CommitList({ commits }: CommitListProps) {
             size="sm"
             className="text-xs"
             asChild
+            icon={<GitCommit className="h-4 w-4" />}
+            iconPosition="left"
           >
             <a
               href={commit.url}
@@ -106,7 +108,11 @@ function RepositoryContent({ repository, commits }: {
         </div>
         <div className="flex items-center gap-2">
           <p className="text-sm text-muted-foreground">{syncStatus}</p>
-          <Button asChild>
+          <Button 
+            asChild
+            icon={<ExternalLink className="h-4 w-4" />}
+            iconPosition="right"
+          >
             <a href={repository.url} target="_blank" rel="noopener noreferrer">
               View on GitHub
             </a>
@@ -205,7 +211,7 @@ function RepositoryContent({ repository, commits }: {
 }
 
 export default async function RepositoryPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   // Fetch repository details
   const { data: repository, error: repoError } = await supabase

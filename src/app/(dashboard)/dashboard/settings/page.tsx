@@ -1,37 +1,24 @@
 /**
- * @module app/(dashboard)/dashboard/settings/page
- * @description User settings page
+ * @module app/dashboard/settings/page
+ * @description Settings page component
  */
 
-import { getSettings } from '@/lib/actions/settings'
+import { redirect } from 'next/navigation'
 import { SettingsContent } from '@/components/dashboard/settings/settings-content'
-import type { SettingsUpdate } from '@/types/settings'
+import { createServerClient } from '@/lib/supabase/server'
+import { Database } from '@/lib/database.types'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function SettingsPage() {
-  const userSettings = await getSettings()
-  
-  // Convert UserSettings to SettingsUpdate format
-  const initialSettings: SettingsUpdate = {
-    theme: userSettings.theme.mode,
-    notifications: {
-      email: userSettings.notifications.email,
-      push: userSettings.notifications.web,
-      inApp: userSettings.notifications.web
-    },
-    privacy: {
-      shareAnalytics: userSettings.privacy.show_activity,
-      shareUsage: userSettings.privacy.show_activity
-    },
-    accessibility: {
-      reduceMotion: userSettings.accessibility.reduce_animations,
-      highContrast: userSettings.accessibility.high_contrast,
-      largeText: userSettings.accessibility.font_size === 'large'
-    },
-    advanced: {
-      experimentalFeatures: false,
-      debugMode: false
-    }
+  const supabase = await createServerClient()
+
+  // Check if user is authenticated
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (!user || error) {
+    redirect('/login')
   }
 
-  return <SettingsContent initialSettings={initialSettings} />
+  return <SettingsContent />
 } 

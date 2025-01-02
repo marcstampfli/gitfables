@@ -3,51 +3,40 @@
  * @description OAuth callback route handler for Supabase Auth
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { logError } from '@/lib/utils/logger'
+import type { NextRequest } from 'next/server'
+import type { Database } from '@/types/database'
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const error = requestUrl.searchParams.get('error')
-  const error_description = requestUrl.searchParams.get('error_description')
-
-  // Handle OAuth errors
-  if (error || !code) {
-    logError('OAuth authentication failed', { 
-      metadata: { 
-        error,
-        error_description,
-        url: request.url 
-      }
-    })
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=${encodeURIComponent(error_description || error || 'Unknown error')}`
-    )
-  }
-
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const requestUrl = new URL(request.url)
+    const code = requestUrl.searchParams.get('code')
+
+    // If no code, redirect to login
+    if (!code) {
+      console.error('No code in callback')
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
 
     // Exchange code for session
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (exchangeError) throw exchangeError
+    if (error) {
+      console.error('Error exchanging code for session:', error)
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('error', error.message)
+      return NextResponse.redirect(loginUrl)
+    }
 
-    // Redirect to the dashboard on success
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`)
+    // Always redirect to dashboard after successful login
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+
   } catch (error) {
-    logError('Failed to exchange code for session', { 
-      metadata: { 
-        error,
-        code,
-        url: request.url 
-      }
-    })
-    const errorMessage = error instanceof Error ? error.message : 'Failed to exchange code for session'
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=${encodeURIComponent(errorMessage)}`
-    )
+    console.error('Callback error:', error)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 } 

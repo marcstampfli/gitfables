@@ -5,7 +5,7 @@
 
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { getStory } from '@/lib/story/story-service'
 import { StoryViewer } from '@/components/story/story-viewer'
 import { Story } from '@/types/story'
@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
   const story = await getStory(supabase, params.id)
 
   if (!story) {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function StoryPage({ params }: PageProps) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
   const story = await getStory(supabase, params.id)
 
   if (!story) {

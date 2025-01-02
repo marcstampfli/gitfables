@@ -1,176 +1,194 @@
 /**
  * @module app/stories/new/page
- * @description Story generator page for creating new stories from repositories
+ * @description Create new story page
  */
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { GitBranch, Settings, Wand2 } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { createServerClient } from '@/lib/supabase/server'
+import { GitBranch, ArrowLeft, Wand2, GitFork } from 'lucide-react'
 
-const repositories = [
-  {
-    name: 'my-saas-app',
-    description: 'A SaaS application built with Next.js and Supabase',
-    lastUpdated: 'March 15, 2024'
-  },
-  {
-    name: 'portfolio-website',
-    description: 'My personal portfolio website built with React',
-    lastUpdated: 'March 10, 2024'
+async function getRepositories() {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
   }
-]
 
-export default function NewStoryPage() {
+  const { data: repositories } = await supabase
+    .from('repositories')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('name', { ascending: true })
+
+  return repositories || []
+}
+
+export default async function NewStoryPage() {
+  const repositories = await getRepositories()
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1">
-        {/* Hero */}
-        <section className="relative py-20">
-          <div className="container relative">
-            <div className="max-w-[800px] mx-auto space-y-8">
+    <div className="container max-w-4xl py-8 space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/stories" className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <h1 className="text-3xl font-bold tracking-tight">Create Story</h1>
+          </div>
+          <p className="text-muted-foreground">
+            Transform your code history into an engaging narrative
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="grid gap-6">
+        {/* Repository Selection */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <GitFork className="h-5 w-5 text-primary" />
+              Select Repository
+            </CardTitle>
+            <CardDescription>
+              Choose the repository you want to create a story from
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {repositories.length > 0 ? (
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a repository" />
+                </SelectTrigger>
+                <SelectContent>
+                  {repositories.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.id}>
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="h-4 w-4" />
+                        <span>{repo.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-sm text-muted-foreground mb-4">
+                  No repositories connected. Connect a repository first to create a story.
+                </p>
+                <Button asChild variant="outline">
+                  <Link href="/dashboard/repositories/new">
+                    Connect Repository
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Story Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Wand2 className="h-5 w-5 text-primary" />
+              Story Details
+            </CardTitle>
+            <CardDescription>
+              Configure how your story will be generated
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
-                  Create a New Story
-                </h1>
-                <p className="text-lg text-muted-foreground">
-                  Transform your repository&apos;s commit history into an engaging narrative
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter story title"
+                  className="max-w-xl"
+                />
+                <p className="text-sm text-muted-foreground">
+                  A descriptive title for your story
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Enter story description"
+                  className="max-w-xl resize-none"
+                  rows={3}
+                />
+                <p className="text-sm text-muted-foreground">
+                  A brief description of what this story is about
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Time Range</Label>
+                <div className="grid gap-4 sm:grid-cols-2 max-w-xl">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate" className="text-xs text-muted-foreground">Start Date</Label>
+                    <Input
+                      type="date"
+                      id="startDate"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endDate" className="text-xs text-muted-foreground">End Date</Label>
+                    <Input
+                      type="date"
+                      id="endDate"
+                    />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Optional: Select a date range to focus on specific commits
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Story Type</Label>
+                <Select defaultValue="technical">
+                  <SelectTrigger className="max-w-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="technical">Technical Documentation</SelectItem>
+                    <SelectItem value="narrative">Narrative Story</SelectItem>
+                    <SelectItem value="changelog">Changelog</SelectItem>
+                    <SelectItem value="release-notes">Release Notes</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Choose how you want your story to be presented
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Repository Selection */}
-        <section className="py-12 bg-muted/50">
-          <div className="container">
-            <div className="max-w-[800px] mx-auto space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold tracking-tight">Select Repository</h2>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/repositories">
-                    Connect New Repository
-                    <GitBranch className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="grid gap-4">
-                {repositories.map((repo) => (
-                  <label
-                    key={repo.name}
-                    className="relative flex items-start p-6 bg-card border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      name="repository"
-                      value={repo.name}
-                      className="peer sr-only"
-                    />
-                    <div className="flex items-center h-5">
-                      <div className="w-4 h-4 border-2 rounded-full peer-checked:bg-primary peer-checked:border-primary" />
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold">
-                          {repo.name}
-                        </h3>
-                      </div>
-                      <p className="mt-1 text-muted-foreground">
-                        {repo.description}
-                      </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Last updated {repo.lastUpdated}
-                      </p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Story Options */}
-        <section className="py-12">
-          <div className="container">
-            <div className="max-w-[800px] mx-auto space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold tracking-tight">Story Options</h2>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/settings/story-preferences">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Story Preferences
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label htmlFor="title" className="text-sm font-medium">
-                    Story Title
-                  </label>
-                  <Input
-                    id="title"
-                    name="title"
-                    placeholder="Enter a title for your story"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="description" className="text-sm font-medium">
-                    Description
-                  </label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Add a brief description of what this story is about"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Time Range
-                  </label>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Input
-                      type="date"
-                      name="startDate"
-                      placeholder="Start date"
-                    />
-                    <Input
-                      type="date"
-                      name="endDate"
-                      placeholder="End date"
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Optional: Select a date range to focus on specific commits
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
         {/* Actions */}
-        <section className="py-12 bg-muted/50">
-          <div className="container">
-            <div className="max-w-[800px] mx-auto flex justify-end gap-4">
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/dashboard">
-                  Cancel
-                </Link>
-              </Button>
-              <Button size="lg">
-                Generate Story
-                <Wand2 className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </section>
+        <div className="flex items-center justify-end gap-4">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/stories">
+              Cancel
+            </Link>
+          </Button>
+          <Button>
+            <Wand2 className="mr-2 h-4 w-4" />
+            Generate Story
+          </Button>
+        </div>
       </div>
     </div>
   )

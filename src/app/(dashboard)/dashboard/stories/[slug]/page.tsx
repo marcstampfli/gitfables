@@ -4,7 +4,7 @@
  */
 
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { StoryEditor } from '@/components/dashboard/stories/story-editor'
 
 interface StoryPageProps {
@@ -14,7 +14,7 @@ interface StoryPageProps {
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const { data: story, error } = await supabase
     .from('stories')

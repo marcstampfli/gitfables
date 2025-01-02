@@ -12,7 +12,7 @@ import { createGitHubClient } from '@/lib/vcs/github-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, GitBranch, CheckCircle2 } from 'lucide-react'
+import { Loader2, GitBranch, CheckCircle2, ArrowLeft } from 'lucide-react'
 import { logError } from '@/lib/utils/logger'
 import type { Repository } from '@/types/vcs'
 
@@ -207,6 +207,8 @@ export default function RepositorySetupPage({ params }: { params: { id: string }
           <Button
             variant="outline"
             onClick={() => router.push('/dashboard/repositories')}
+            icon={<ArrowLeft className="h-4 w-4" />}
+            iconPosition="left"
           >
             Back to Repositories
           </Button>

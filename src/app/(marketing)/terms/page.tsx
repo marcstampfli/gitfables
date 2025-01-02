@@ -1,230 +1,137 @@
 /**
  * @module app/terms/page
- * @description Terms of Service page with detailed legal information
+ * @description Terms of Service page outlining user agreements and legal terms
  */
 
-import { Button } from '@/components/ui/button'
-import { Mail } from 'lucide-react'
-import Link from 'next/link'
-
-const sections = [
-  {
-    id: 'agreement',
-    title: '1. Agreement to Terms',
-    content: `Welcome to GitFables! Before using the service, please read these Terms of Service carefully.
-
-By accessing or using GitFables, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this service. These terms apply to all visitors, users, and others who access or use GitFables.`
-  },
-  {
-    id: 'license',
-    title: '2. Use License',
-    content: `When you use GitFables, I grant you a limited, non-exclusive, non-transferable license that allows you to:`,
-    items: [
-      'Access and use the service for your personal or business purposes',
-      'Generate and share stories based on your repository data',
-      'Connect and analyze your GitHub repositories',
-      'Download, share, and embed your generated stories'
-    ],
-    footer: `This license is subject to these Terms of Service and may be revoked if you violate these terms.`
-  },
-  {
-    id: 'restrictions',
-    title: '3. Restrictions',
-    content: `To maintain the quality and integrity of the service, you are specifically restricted from:`,
-    items: [
-      'Using the service for any unlawful or prohibited purposes',
-      'Sharing or transferring your account access to others',
-      'Attempting to decompile or reverse engineer the software',
-      'Removing any copyright or proprietary notices',
-      'Using the service in any way that could damage or overburden it',
-      'Creating multiple accounts to circumvent service limitations'
-    ],
-    footer: `Violation of these restrictions may result in immediate termination of your access to GitFables.`
-  },
-  {
-    id: 'content',
-    title: '4. Your Content',
-    content: `When you use GitFables with your repositories, it&apos;s important to understand how your content is handled:`,
-    items: [
-      'You retain full ownership of your code and repository content',
-      'You grant GitFables permission to analyze and process your data',
-      'You are responsible for ensuring you have rights to share the content',
-      'Content violating these terms may be removed',
-      'You maintain ownership of all stories generated from your data'
-    ],
-    footer: `I respect your intellectual property rights and will only use your content as necessary to provide the service.`
-  },
-  {
-    id: 'modifications',
-    title: '5. Service Modifications',
-    content: `To ensure the best possible service, I reserve the right to:`,
-    items: [
-      'Modify or discontinue parts of the service with notice',
-      'Change pricing with at least 30 days notice',
-      'Limit access to certain features when necessary',
-      'Update these terms to reflect service changes',
-      'Add, remove, or modify functionality'
-    ],
-    footer: `I will make reasonable efforts to notify you of any significant changes that affect your use of GitFables.`
-  },
-  {
-    id: 'account',
-    title: '6. Account Terms',
-    content: `To maintain a secure and reliable service, you must:`,
-    items: [
-      'Provide accurate and complete account information',
-      'Maintain the security of your account credentials',
-      'Promptly report any unauthorized account access',
-      'Be at least 13 years old to use the service',
-      'Have a valid GitHub account in good standing'
-    ],
-    footer: `You are responsible for all activity that occurs under your account.`
-  },
-  {
-    id: 'payment',
-    title: '7. Payment Terms',
-    content: `For paid services and subscriptions:`,
-    items: [
-      'All payments are processed securely through Stripe',
-      'Subscriptions automatically renew unless cancelled',
-      'Refunds are handled according to our refund policy',
-      'Prices may change with 30 days advance notice',
-      'Service access may be suspended for failed payments'
-    ],
-    footer: `You can cancel your subscription at any time, and it will remain active until the end of your current billing period.`
-  },
-  {
-    id: 'disclaimer',
-    title: '8. Disclaimer',
-    content: `GitFables is provided "as is" and without warranties of any kind, either express or implied. While I strive to provide a reliable service:
-
-• I do not guarantee the service will be uninterrupted or error-free
-• I make no warranties about the accuracy or reliability of the generated stories
-• You understand and agree that you use the service at your own risk
-• Technical issues may occasionally affect service availability
-
-Your use of GitFables is at your sole risk. I regularly back up data and maintain security measures, but you should maintain your own backups of important repository data.`
-  },
-  {
-    id: 'liability',
-    title: '9. Limitation of Liability',
-    content: `To the fullest extent permitted by law, GitFables shall not be liable for any:
-
-• Direct, indirect, or consequential damages
-• Loss of profits, revenue, or data
-• Business interruption or lost opportunities
-• Damages resulting from service interruptions
-• Issues arising from third-party integrations
-
-This limitation of liability applies whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis.`
-  },
-  {
-    id: 'termination',
-    title: '10. Termination',
-    content: `I may terminate or suspend your access to GitFables immediately, without prior notice, if:
-
-• You violate these Terms of Service
-• Your actions could harm other users or the service
-• You breach any applicable laws or regulations
-• Your usage poses a security risk
-
-Upon termination, your right to use the service will immediately cease. All provisions of these Terms which by their nature should survive termination shall survive.`
-  }
-]
+import { PageHeader } from '@/components/marketing/page-header'
 
 export default function TermsPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1">
-        {/* Hero */}
-        <section className="py-20">
-          <div className="container">
-            <div className="max-w-[800px] mx-auto">
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tight sm:text-5xl text-center">
-                    Terms of Service
-                  </h1>
-                  <p className="text-lg text-muted-foreground text-center">
-                    Last updated: March 15, 2024
-                  </p>
-                </div>
+    <div className="relative">
+      <PageHeader
+        title="Terms of Service"
+        titleGradient="Terms"
+        description="Our terms and conditions for using GitFables"
+      />
 
-                {/* Quick Links */}
-                <nav className="flex flex-wrap justify-center gap-2 text-sm">
-                  {sections.map((section) => (
-                    <a
-                      key={section.id}
-                      href={`#${section.id}`}
-                      className="px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                    >
-                      {section.title.split('.')[1]}
-                    </a>
-                  ))}
-                </nav>
-              </div>
+      <section className="py-24">
+        <div className="container">
+          <div className="prose prose-gray dark:prose-invert max-w-3xl mx-auto">
+            <div className="text-sm text-muted-foreground mb-8">
+              Last updated: March 15, 2024
             </div>
-          </div>
-        </section>
 
-        {/* Content */}
-        <section className="py-12">
-          <div className="container">
-            <div className="max-w-[800px] mx-auto">
-              <article className="prose prose-gray dark:prose-invert lg:prose-lg max-w-none">
-                {sections.map((section) => (
-                  <div key={section.id} id={section.id} className="scroll-m-20">
-                    <h2 className="text-3xl font-bold tracking-tight mt-16 first:mt-0">
-                      {section.title}
-                    </h2>
-                    {section.content && (
-                      <div className="mt-6 space-y-4 text-base leading-7">
-                        {section.content.split('\n\n').map((paragraph, i) => (
-                          <p key={i}>{paragraph}</p>
-                        ))}
-                      </div>
-                    )}
-                    {section.items && (
-                      <ul className="mt-6 space-y-4 text-base">
-                        {section.items.map((item, i) => (
-                          <li key={i} className="leading-7">
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {section.footer && (
-                      <p className="mt-6 text-sm text-muted-foreground">
-                        {section.footer}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section className="py-20 bg-muted/50">
-          <div className="container">
-            <div className="max-w-[600px] mx-auto text-center space-y-8">
-              <h2 className="text-3xl font-bold tracking-tight">
-                Questions About Terms?
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                If you have any questions about these Terms of Service, please don&apos;t hesitate to contact me.
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Agreement to Terms</h2>
+              <p>
+                By accessing or using GitFables (&quot;the Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of the terms, you may not access the Service.
               </p>
-              <Button size="lg" asChild>
-                <Link href="mailto:legal@gitfables.com">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Contact Legal Team
-                </Link>
-              </Button>
-            </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Accounts and Registration</h2>
+              <p>
+                When you create an account with us, you must provide accurate, complete, and current information. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.
+              </p>
+              <p>
+                You are responsible for:
+              </p>
+              <ul>
+                <li>Maintaining the security of your account</li>
+                <li>All activities that occur under your account</li>
+                <li>Protecting your password and access credentials</li>
+                <li>Notifying us immediately of any unauthorized access</li>
+              </ul>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Acceptable Use</h2>
+              <p>You agree not to:</p>
+              <ul>
+                <li>Use the Service for any illegal purposes</li>
+                <li>Violate any intellectual property rights</li>
+                <li>Transmit malware or harmful code</li>
+                <li>Attempt to gain unauthorized access</li>
+                <li>Interfere with the proper working of the Service</li>
+                <li>Engage in automated use of the system</li>
+              </ul>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Intellectual Property</h2>
+              <p>
+                The Service and its original content, features, and functionality are owned by GitFables and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+              </p>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">User Content</h2>
+              <p>
+                When you create, upload, or share content through the Service, you retain your intellectual property rights. However, you grant us a license to use, modify, publicly perform, publicly display, reproduce, and distribute such content.
+              </p>
+              <p>
+                You are responsible for any content you contribute, and you represent that:
+              </p>
+              <ul>
+                <li>You own the content or have the right to use it</li>
+                <li>Your content does not violate the rights of others</li>
+                <li>Your content complies with these Terms and applicable laws</li>
+              </ul>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Payment Terms</h2>
+              <p>
+                Some aspects of the Service may be provided for a fee. You agree to pay all fees in accordance with the pricing and payment terms presented to you for such features.
+              </p>
+              <ul>
+                <li>Fees are non-refundable except as required by law</li>
+                <li>You are responsible for all applicable taxes</li>
+                <li>Subscription fees are billed in advance</li>
+                <li>You must provide accurate billing information</li>
+              </ul>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Termination</h2>
+              <p>
+                We may terminate or suspend your account immediately, without prior notice or liability, for any reason, including breach of these Terms. Upon termination, your right to use the Service will immediately cease.
+              </p>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Limitation of Liability</h2>
+              <p>
+                In no event shall GitFables, its directors, employees, partners, agents, suppliers, or affiliates be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, use, goodwill, or other intangible losses.
+              </p>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Disclaimer</h2>
+              <p>
+                The Service is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis. The Service is provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance.
+              </p>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Changes to Terms</h2>
+              <p>
+                We reserve the right to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days&apos; notice prior to any new terms taking effect.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold tracking-tight mb-4">Contact Us</h2>
+              <p>
+                If you have any questions about these Terms, please contact us at{' '}
+                <a href="mailto:legal@gitfables.com" className="text-primary hover:underline">
+                  legal@gitfables.com
+                </a>
+              </p>
+            </section>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   )
 } 

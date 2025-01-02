@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { useSharedStories } from '@/hooks/story/use-shared-stories'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Eye, Calendar, Share2 } from 'lucide-react'
+import { Loader2, Eye, Calendar, Share2, Home } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import type { SharedStory } from '@/types/stories'
 
@@ -69,7 +69,13 @@ export default function SharedStoryPage({ params }: PageProps) {
           <p className="mt-2 text-muted-foreground">
             The story you&apos;re looking for might have been removed or expired.
           </p>
-          <Button className="mt-4" variant="outline" asChild>
+          <Button 
+            className="mt-4" 
+            variant="outline" 
+            asChild
+            icon={<Home className="h-4 w-4" />}
+            iconPosition="left"
+          >
             <a href="/">Return Home</a>
           </Button>
         </Card>
